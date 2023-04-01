@@ -4,10 +4,10 @@
 const express = require('express')
 const router = express.Router()
 
-const WorkController = require('../controllers/work.controller')
-const middleware = require('../middlewares')
+const WorkController = require('../../../controllers/work.controller')
+const middleware = require('../../../middlewares')
 const passport = require('passport')
-const { ADMIN, MANAGER, SANTRI } = require('../traits/role')
+const { ADMIN, MANAGER, SANTRI } = require('../../../traits/role')
 
 router.use(passport.authenticate('jwt', { session: false }))
 

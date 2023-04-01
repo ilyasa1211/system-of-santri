@@ -4,11 +4,11 @@
 const express = require('express')
 const router = express.Router()
 
-const { AccountController } = require('../controllers')
+const { AccountController } = require('../../../controllers')
 const passport = require('passport')
-const upload = require('../config/multer')('account')
-const middleware = require('../middlewares')
-const { ADMIN, MANAGER, SANTRI } = require('../traits/role')
+const upload = require('../../../config/multer')('account')
+const middleware = require('../../../middlewares')
+const { ADMIN, MANAGER } = require('../../../traits/role')
 
 router.use(upload.single('avatar'))
 router.use(passport.authenticate('jwt', { session: false }))

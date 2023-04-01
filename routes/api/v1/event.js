@@ -4,10 +4,10 @@
 const express = require('express')
 const router = express.Router()
 
-const { EventController } = require('../controllers')
+const { EventController } = require('../../../controllers')
 const passport = require('passport')
-const middleware = require('../middlewares')
-const { ADMIN, MANAGER, SANTRI } = require('../traits/role')
+const middleware = require('../../../middlewares')
+const { ADMIN } = require('../../../traits/role')
 
 router.get('/', EventController.index)
 router.get('/calendar', EventController.calendar)

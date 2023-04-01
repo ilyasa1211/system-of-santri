@@ -5,9 +5,9 @@ const express = require('express')
 const router = express.Router()
 
 const passport = require('passport')
-const { AbsenseController } = require('../controllers')
-const middleware = require('../middlewares')
-const { ADMIN, MANAGER, SANTRI } = require('../traits/role')
+const { AbsenseController } = require('../../../controllers')
+const middleware = require('../../../middlewares')
+const { ADMIN, MANAGER, SANTRI } = require('../../../traits/role')
 
 router.use(passport.authenticate('jwt', { session: false }))
 router.get('/me', AbsenseController.me)

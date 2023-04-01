@@ -5,9 +5,9 @@ const express = require('express')
 const passport = require('passport')
 const router = express.Router()
 
-const NoteController = require('../controllers/note.controller')
-const { accountIs } = require('../middlewares')
-const { MANAGER, ADMIN } = require('../traits/role')
+const NoteController = require('../../../controllers/note.controller')
+const { accountIs } = require('../../../middlewares')
+const { MANAGER, ADMIN } = require('../../../traits/role')
 
 router.use(passport.authenticate('jwt', { session: false }))
 

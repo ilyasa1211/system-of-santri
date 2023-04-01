@@ -5,11 +5,11 @@ const express = require('express')
 const router = express.Router()
 
 const passport = require('passport')
-const middleware = require('../middlewares')
+const middleware = require('../../../middlewares')
 
-const upload = require('../config/multer')('account')
-const { LearningController } = require('../controllers')
-const { ADMIN, MANAGER } = require('../traits/role')
+const upload = require('../../../config/multer')('account')
+const { LearningController } = require('../../../controllers')
+const { ADMIN, MANAGER } = require('../../../traits/role')
 
 router.get('/', LearningController.index)
 router.get('/:id', LearningController.show)

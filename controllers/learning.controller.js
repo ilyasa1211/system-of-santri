@@ -8,7 +8,7 @@ const path = require('node:path')
 module.exports = { index, insert, update, destroy, show }
 
 /**
- * Get all learnings
+ * Get all learnings, everyone has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next
@@ -23,7 +23,7 @@ async function index (req, res, next) {
 }
 
 /**
- * Show one learning
+ * Show one learning, everyone has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next
@@ -38,7 +38,7 @@ async function show (req, res, next) {
 }
 
 /**
- * Create a new learning
+ * Create a new learning, manager has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next
@@ -53,7 +53,7 @@ async function insert (req, res, next) {
 }
 
 /**
- * Update an existing learning
+ * Update an existing learning, manager has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next
@@ -68,7 +68,7 @@ async function update (req, res, next) {
 }
 
 /**
- * Delete a learning
+ * Delete a learning, manager has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next

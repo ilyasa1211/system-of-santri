@@ -7,6 +7,7 @@
 const { Resume } = require('../models')
 const { StatusCodes } = require('http-status-codes')
 const { ConflictError } = require('../errors')
+const { authorize } = require('../utils')
 
 module.exports = { index, show, insert, destroy, update }
 
@@ -68,7 +69,14 @@ async function insert (req, res, next) {
 async function update (req, res, next) {
     try {
         const { id } = req.params
-        await Resume.findByIdAndUpdate(id, req.body)
+        const { technicalSkill, education, personalBackground, experience } = req.body
+        const resume = await Resume.findById(id, req.body)
+        authorize(req.user, resume.account_id.toString())
+        if (technicalSkill) resume.technical_skill = technicalSkill
+        if (education) resume.education = education
+        if (personalBackground) resume.personal_background = personalBackground
+        if (experience) resume.experience = experience
+        await resume.save()
         res.status(StatusCodes.OK).send({ message: 'Success updating resume!' })
     } catch (error) {
         next(error)
@@ -84,7 +92,8 @@ async function update (req, res, next) {
 async function destroy (req, res, next) {
     try {
         const { id } = req.params
-        await Resume.findByIdAndDelete(id)
+        const resume = await Resume.findById(id)
+        authorize(req.user, resume.account_id.toString())
         res.status(StatusCodes.OK).send({ message: 'Success deleting resume!' })
     } catch (error) {
         next(error)

@@ -59,7 +59,7 @@ async function insert (req, res, next) {
 }
 
 /**
- * Update the existing note
+ * Update the existing note, manager has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next
@@ -74,7 +74,7 @@ async function update (req, res, next) {
 }
 
 /**
- * Delete a note permanently
+ * Delete a note permanently, manager has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next

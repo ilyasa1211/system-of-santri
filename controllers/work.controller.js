@@ -45,7 +45,6 @@ async function show (req, res, next) {
  */
 async function insert (req, res, next) {
     try {
-        console.log(req.user)
         req.body.account_id = req.user.id
         const works = await Work.create(req.body)
         const account = await Account.findById(req.user.id)

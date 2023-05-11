@@ -12,6 +12,12 @@ const { SANTRI } = require('../traits/role')
 
 module.exports = { signup, signin, verify, forgotPassword, resetPassword }
 
+/**
+ * Register an account
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function signup (req, res, next) {
     try {
         const { name, email, password } = req.body
@@ -36,6 +42,12 @@ async function signup (req, res, next) {
     }
 }
 
+/**
+ * Login to an account
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function signin (req, res, next) {
     try {
         const { email, password } = req.body
@@ -52,6 +64,13 @@ async function signin (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * Verify an account
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function verify (req, res, next) {
     try {
         const hash = req.query.hash
@@ -67,6 +86,12 @@ async function verify (req, res, next) {
     }
 }
 
+/**
+ * When a user forgot their account password
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function forgotPassword (req, res, next) {
     try {
         const { email } = req.body
@@ -84,6 +109,12 @@ async function forgotPassword (req, res, next) {
     }
 }
 
+/**
+ * Reset account password
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function resetPassword (req, res, next) {
     try {
         const { token } = req.query

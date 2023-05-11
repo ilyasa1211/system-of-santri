@@ -11,20 +11,28 @@ require('./resume.model')
  */
 const accountSchema = new mongoose.Schema({
     name: {
-        type: String
+        type: String,
+        required: [true, 'Name field required']
     },
     email: {
         type: String,
+        maxLength: [255, 'Email cannot be longer than 255 characters'],
+        required: [true, 'Email field required'],
         unique: true
     },
     password: {
-        type: String
+        type: String,
+        minLength: [8, 'Password cannot be less than 8 characters'],
+        required: [true, 'Password field required']
     },
     phoneNumber: {
-        type: String
+        type: String,
+        maxLength: [20, 'Phone number cannot be longer than 20 characters'],
+        required: [true, 'Please enter your phone number']
     },
     division: {
-        type: String
+        type: String,
+        required: [true, 'Please enter your division']
     },
     status: {
         type: String

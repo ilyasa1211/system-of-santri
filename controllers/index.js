@@ -1,4 +1,3 @@
-
 'use strict'
 
 const AccountController = require('./account.controller')
@@ -9,4 +8,12 @@ const ResumeController = require('./resume.controller')
 const WorkController = require('./work.controller')
 const EventController = require('./event.controller')
 
-module.exports = { AccountController, LearningController, AbsenseController, AuthController, ResumeController, WorkController, EventController }
+module.exports = {
+    AccountController,
+    LearningController,
+    AbsenseController,
+    AuthController,
+    ResumeController,
+    WorkController,
+    EventController
+}

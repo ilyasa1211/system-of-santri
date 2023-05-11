@@ -7,6 +7,12 @@ const { authorize } = require('../utils')
 
 module.exports = { index, insert, update, destroy, show }
 
+/**
+ * Get all works from all account, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function index (req, res, next) {
     try {
         const works = await Work.find({}, {}, { sort: { createdAt: 'desc' } })
@@ -15,6 +21,13 @@ async function index (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * Show one work from id, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function show (req, res, next) {
     try {
         const work = await Work.findOne({ _id: req.params.id })
@@ -23,6 +36,13 @@ async function show (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * Create a new work, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function insert (req, res, next) {
     try {
         console.log(req.user)
@@ -36,6 +56,13 @@ async function insert (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * Update the exisiting work, the owner of the work has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function update (req, res, next) {
     try {
         const { id } = req.params
@@ -52,6 +79,12 @@ async function update (req, res, next) {
     }
 }
 
+/**
+ * Delete a work permanently, the owner of the work has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function destroy (req, res, next) {
     try {
         const { id } = req.params

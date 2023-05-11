@@ -10,6 +10,12 @@ const { ConflictError } = require('../errors')
 
 module.exports = { index, show, insert, destroy, update }
 
+/**
+ * Get resume from all account, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function index (req, res, next) {
     try {
         const resumes = await Resume.find({}, {}, { sort: { createdAt: 'desc' } })
@@ -18,6 +24,13 @@ async function index (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * Show one resume from the given id, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function show (req, res, next) {
     try {
         const resume = await Resume.findOne({ _id: req.params.id })
@@ -26,6 +39,13 @@ async function show (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * Create a new resume for an account, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function insert (req, res, next) {
     try {
         const { id } = req.user
@@ -38,6 +58,13 @@ async function insert (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * Update the existing resume, the owner of the resume has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function update (req, res, next) {
     try {
         const { id } = req.params
@@ -48,6 +75,12 @@ async function update (req, res, next) {
     }
 }
 
+/**
+ * Delete a resume permanently by id, the owner of the resume has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function destroy (req, res, next) {
     try {
         const { id } = req.params

@@ -1,4 +1,3 @@
-
 'use strict'
 
 const { Calendar, Event } = require('../models')
@@ -9,11 +8,17 @@ const MONTHS = require('../traits/month')
 
 module.exports = { index, insert, update, destroy, calendar }
 
+/**
+ * Get event calendar
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function calendar (req, res, next) {
     try {
         const calendar = await findOrCreate(Calendar, { id: 0 })
         const events = await Event.find()
-        events.forEach(event => {
+        events.forEach((event) => {
             const { title, slug, date } = event
             const [month, day] = date.split('-').slice(1)
             calendar.months[MONTHS[month - 1]][day - 1].event?.push({ title, slug })
@@ -25,6 +30,12 @@ async function calendar (req, res, next) {
     }
 }
 
+/**
+ * Get normal calendar
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function index (req, res, next) {
     try {
         const events = await Event.find()
@@ -34,25 +45,50 @@ async function index (req, res, next) {
     }
 }
 
+/**
+ * Create an event
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function insert (req, res, next) {
     try {
         const event = await Event.create(req.body)
-        res.status(StatusCodes.OK).send({ message: 'Event successfully created', event })
+        res.status(StatusCodes.OK).send({
+            message: 'Event successfully created',
+            event
+        })
     } catch (error) {
         if (error.code === 11000) next(new ConflictError('Event already exists'))
         next(error)
     }
 }
 
+/**
+ * Update an event
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function update (req, res, next) {
     try {
         const { slug } = req.params
         const event = await Event.findOneAndUpdate({ slug }, req.body)
-        res.status(StatusCodes.OK).send({ message: 'Event successfully updated', event })
+        res.status(StatusCodes.OK).send({
+            message: 'Event successfully updated',
+            event
+        })
     } catch (error) {
         next(error)
     }
 }
+
+/**
+ * Delete an event
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function destroy (req, res, next) {
     try {
         const { slug } = req.params

@@ -25,6 +25,7 @@ async function show (req, res, next) {
 }
 async function insert (req, res, next) {
     try {
+        console.log(req.user)
         req.body.account_id = req.user.id
         const works = await Work.create(req.body)
         const account = await Account.findById(req.user.id)
@@ -41,7 +42,7 @@ async function update (req, res, next) {
         const { user } = req
         const { title, link } = req.body
         const work = await Work.findById(id)
-        authorize(user, work)
+        authorize(user, work.account_id.toString())
         if (title) work.title = title
         if (link) work.link = link
         await work.save()
@@ -56,7 +57,7 @@ async function destroy (req, res, next) {
         const { id } = req.params
         const { user } = req
         const work = await Work.findById(id)
-        authorize(user, work)
+        authorize(user, work.account_id.toString())
         await work.deleteOne()
         res.status(StatusCodes.OK).send({ message: 'Success deleting!' })
     } catch (error) {

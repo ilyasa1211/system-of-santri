@@ -7,9 +7,9 @@ const { ADMIN } = require('../traits/role')
  * @param {Array} RoleException
  * @returns Boolean
  */
-module.exports = function (User, Model, RoleException = [ADMIN]) {
+module.exports = function (User, Id, RoleException = [ADMIN]) {
     const hasTheRights = RoleException.find(role => User.role.id === role)
-    const theOwner = Model.account_id.toString() === User.id
+    const theOwner = Id === User.id
     if (!hasTheRights && !theOwner) throw new UnauthorizedError('You have no rights')
     return true
 }

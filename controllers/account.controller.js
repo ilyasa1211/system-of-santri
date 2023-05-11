@@ -8,9 +8,16 @@ const { StatusCodes } = require('http-status-codes')
 const { NotFoundError, BadRequestError } = require('../errors')
 const { Account, Resume, Work } = require('../models')
 const { EMAIL_PATTERN } = require('../traits')
+const { authorize } = require('../utils')
 
 module.exports = { index, profile, show, update, destroy, trash, restore, eliminate, insert, workIndex, workShow, resume }
 
+/**
+ *  Get All Accounts, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} next
+ */
 async function index (req, res, next) {
     try {
         const withTrashed = req.query.trashed
@@ -22,7 +29,12 @@ async function index (req, res, next) {
         next(error)
     }
 }
-
+/**
+ * Create an account to the database, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function insert (req, res, next) {
     try {
         const { email, password, name } = req.body
@@ -42,6 +54,12 @@ async function insert (req, res, next) {
     }
 }
 
+/**
+ * Show one account, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function show (req, res, next) {
     try {
         const { id } = req.params
@@ -52,8 +70,15 @@ async function show (req, res, next) {
     }
 }
 
+/**
+ * Show one account, the user of the account and admin has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function update (req, res, next) {
     try {
+        authorize(req.user, req.user.id)
         const { id } = req.params
         req.body.updatedAt = Date.now()
         const account = await Account.findOneAndUpdate({ _id: id, deletedAt: null }, req.body)
@@ -63,8 +88,15 @@ async function update (req, res, next) {
     }
 }
 
+/**
+ * Delete one account not permanently, the user of the account and admin has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function destroy (req, res, next) {
     try {
+        authorize(req.user, req.user.id)
         const { id } = req.params
         const account = await Account.findOneAndUpdate({ _id: id, deletedAt: null }, { deletedAt: Date.now() })
         res.status(StatusCodes.OK).send({ account })
@@ -72,6 +104,12 @@ async function destroy (req, res, next) {
         next(error)
     }
 }
+/**
+ * Show all deleted account, admin has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function trash (req, res, next) {
     try {
         const accounts = await Account.find({ deletedAt: { $ne: null } })
@@ -80,6 +118,13 @@ async function trash (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * Restore one of the deleted account, admin has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function restore (req, res, next) {
     try {
         const { id } = req.params
@@ -89,6 +134,12 @@ async function restore (req, res, next) {
         next(error)
     }
 }
+/**
+ * Delete one account PERMANENTLY becareful, admin has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function eliminate (req, res, next) {
     try {
         const { id } = req.params
@@ -101,6 +152,12 @@ async function eliminate (req, res, next) {
         next(error)
     }
 }
+/**
+ * Get information about my account, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function profile (req, res, next) {
     try {
         const { id } = req.user
@@ -111,6 +168,12 @@ async function profile (req, res, next) {
     }
 }
 
+/**
+ * Get all works about an account, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function workIndex (req, res, next) {
     try {
         const { id } = req.params
@@ -121,6 +184,12 @@ async function workIndex (req, res, next) {
     }
 }
 
+/**
+ * Get a work about an account, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function workShow (req, res, next) {
     try {
         const { workId, id } = req.params
@@ -132,6 +201,12 @@ async function workShow (req, res, next) {
     }
 }
 
+/**
+ * Get a resume of an account, everyone has rights
+ * @param {Request} req
+ * @param {Response} res
+ * @param {VoidFunction} next
+ */
 async function resume (req, res, next) {
     try {
         const { id } = req.params

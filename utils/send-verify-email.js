@@ -6,6 +6,7 @@
  */
 const nodemailer = require('../config/nodemailer')
 const pug = require('pug')
+const path = require('node:path')
 const domain = process.env.DOMAIN
 /**
  * Sending email
@@ -18,7 +19,7 @@ function sendEmail (hash, to) {
         to,
         subject: 'Verify your email',
         text: 'Click The Verify Button To Verify',
-        html: pug.renderFile('../views/verify-email.pug', { hash, domain, title: 'Email Verification' })
+        html: pug.renderFile(path.join(__dirname, '..', 'views', 'verify-email.pug'), { hash, domain, title: 'Email Verification' })
     })
 }
 

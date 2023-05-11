@@ -7,7 +7,8 @@ const { StatusCodes } = require('http-status-codes')
 const { NotFoundError, UnauthorizedError, BadRequestError, ConflictError } = require('../errors')
 const { Account } = require('../models')
 const { sendVerifyEmail, sendForgetPasswordEmail, generateToken } = require('../utils')
-const { EMAIL_PATTERN } = require('../traits')
+const { EMAIL_PATTERNS } = require('../traits')
+const { SANTRI } = require('../traits/role')
 
 module.exports = { signup, signin, verify, forgotPassword, resetPassword }
 
@@ -16,10 +17,12 @@ async function signup (req, res, next) {
         const { name, email, password } = req.body
         if (!email) throw new BadRequestError('Email address is required')
         if (!password) throw new BadRequestError('Password is required')
-        if (!EMAIL_PATTERN.test(email)) throw new BadRequestError('Please insert a valid email address')
+        if (password.length < 8) throw new BadRequestError('Password minimal 8 character')
+        if (!EMAIL_PATTERNS.test(email)) throw new BadRequestError('Please insert a valid email address')
         if (req.file) req.body.photo = req.file.filename
         const hash = generateToken()
         req.body.verify = false
+        req.body.role = SANTRI
         req.body.hash = hash
         req.body.password = await argon2.hash(password, { type: argon2.argon2i })
         const account = await Account.create(req.body)
@@ -38,7 +41,7 @@ async function signin (req, res, next) {
         const { email, password } = req.body
         if (!email) throw new BadRequestError('Email address is required')
         if (!password) throw new BadRequestError('Password is required')
-        if (!emailPattern.test(email)) throw new BadRequestError('Please insert a valid email address')
+        if (!EMAIL_PATTERNS.test(email)) throw new BadRequestError('Please insert a valid email address')
         const account = await Account.findOne({ email, deletedAt: null, verify: true })
         if (!account) throw new NotFoundError('Account not found')
         const valid = await argon2.verify(account.password, password)

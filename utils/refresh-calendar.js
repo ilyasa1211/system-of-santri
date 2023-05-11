@@ -1,5 +1,3 @@
-
-
 module.exports = async function (Model, method) {
     const currentYear = new Date().getFullYear()
     const calendar = await method(Model, { id: 0 })

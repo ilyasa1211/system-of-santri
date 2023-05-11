@@ -1,4 +1,3 @@
-
 'use strict'
 
 /**
@@ -19,7 +18,10 @@ function sendEmail (hash, to) {
         to,
         subject: 'Verify your email',
         text: 'Click The Verify Button To Verify',
-        html: pug.renderFile(path.join(__dirname, '..', 'views', 'verify-email.pug'), { hash, domain, title: 'Email Verification' })
+        html: pug.renderFile(
+            path.join(__dirname, '..', 'views', 'verify-email.pug'),
+            { hash, domain, title: 'Email Verification' }
+        )
     })
 }
 

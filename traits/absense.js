@@ -1,4 +1,3 @@
-
 module.exports = {
     ATTEND: 1,
     PERMIT: 2,

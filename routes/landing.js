@@ -5,4 +5,6 @@ const router = express.Router()
 
 module.exports = router
 
-router.get('/', (req, res, next) => { res.send({ message: 'Welcome to System of Santri' }) })
+router.get('/', (req, res, next) => {
+    res.send({ message: 'Welcome to System of Santri' })
+})

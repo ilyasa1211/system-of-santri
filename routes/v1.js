@@ -1,7 +1,16 @@
-
 const express = require('express')
 const router = express.Router()
-const { absenseRoute, accountRoute, authRoute, learningRoute, workRoute, resumeRoute, eventRoute, trashRoute, testRoute } = require('./api/v1')
+const {
+    absenseRoute,
+    accountRoute,
+    authRoute,
+    learningRoute,
+    workRoute,
+    resumeRoute,
+    eventRoute,
+    trashRoute,
+    testRoute
+} = require('./api/v1')
 
 module.exports = router
 

@@ -1,4 +1,3 @@
-
 const ABSENSES = require('./absense')
 const MONTHS = require('./month')
 const ROLES = require('./role')

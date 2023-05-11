@@ -1,4 +1,3 @@
-
 'use strict'
 
 const mongoose = require('mongoose')
@@ -9,7 +8,6 @@ const eventSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Choose date'],
         match: /^\d{4}-\d{2}-\d{2}$/
-        // example : 2023-03-20
     },
     title: {
         type: String,

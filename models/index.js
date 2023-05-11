@@ -1,4 +1,3 @@
-
 const Account = require('./account.model')
 const Calendar = require('./calendar.model')
 const Event = require('./event.model')
@@ -8,4 +7,13 @@ const Role = require('./role.model')
 const Work = require('./work.model')
 const Resume = require('./resume.model')
 
-module.exports = { Account, Calendar, Event, Learning, Note, Role, Work, Resume }
+module.exports = {
+    Account,
+    Calendar,
+    Event,
+    Learning,
+    Note,
+    Role,
+    Work,
+    Resume
+}

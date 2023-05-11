@@ -1,6 +1,4 @@
-
 /**
- *
  * @param {import('mongoose').Model} Model
  * @param {object} filterOrCreate
  * @returns Mongoose Model

@@ -30,6 +30,12 @@ async function signup (req, res, next) {
         req.body.verify = false
         req.body.role = SANTRI
         req.body.hash = hash
+        req.body.name = req.body.name.trim()
+        req.body.email = req.body.email.trim()
+        req.body.password = req.body.password.trim()
+        req.body.phoneNumber = req.body.phoneNumber.trim()
+        req.body.division = req.body.division.trim()
+        req.body.status = req.body.status.trim()
         req.body.password = await argon2.hash(password, { type: argon2.argon2i })
         const account = await Account.create(req.body)
         const { id } = account

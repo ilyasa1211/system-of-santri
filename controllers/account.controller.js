@@ -5,8 +5,9 @@ const fs = require('node:fs')
 const path = require('node:path')
 const { StatusCodes } = require('http-status-codes')
 const { NotFoundError, BadRequestError } = require('../errors')
+
 const { Account, Resume, Work } = require('../models')
-const { EMAIL_PATTERN } = require('../traits')
+const { EMAIL_PATTERNS } = require('../traits')
 const { authorize } = require('../utils')
 
 module.exports = {
@@ -57,15 +58,22 @@ async function index (req, res, next) {
  */
 async function insert (req, res, next) {
     try {
-        const { email, password, name } = req.body
+        const { email, password, name, phoneNumber } = req.body
         if (!email) throw new BadRequestError('Email address is required')
         if (!password) throw new BadRequestError('Password is required')
         if (!name) throw new BadRequestError('Name is required')
-        if (!EMAIL_PATTERN.test(email)) {
+        if (!phoneNumber.startsWith('08')) throw new BadRequestError('Enter a valid phone number')
+        if (!EMAIL_PATTERNS.test(email)) {
             throw new BadRequestError('Please insert a valid email address')
         }
         if (req.file) req.body.photo = req.file.filename
         req.body.verify = true
+        req.body.name = req.body.name.trim()
+        req.body.email = req.body.email.trim()
+        req.body.password = req.body.password.trim()
+        req.body.phoneNumber = req.body.phoneNumber.trim()
+        req.body.division = req.body.division.trim()
+        req.body.status = req.body.status.trim()
         const account = await Account.create(req.body)
         const { id } = account
         const token = jwt.sign({ id, name }, process.env.JWT_SECRET)
@@ -93,7 +101,7 @@ async function show (req, res, next) {
 }
 
 /**
- * Show one account, the user of the account and admin has rights
+ * Update the existing account, the user of the account and admin has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next
@@ -196,7 +204,7 @@ async function eliminate (req, res, next) {
 async function profile (req, res, next) {
     try {
         const { id } = req.user
-        const account = await Account.findById(id)
+        const account = await Account.findById(id, { name: 1, email: 1, phoneNumber: 1, division: 1, status: 1, avatar: 1, santriPeriod: 1, generation: 1, generationYear: 1, role: 1 })
         res.status(StatusCodes.OK).send({ account })
     } catch (error) {
         next(error)

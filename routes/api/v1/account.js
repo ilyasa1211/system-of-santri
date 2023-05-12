@@ -12,12 +12,6 @@ const { ADMIN } = require('../../../traits/role')
 
 router.use(upload.single('avatar'))
 
-// All this route will work for authenticated user only
-router.use(passport.authenticate('jwt', { session: false }))
-
-// Get information about my account
-router.get('/me', AccountController.profile)
-
 // Get All Accounts
 router.get('/', AccountController.index)
 
@@ -33,10 +27,16 @@ router.get('/:id/work/:workId', AccountController.workShow)
 // Get a resume of an account
 router.get('/:id/resume', AccountController.resume)
 
+// All route below this will work for authenticated user only
+router.use(passport.authenticate('jwt', { session: false }))
+
+// Get information about my account
+router.get('/me', AccountController.profile)
+
 // Create an account to the database
 router.post('/', middleware.accountIs(ADMIN), AccountController.insert)
 
-// Show one account
+// Update the existing account
 router.put('/:id', AccountController.update)
 
 // Delete one account not permanently

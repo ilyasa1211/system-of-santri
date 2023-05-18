@@ -70,7 +70,7 @@ async function update (req, res, next) {
     try {
         const { id } = req.params
         const { technicalSkill, education, personalBackground, experience } = req.body
-        const resume = await Resume.findById(id, req.body)
+        const resume = await Resume.findById(id)
         authorize(req.user, resume.account_id.toString())
         if (technicalSkill) resume.technical_skill = technicalSkill
         if (education) resume.education = education

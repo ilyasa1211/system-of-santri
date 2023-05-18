@@ -4,11 +4,10 @@
 const jwt = require('jsonwebtoken')
 const argon2 = require('argon2')
 const { StatusCodes } = require('http-status-codes')
-const { NotFoundError, UnauthorizedError, BadRequestError, ConflictError } = require('../errors')
+const { NotFoundError, UnauthorizedError, BadRequestError } = require('../errors')
 const { Account } = require('../models')
 const { sendVerifyEmail, sendForgetPasswordEmail, generateToken } = require('../utils')
-const { EMAIL_PATTERNS } = require('../traits')
-const { SANTRI } = require('../traits/role')
+const trimAllBody = require('../utils/trim-all-body')
 
 module.exports = { signup, signin, verify, forgotPassword, resetPassword }
 
@@ -21,21 +20,11 @@ module.exports = { signup, signin, verify, forgotPassword, resetPassword }
 async function signup (req, res, next) {
     try {
         const { name, email, password } = req.body
-        if (!email) throw new BadRequestError('Email address is required')
-        if (!password) throw new BadRequestError('Password is required')
-        if (password.length < 8) throw new BadRequestError('Password minimal 8 character')
-        if (!EMAIL_PATTERNS.test(email)) throw new BadRequestError('Please insert a valid email address')
         if (req.file) req.body.photo = req.file.filename
         const hash = generateToken()
+        trimAllBody(req)
         req.body.verify = false
-        req.body.role = SANTRI
         req.body.hash = hash
-        req.body.name = req.body.name.trim()
-        req.body.email = req.body.email.trim()
-        req.body.password = req.body.password.trim()
-        req.body.phoneNumber = req.body.phoneNumber.trim()
-        req.body.division = req.body.division.trim()
-        req.body.status = req.body.status.trim()
         req.body.password = await argon2.hash(password, { type: argon2.argon2i })
         const account = await Account.create(req.body)
         const { id } = account
@@ -43,7 +32,6 @@ async function signup (req, res, next) {
         sendVerifyEmail(hash, email)
         res.send({ message: 'Please check your email to verify', token })
     } catch (error) {
-        if (error.code === 11000) next(new ConflictError('Email already exists'))
         next(error)
     }
 }
@@ -57,9 +45,6 @@ async function signup (req, res, next) {
 async function signin (req, res, next) {
     try {
         const { email, password } = req.body
-        if (!email) throw new BadRequestError('Email address is required')
-        if (!password) throw new BadRequestError('Password is required')
-        if (!EMAIL_PATTERNS.test(email)) throw new BadRequestError('Please insert a valid email address')
         const account = await Account.findOne({ email, deletedAt: null, verify: true })
         if (!account) throw new NotFoundError('Account not found')
         const valid = await argon2.verify(account.password, password)
@@ -82,7 +67,7 @@ async function verify (req, res, next) {
         const hash = req.query.hash
         if (!hash) throw new BadRequestError('Token missing')
         const account = await Account.findOne({ hash })
-        if (!account) throw new NotFoundError('Account has been verified')
+        if (!account) throw new NotFoundError('Account not found')
         account.hash = null
         account.verify = true
         await account.save()

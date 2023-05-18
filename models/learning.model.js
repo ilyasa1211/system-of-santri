@@ -4,7 +4,8 @@ const mongoose = require('mongoose')
 
 const learningSchema = new mongoose.Schema({
     division: {
-        type: String
+        type: String,
+        required: [true, 'Please Insert the Division']
     },
     thumbnail: {
         type: String,

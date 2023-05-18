@@ -14,7 +14,7 @@ router.use(passport.authenticate('jwt', { session: false }))
 router.get('/', middleware.accountIs(ADMIN, MANAGER), WorkController.index)
 router.post('/', middleware.accountIs(ADMIN, MANAGER, SANTRI), WorkController.insert)
 
-router.use(middleware.accountIs(SANTRI))
+router.use(middleware.accountIs(ADMIN, MANAGER, SANTRI))
 
 router.put('/:id', WorkController.update)
 router.delete('/:id', WorkController.destroy)

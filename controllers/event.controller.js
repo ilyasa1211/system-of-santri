@@ -2,7 +2,7 @@
 
 const { Calendar, Event } = require('../models')
 const { StatusCodes } = require('http-status-codes')
-const { ConflictError } = require('../errors')
+const { ConflictError, NotFoundError } = require('../errors')
 const findOrCreate = require('../utils/find-or-create')
 const MONTHS = require('../traits/month')
 
@@ -53,13 +53,9 @@ async function index (req, res, next) {
  */
 async function insert (req, res, next) {
     try {
-        const event = await Event.create(req.body)
-        res.status(StatusCodes.OK).send({
-            message: 'Event successfully created',
-            event
-        })
+        await Event.create(req.body)
+        res.status(StatusCodes.OK).send({ message: 'Event successfully created' })
     } catch (error) {
-        if (error.code === 11000) next(new ConflictError('Event already exists'))
         next(error)
     }
 }
@@ -72,12 +68,12 @@ async function insert (req, res, next) {
  */
 async function update (req, res, next) {
     try {
-        const { slug } = req.params
-        const event = await Event.findOneAndUpdate({ slug }, req.body)
-        res.status(StatusCodes.OK).send({
-            message: 'Event successfully updated',
-            event
-        })
+        const { id } = req.params
+        const event = await Event.findById(id)
+        if (!event) throw new NotFoundError('Event not found')
+        Object.assign(event, req.body)
+        await event.save()
+        res.status(StatusCodes.OK).send({ message: 'Event successfully updated' })
     } catch (error) {
         next(error)
     }
@@ -91,8 +87,8 @@ async function update (req, res, next) {
  */
 async function destroy (req, res, next) {
     try {
-        const { slug } = req.params
-        await Event.findOneAndDelete({ slug })
+        const { id } = req.params
+        await Event.findOneAndDelete({ _id: id })
         res.status(StatusCodes.OK).send({ message: 'Event successfully deleted' })
     } catch (error) {
         next(error)

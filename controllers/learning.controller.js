@@ -4,6 +4,7 @@ const { Learning } = require('../models')
 const { StatusCodes } = require('http-status-codes')
 const fs = require('node:fs')
 const path = require('node:path')
+const NotFoundError = require('../errors/not-found')
 
 module.exports = { index, insert, update, destroy, show }
 
@@ -45,8 +46,11 @@ async function show (req, res, next) {
  */
 async function insert (req, res, next) {
     try {
-        const learnings = await Learning.create(req.body)
-        res.status(StatusCodes.OK).send({ message: 'Created!', learnings })
+        if (req.file) {
+            req.body.thumbnail = req.file.filename
+        }
+        await Learning.create(req.body)
+        res.status(StatusCodes.OK).send({ message: 'Success Created!' })
     } catch (error) {
         next(error)
     }
@@ -60,8 +64,14 @@ async function insert (req, res, next) {
  */
 async function update (req, res, next) {
     try {
-        const learnings = await Learning.findByIdAndUpdate(req.params.id, req.body)
-        res.status(StatusCodes.OK).send({ message: 'Updated!', learnings })
+        if (req.file) {
+            req.body.thumbnail = req.file.filename
+        }
+        const learning = await Learning.findById(req.params.id)
+        if (!learning) throw NotFoundError('Learning not found')
+        Object.assign(learning, req.body)
+        await learning.save()
+        res.status(StatusCodes.OK).send({ message: 'Success Updated!' })
     } catch (error) {
         next(error)
     }
@@ -76,17 +86,18 @@ async function update (req, res, next) {
 async function destroy (req, res, next) {
     try {
         const learning = await Learning.findById(req.params.id)
-        const photo = { learning }
-        if (photo !== 'default-thumbnail.jpg') {
+        if (!learning) throw new NotFoundError('Learning not found')
+        const { thumbnail } = learning
+        if (thumbnail && thumbnail !== 'default-thumbnail.jpg') {
             fs.unlink(
-                path.join(__dirname, '..', 'public', 'images', photo),
+                path.join(__dirname, '..', 'public', 'images', process.env.SAVE_LEARNING_THUMBNAIL, thumbnail),
                 (error) => {
                     if (error) throw error
                 }
             )
         }
         await learning.deleteOne()
-        res.status(StatusCodes.OK).send({ message: 'Deleted!', learning })
+        res.status(StatusCodes.OK).send({ message: 'Success Deleted!' })
     } catch (error) {
         next(error)
     }

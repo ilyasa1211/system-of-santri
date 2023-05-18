@@ -10,7 +10,9 @@ module.exports = function (paths) {
             cb(null, path.join(__dirname, '..', 'public', 'images', paths))
         },
         filename: function (req, file, cb) {
-            cb(null, crypto.randomUUID())
+            const { mimetype } = file
+            const fileExt = mimetype.slice(mimetype.indexOf('/') + 1)
+            cb(null, crypto.randomUUID().concat('.', fileExt))
         }
     })
     return multer({ storage })

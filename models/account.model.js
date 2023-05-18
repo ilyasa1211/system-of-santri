@@ -1,6 +1,7 @@
 'use strict'
 
 const mongoose = require('mongoose')
+const { SANTRI } = require('../traits/role')
 
 require('./role.model')
 require('./resume.model')
@@ -17,7 +18,8 @@ const accountSchema = new mongoose.Schema({
         type: String,
         maxLength: [255, 'Email cannot be longer than 255 characters'],
         required: [true, 'Email field required'],
-        unique: true
+        unique: true,
+        match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
     password: {
         type: String,
@@ -27,11 +29,11 @@ const accountSchema = new mongoose.Schema({
     phoneNumber: {
         type: String,
         maxLength: [20, 'Phone number cannot be longer than 20 characters'],
-        required: [true, 'Please enter your phone number']
+        required: [true, 'Phone number field required']
     },
     division: {
         type: String,
-        required: [true, 'Please enter your division']
+        required: [true, 'Division field required']
     },
     status: {
         type: String
@@ -87,7 +89,7 @@ const accountSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 accountSchema.pre('save', function (next) {
-    this.role_id = 3
+    this.role_id = SANTRI
     this.absense = 0
     next()
 })

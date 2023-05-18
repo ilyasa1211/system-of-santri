@@ -4,11 +4,19 @@ const jwt = require('jsonwebtoken')
 const fs = require('node:fs')
 const path = require('node:path')
 const { StatusCodes } = require('http-status-codes')
-const { NotFoundError, BadRequestError } = require('../errors')
-
+const { NotFoundError } = require('../errors')
+const argon2 = require('argon2')
 const { Account, Resume, Work } = require('../models')
-const { EMAIL_PATTERNS } = require('../traits')
 const { authorize } = require('../utils')
+const trimAllBody = require('../utils/trim-all-body')
+
+const projection = {
+    password: 0,
+    verify: 0,
+    hash: 0,
+    forgetToken: 0,
+    __v: 0
+}
 
 module.exports = {
     index,
@@ -36,15 +44,7 @@ async function index (req, res, next) {
         const withTrashed = req.query.trashed
         const option = { deletedAt: null }
         if (withTrashed) option.deletedAt = { $ne: null }
-        const accounts = await Account.find(option, {
-            name: 1,
-            email: 1,
-            avatar: 1,
-            generationYear: 1,
-            generation: 1,
-            division: 1,
-            status: 1
-        })
+        const accounts = await Account.find(option, projection)
         res.status(StatusCodes.OK).send({ accounts })
     } catch (error) {
         next(error)
@@ -58,27 +58,14 @@ async function index (req, res, next) {
  */
 async function insert (req, res, next) {
     try {
-        const { email, password, name, phoneNumber } = req.body
-        if (!email) throw new BadRequestError('Email address is required')
-        if (!password) throw new BadRequestError('Password is required')
-        if (!name) throw new BadRequestError('Name is required')
-        if (!phoneNumber.startsWith('08')) throw new BadRequestError('Enter a valid phone number')
-        if (!EMAIL_PATTERNS.test(email)) {
-            throw new BadRequestError('Please insert a valid email address')
-        }
-        if (req.file) req.body.photo = req.file.filename
+        if (req.file) req.body.avatar = req.file.filename
+        trimAllBody(req)
         req.body.verify = true
-        req.body.name = req.body.name.trim()
-        req.body.email = req.body.email.trim()
-        req.body.password = req.body.password.trim()
-        req.body.phoneNumber = req.body.phoneNumber.trim()
-        req.body.division = req.body.division.trim()
-        req.body.status = req.body.status.trim()
+        req.body.password = await argon2.hash(req.body.password, { type: argon2.argon2i })
         const account = await Account.create(req.body)
         const { id } = account
-        const token = jwt.sign({ id, name }, process.env.JWT_SECRET)
-        const showAccount = { id, name, email, password }
-        res.status(StatusCodes.OK).send({ token, account: showAccount })
+        const token = jwt.sign({ id, name: req.body.name }, process.env.JWT_SECRET)
+        res.status(StatusCodes.OK).send({ token })
     } catch (error) {
         next(error)
     }
@@ -93,7 +80,7 @@ async function insert (req, res, next) {
 async function show (req, res, next) {
     try {
         const { id } = req.params
-        const account = await Account.findOne({ _id: id, deletedAt: null })
+        const account = await Account.findOne({ _id: id, deletedAt: null }, projection)
         res.status(StatusCodes.OK).send({ account })
     } catch (error) {
         next(error)
@@ -111,11 +98,11 @@ async function update (req, res, next) {
         authorize(req.user, req.user.id)
         const { id } = req.params
         req.body.updatedAt = Date.now()
-        const account = await Account.findOneAndUpdate(
+        await Account.findOneAndUpdate(
             { _id: id, deletedAt: null },
             req.body
         )
-        res.status(StatusCodes.OK).send({ account })
+        res.status(StatusCodes.OK).send({ message: 'Success Update Account' })
     } catch (error) {
         next(error)
     }
@@ -131,11 +118,11 @@ async function destroy (req, res, next) {
     try {
         authorize(req.user, req.user.id)
         const { id } = req.params
-        const account = await Account.findOneAndUpdate(
+        await Account.findOneAndUpdate(
             { _id: id, deletedAt: null },
             { deletedAt: Date.now() }
         )
-        res.status(StatusCodes.OK).send({ account })
+        res.status(StatusCodes.OK).send({ message: 'Account Deleted!' })
     } catch (error) {
         next(error)
     }
@@ -204,7 +191,7 @@ async function eliminate (req, res, next) {
 async function profile (req, res, next) {
     try {
         const { id } = req.user
-        const account = await Account.findById(id, { name: 1, email: 1, phoneNumber: 1, division: 1, status: 1, avatar: 1, santriPeriod: 1, generation: 1, generationYear: 1, role: 1 })
+        const account = await Account.findById(id, projection)
         res.status(StatusCodes.OK).send({ account })
     } catch (error) {
         next(error)

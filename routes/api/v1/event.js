@@ -16,7 +16,7 @@ router.use(passport.authenticate('jwt', { session: false }))
 
 router.use(middleware.accountIs(ADMIN))
 router.post('/', EventController.insert)
-router.put('/:slug', EventController.update)
-router.delete('/:slug', EventController.destroy)
+router.put('/:id', EventController.update)
+router.delete('/:id', EventController.destroy)
 
 module.exports = router

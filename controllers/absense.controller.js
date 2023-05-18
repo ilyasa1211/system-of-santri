@@ -16,8 +16,16 @@ module.exports = { index, insert, show, me }
  */
 async function index (req, res, next) {
     try {
-        const absenses = await Account.find({}, { name: 1, absense_id: 1 }, {})
+        const absenses = await Account.find({}, { name: 1, absense_id: 1, absenses: 1 })
             .populate({ path: 'absense', foreignField: 'id' })
+
+        absenses?.forEach(absense => {
+            absense?.absenses?.forEach((absens) => {
+                const [day, month, status] = absens.split('/')
+                absense.absense.months[MONTHS[month - 1]][day - 1].status =
+        STATUSES[status - 1]
+            })
+        })
         res.status(StatusCodes.OK).send({ absenses })
     } catch (error) {
         next(error)
@@ -42,7 +50,7 @@ async function me (req, res, next) {
             foreignField: 'id',
             select: 'months -_id -id'
         })
-        account.absenses.forEach((absens) => {
+        account?.absenses?.forEach((absens) => {
             const [day, month, status] = absens.split('/')
             account.absense.months[MONTHS[month - 1]][day - 1].status =
         STATUSES[status - 1]

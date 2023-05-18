@@ -1,7 +1,6 @@
 'use strict'
 
 const mongoose = require('mongoose')
-const { default: slugify } = require('slugify')
 
 const eventSchema = new mongoose.Schema({
     date: {
@@ -19,10 +18,5 @@ const eventSchema = new mongoose.Schema({
         unique: true
     }
 }, { timestamps: true })
-
-eventSchema.pre('save', function (next) {
-    this.slug = slugify(this.title + this.date)
-    next()
-})
 
 module.exports = new mongoose.model('Event', eventSchema)

@@ -50,7 +50,7 @@ async function signin (req, res, next) {
         const valid = await argon2.verify(account.password, password)
         if (!valid) throw new UnauthorizedError('Invalid password')
         const token = jwt.sign({ id: account.id }, process.env.JWT_SECRET)
-        res.status(StatusCodes.OK).send({ token })
+        res.status(StatusCodes.OK).send({ message: 'Success signin', token })
     } catch (error) {
         next(error)
     }
@@ -91,10 +91,10 @@ async function forgotPassword (req, res, next) {
         if (!account) throw new NotFoundError('Account not found')
         const token = generateToken()
         const forgetToken = jwt.sign({ token }, process.env.JWT_SECRET, { expiresIn: '1h' })
-        account.forgetToken = forgetToken
+        account.forgetToken = token
         await account.save()
         sendForgetPasswordEmail(forgetToken, email)
-        res.send({ message: 'Check your email' })
+        res.send({ message: 'Please check your email' })
     } catch (error) {
         next(error)
     }
@@ -112,8 +112,7 @@ async function resetPassword (req, res, next) {
         const { password, confirmPassword } = req.body
 
         if (!token) throw new BadRequestError('Token Invalid')
-        if (!password) throw new BadRequestError('Set your new password, don\'t forget it :)')
-        if (!confirmPassword) throw new BadRequestError('Set confirmation password')
+        if (!password) throw new BadRequestError('Please set your new password, don\'t forget it :)')
         if (password !== confirmPassword) throw new BadRequestError('Password and Confirmation Password does not match')
         let decoded
         jwt.verify(token, process.env.JWT_SECRET, (error, jwtPayload) => {
@@ -121,6 +120,7 @@ async function resetPassword (req, res, next) {
             if (jwtPayload.exp < Date.now() / 1000) throw new UnauthorizedError('Token Expired')
             decoded = jwtPayload
         })
+        console.log(decoded)
         const account = await Account.findOne({ forgetToken: decoded.token })
         if (!account) throw new NotFoundError('Account not found')
         account.password = await argon2.hash(password, { type: argon2.argon2i })

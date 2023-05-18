@@ -1,5 +1,6 @@
 'use strict'
 
+const path = require('node:path')
 /**
  * @type {import('nodemailer').Transporter}
  */
@@ -17,7 +18,7 @@ function sendForgetPasswordEmail (forgetToken, to) {
         to,
         subject: 'Reset Password',
         text: 'Reset Your Password',
-        html: pug.renderFile('../views/forget-password-email.pug', {
+        html: pug.renderFile(path.join(__dirname, '..', 'views', 'forget-password-email.pug'), {
             forgetToken,
             domain,
             title: 'Reset Password'

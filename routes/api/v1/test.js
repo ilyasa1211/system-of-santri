@@ -15,7 +15,7 @@ router.get('/', async (req, res, next) => {
     try {
         await refreshCalendar(Calendar, findOrCreate)
         await refreshRole(Role, findOrCreate)
-        res.send({ account: req.user, message: 'Testing Succeed, \nCalendar refreshed, \nRole refreshed' })
+        res.send({ message: 'Testing Succeed, \nCalendar refreshed, \nRole refreshed' })
     } catch (error) {
         next(error)
     }

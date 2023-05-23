@@ -2,7 +2,7 @@
 
 const { Account } = require('../models')
 const { StatusCodes } = require('http-status-codes')
-const { ConflictError } = require('../errors')
+const { ConflictError, BadRequestError } = require('../errors')
 const { ATTEND } = require('../traits/absense')
 const { MONTHS, STATUSES } = require('../traits')
 
@@ -16,14 +16,18 @@ module.exports = { index, insert, show, me }
  */
 async function index (req, res, next) {
     try {
-        const absenses = await Account.find({}, { name: 1, absense_id: 1, absenses: 1 })
+        const absenses = await Account.find({}, {
+            name: 1,
+            absense_id: 1,
+            absenses: 1
+        })
             .populate({ path: 'absense', foreignField: 'id' })
 
-        absenses?.forEach(absense => {
+        absenses?.forEach((absense) => {
             absense?.absenses?.forEach((absens) => {
                 const [day, month, status] = absens.split('/')
                 absense.absense.months[MONTHS[month - 1]][day - 1].status =
-        STATUSES[status - 1]
+          STATUSES[status - 1]
             })
         })
         res.status(StatusCodes.OK).send({ absenses })
@@ -98,6 +102,11 @@ async function show (req, res, next) {
  */
 async function insert (req, res, next) {
     try {
+        const currentHours = new Date().getHours()
+        const lessonHours = 8
+        if (currentHours !== lessonHours) {
+            throw new BadRequestError('Sorry, absense closed! Please come back at ' + lessonHours + 'am')
+        }
         const account = req.user
         const status = ATTEND
         const date = new Intl.DateTimeFormat('id').format()

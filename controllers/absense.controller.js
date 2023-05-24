@@ -102,10 +102,11 @@ async function show (req, res, next) {
  */
 async function insert (req, res, next) {
     try {
+        const currentServerTime = new Intl.DateTimeFormat('id', { timeStyle: 'short' }).format()
         const currentHours = new Date().getHours()
         const lessonHours = 8
         if (currentHours !== lessonHours) {
-            throw new BadRequestError('Sorry, absense closed! Please come back at ' + lessonHours + 'am')
+            throw new BadRequestError('Sorry, absense closed! Please come back at ' + lessonHours + 'am.' + 'Current server time: ' + currentServerTime)
         }
         const account = req.user
         const status = ATTEND

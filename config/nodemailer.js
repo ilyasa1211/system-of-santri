@@ -2,10 +2,10 @@
 
 const nodemailer = require('nodemailer')
 
-const host = process.env.MAIL_HOST
-const port = process.env.MAIL_PORT
-const user = process.env.MAIL_USER
-const pass = process.env.MAIL_PASS
+const host = process.env.SMTP_HOST
+const port = process.env.SMTP_PORT
+const user = process.env.SMTP_USERNAME
+const pass = process.env.SMTP_PASSWORD
 
 const transport = nodemailer.createTransport({
     host,

@@ -68,7 +68,6 @@ async function update (req, res, next) {
         const { user } = req
         const { title, link } = req.body
         const work = await Work.findById(id)
-        console.log(work);
         authorize(user, work.account_id.toString())
         if (title) work.title = title
         if (link) work.link = link

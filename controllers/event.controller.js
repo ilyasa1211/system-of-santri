@@ -2,7 +2,7 @@
 
 const { Calendar, Event } = require('../models')
 const { StatusCodes } = require('http-status-codes')
-const { ConflictError, NotFoundError } = require('../errors')
+const { NotFoundError } = require('../errors')
 const findOrCreate = require('../utils/find-or-create')
 const MONTHS = require('../traits/month')
 

@@ -95,8 +95,8 @@ async function show (req, res, next) {
  */
 async function update (req, res, next) {
     try {
-        authorize(req.user, req.user.id)
         const { id } = req.params
+        authorize(req.user, id)
         req.body.updatedAt = Date.now()
         await Account.findOneAndUpdate(
             { _id: id, deletedAt: null },
@@ -116,8 +116,8 @@ async function update (req, res, next) {
  */
 async function destroy (req, res, next) {
     try {
-        authorize(req.user, req.user.id)
         const { id } = req.params
+        authorize(req.user, id)
         await Account.findOneAndUpdate(
             { _id: id, deletedAt: null },
             { deletedAt: Date.now() }

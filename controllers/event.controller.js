@@ -16,7 +16,8 @@ module.exports = { index, insert, update, destroy, calendar }
  */
 async function calendar (req, res, next) {
     try {
-        const calendar = await findOrCreate(Calendar, { id: 0 })
+        const year = new Date().getFullYear()
+        const calendar = await findOrCreate(Calendar, { year })
         const events = await Event.find()
         events.forEach((event) => {
             const { title, slug, date } = event

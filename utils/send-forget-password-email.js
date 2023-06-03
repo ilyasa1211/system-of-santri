@@ -12,9 +12,10 @@ const domain = process.env.DOMAIN
  * @param {string} forgetToken
  * @param {string} to
  */
-function sendForgetPasswordEmail (forgetToken, to) {
-    nodemailer.sendMail({
-        from: process.env.EMAIL_ADDRESS,
+async function sendForgetPasswordEmail (forgetToken, to) {
+    const transporter = await nodemailer()
+    transporter.sendMail({
+        from: process.env.MAIL_USERNAME,
         to,
         subject: 'Reset Password',
         text: 'Reset Your Password',

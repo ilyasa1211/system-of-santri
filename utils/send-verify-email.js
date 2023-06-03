@@ -12,9 +12,10 @@ const domain = process.env.DOMAIN
  * @param {string} hash
  * @param {string} to
  */
-function sendEmail (hash, to) {
-    nodemailer.sendMail({
-        from: process.env.EMAIL_ADDRESS,
+async function sendEmail (hash, to) {
+    const transporter = await nodemailer()
+    transporter.sendMail({
+        from: process.env.MAIL_USERNAME,
         to,
         subject: 'Verify your email',
         text: 'Click The Verify Button To Verify',

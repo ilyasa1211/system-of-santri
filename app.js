@@ -19,6 +19,7 @@ const cronExpression = '0 0 0 1 1 *'
 // Schedule the task to run on the defined cron expression
 const job = schedule.scheduleJob(cronExpression, async () => {
     await refreshCalendar(Calendar, findOrCreate)
+    console.log('Calendar Refreshed!')
 })
 job.invoke()
 

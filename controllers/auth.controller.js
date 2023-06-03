@@ -29,7 +29,7 @@ async function signup (req, res, next) {
         const account = await Account.create(req.body)
         const { id } = account
         const token = jwt.sign({ id, email, name }, process.env.JWT_SECRET)
-        sendVerifyEmail(hash, email)
+        await sendVerifyEmail(hash, email)
         res.send({ message: 'Please check your email to verify', token })
     } catch (error) {
         next(error)
@@ -55,6 +55,28 @@ async function signin (req, res, next) {
         next(error)
     }
 }
+
+/**
+ * coming soon
+ *  Used to resend email verification token
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+// async function resendVerifyEmail (req, res, next) {
+//     try {
+//         const { user: account } = req
+//         const { email } = account
+//         if (!email) throw new NotFoundError('Account not found')
+//         const hash = generateToken()
+//         account.hash = hash
+//         await account.save()
+//         await sendVerifyEmail(hash, email)
+//         res.status(StatusCodes.OK).send({ message: 'Success resend verification email' })
+//     } catch (error) {
+//         next(error)
+//     }
+// }
 
 /**
  * Verify an account
@@ -93,7 +115,7 @@ async function forgotPassword (req, res, next) {
         const forgetToken = jwt.sign({ token }, process.env.JWT_SECRET, { expiresIn: '1h' })
         account.forgetToken = token
         await account.save()
-        sendForgetPasswordEmail(forgetToken, email)
+        await sendForgetPasswordEmail(forgetToken, email)
         res.send({ message: 'Please check your email' })
     } catch (error) {
         next(error)
@@ -120,7 +142,6 @@ async function resetPassword (req, res, next) {
             if (jwtPayload.exp < Date.now() / 1000) throw new UnauthorizedError('Token Expired')
             decoded = jwtPayload
         })
-        console.log(decoded)
         const account = await Account.findOne({ forgetToken: decoded.token })
         if (!account) throw new NotFoundError('Account not found')
         account.password = await argon2.hash(password, { type: argon2.argon2i })

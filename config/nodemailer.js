@@ -1,19 +1,45 @@
 'use strict'
 
 const nodemailer = require('nodemailer')
+const { google } = require('googleapis')
+const OAuth2 = google.auth.OAuth2
 
-const host = process.env.SMTP_HOST
-const port = process.env.SMTP_PORT
-const user = process.env.SMTP_USERNAME
-const pass = process.env.SMTP_PASSWORD
+const createTransporter = async () => {
+    const oauth2Client = new OAuth2(
+        process.env.OAUTH_CLIENTID,
+        process.env.OAUTH_CLIENT_SECRET,
+        'https://developers.google.com/oauthplayground/'
+    )
 
-const transport = nodemailer.createTransport({
-    host,
-    port,
-    auth: {
-        user,
-        pass
-    }
-})
+    oauth2Client.setCredentials({
+        refresh_token: process.env.OAUTH_REFRESH_TOKEN
+    })
 
-module.exports = transport
+    const accessToken = await new Promise((resolve, reject) => {
+        oauth2Client.getAccessToken((err, token) => {
+            if (err) {
+                reject(err)
+            }
+            resolve(token)
+        })
+    })
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            type: 'OAuth2',
+            user: process.env.MAIL_USERNAME,
+            accessToken,
+            clientId: process.env.OAUTH_CLIENTID,
+            clientSecret: process.env.OAUTH_CLIENT_SECRET,
+            refreshToken: process.env.OAUTH_REFRESH_TOKEN
+        },
+        tls: {
+            rejectUnauthorized: false
+        }
+    })
+
+    return transporter
+}
+
+module.exports = createTransporter

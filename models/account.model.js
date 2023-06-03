@@ -1,7 +1,6 @@
 'use strict'
 
 const mongoose = require('mongoose')
-const { SANTRI } = require('../traits/role')
 
 require('./role.model')
 require('./resume.model')
@@ -74,6 +73,10 @@ const accountSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    verifyExpiration: {
+        type: Number,
+        default: null
+    },
     forgetToken: {
         type: String,
         default: null
@@ -89,7 +92,7 @@ const accountSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 accountSchema.pre('save', function (next) {
-    this.role_id = SANTRI
+    // abense = 0 is for relation with absense model with id 0
     this.absense = 0
     next()
 })

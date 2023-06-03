@@ -51,7 +51,7 @@ async function index (req, res, next) {
     }
 }
 /**
- * Create an account to the database, everyone has rights
+ * Create an account to the database, only admin has rights
  * @param {Request} req
  * @param {Response} res
  * @param {VoidFunction} next

@@ -8,20 +8,31 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 
 const schedule = require('node-schedule')
-const { Calendar } = require('./models')
+const { Calendar, Account } = require('./models')
 const { error, notFound } = require('./middlewares')
 const { v1, landingRoute } = require('./routes')
 const { refreshCalendar, findOrCreate } = require('./utils')
 
 // Define the cron expression for January 1st at 00:00
-const cronExpression = '0 0 0 1 1 *'
+const everyYear = '0 0 0 1 1 *'
 
+// Define the cron expression for everyDay at 00:00
+const everyDay = '0 0 0 * * *'
 // Schedule the task to run on the defined cron expression
-const job = schedule.scheduleJob(cronExpression, async () => {
+const job = schedule.scheduleJob(everyYear, async () => {
     await refreshCalendar(Calendar, findOrCreate)
     console.log('Calendar Refreshed!')
 })
+const job2 = schedule.scheduleJob(everyDay, async () => {
+    const today = new Date().getTime()
+    const deleted = await Account.deleteMany({
+        verifyExpiration: { $lt: today },
+        verify: false
+    })
+    console.log('Deleted unverfied account! count: ', deleted.deletedCount)
+})
 job.invoke()
+job2.invoke()
 
 const app = express()
 

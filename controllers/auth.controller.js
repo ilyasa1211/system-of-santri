@@ -8,6 +8,7 @@ const { NotFoundError, UnauthorizedError, BadRequestError } = require('../errors
 const { Account } = require('../models')
 const { sendVerifyEmail, sendForgetPasswordEmail, generateToken } = require('../utils')
 const trimAllBody = require('../utils/trim-all-body')
+const { SANTRI } = require('../traits/role')
 
 module.exports = { signup, signin, verify, forgotPassword, resetPassword }
 
@@ -19,14 +20,21 @@ module.exports = { signup, signin, verify, forgotPassword, resetPassword }
  */
 async function signup (req, res, next) {
     try {
+        const uncreatedAccount = req.body
+        const date = new Date()
         const { name, email, password } = req.body
+        if (!name) throw new BadRequestError('name is required')
+        if (!email) throw new BadRequestError('email is required')
+        if (!password) throw new BadRequestError('password is required')
         if (req.file) req.body.photo = req.file.filename
         const hash = generateToken()
         trimAllBody(req)
-        req.body.verify = false
-        req.body.hash = hash
-        req.body.password = await argon2.hash(password, { type: argon2.argon2i })
-        const account = await Account.create(req.body)
+        uncreatedAccount.verify = false
+        uncreatedAccount.verifyExpiration = date.setDate(date.getDate() + 1)
+        uncreatedAccount.role_id = SANTRI
+        uncreatedAccount.hash = hash
+        uncreatedAccount.password = await argon2.hash(password, { type: argon2.argon2i })
+        const account = await Account.create(uncreatedAccount)
         const { id } = account
         const token = jwt.sign({ id, email, name }, process.env.JWT_SECRET)
         await sendVerifyEmail(hash, email)

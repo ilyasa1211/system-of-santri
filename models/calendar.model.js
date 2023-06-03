@@ -17,7 +17,6 @@ const absenseSchema = new mongoose.Schema({
 
 absenseSchema.pre('save', function (next) {
     this.months = require('../utils/calendar')()
-    this.id = 0
     this.year = new Date().getFullYear()
     next()
 })

@@ -32,7 +32,6 @@ const job2 = schedule.scheduleJob(everyDay, async () => {
     console.log('Deleted unverfied account! count: ', deleted.deletedCount)
 })
 job.invoke()
-job2.invoke()
 
 const app = express()
 

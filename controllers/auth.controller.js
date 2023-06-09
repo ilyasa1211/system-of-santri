@@ -23,9 +23,6 @@ async function signup (req, res, next) {
         const uncreatedAccount = req.body
         const date = new Date()
         const { name, email, password } = req.body
-        if (!name) throw new BadRequestError('name is required')
-        if (!email) throw new BadRequestError('email is required')
-        if (!password) throw new BadRequestError('password is required')
         if (req.file) req.body.photo = req.file.filename
         const hash = generateToken()
         trimAllBody(req)

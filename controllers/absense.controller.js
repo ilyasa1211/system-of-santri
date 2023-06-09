@@ -16,16 +16,17 @@ module.exports = { index, insert, show, me }
  */
 async function index (req, res, next) {
     try {
+        const currentYear = new Date().getFullYear()
         const absenses = await Account.find({}, {
             name: 1,
             absense_id: 1,
             absenses: 1
         })
-            .populate({ path: 'absense', foreignField: 'id' })
-
+            .populate({ path: 'absense', foreignField: 'id', select: 'months year -_id -id' })
         absenses?.forEach((absense) => {
             absense?.absenses?.forEach((absens) => {
-                const [day, month, status] = absens.split('/')
+                const [day, month, year, status] = absens.split('/')
+                if (year !== currentYear) { return }
                 absense.absense.months[MONTHS[month - 1]][day - 1].status =
           STATUSES[status - 1]
             })
@@ -45,17 +46,20 @@ async function index (req, res, next) {
 async function me (req, res, next) {
     try {
         const { id } = req.user
+        const currentYear = new Date().getFullYear()
         const account = await Account.findById(id, {
             name: 1,
             absense: 1,
-            absenses: 1
+            absenses: 1,
+            year: 1
         }).populate({
             path: 'absense',
             foreignField: 'id',
-            select: 'months -_id -id'
+            select: 'months year -_id -id'
         })
         account?.absenses?.forEach((absens) => {
-            const [day, month, status] = absens.split('/')
+            const [day, month, year, status] = absens.split('/')
+            if (year !== currentYear) { return }
             account.absense.months[MONTHS[month - 1]][day - 1].status =
         STATUSES[status - 1]
         })
@@ -74,6 +78,7 @@ async function me (req, res, next) {
 async function show (req, res, next) {
     try {
         const { id } = req.params
+        const currentYear = new Date().getFullYear()
         const account = await Account.findById(id, {
             name: 1,
             absense: 1,
@@ -84,7 +89,8 @@ async function show (req, res, next) {
             select: 'months -_id -id'
         })
         account.absense.forEach((absens) => {
-            const [day, month, status] = absens.split('/')
+            const [day, month, year, status] = absens.split('/')
+            if (year !== currentYear) { return }
             account.absense.months[MONTHS[month - 1]][day - 1].status =
         STATUSES[status - 1]
         })
@@ -103,7 +109,8 @@ async function show (req, res, next) {
 async function insert (req, res, next) {
     try {
         const currentServerTime = new Intl.DateTimeFormat('id', { timeStyle: 'short' }).format()
-        const currentHours = new Date().getHours()
+        const currentDate = new Date()
+        const currentHours = currentDate.getHours()
         const lessonHours = 8
         if (currentHours !== lessonHours) {
             throw new BadRequestError('Sorry, absense closed! Please come back at ' + lessonHours + 'am.' + 'Current server time: ' + currentServerTime)
@@ -111,9 +118,12 @@ async function insert (req, res, next) {
         const account = req.user
         const status = ATTEND
         const date = new Intl.DateTimeFormat('id').format()
-        const now = date.slice(0, date.lastIndexOf('/')).concat('/', status)
+
+        // day / month / year / status
+        // 3/6/2023/1
+        const now = date.concat('/', status)
         const alreadyAbsent = account.absenses.find((array) =>
-            array.toString() === now.toString()
+            array.slice(array.lastIndexOf('/')).toString() === now.slice(now.lastIndexOf('/')).toString()
         )
         if (alreadyAbsent) throw new ConflictError('Already Absent')
         account.absenses.push(now)

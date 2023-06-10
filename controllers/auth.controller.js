@@ -18,7 +18,7 @@ module.exports = { signup, signin, verify, forgotPassword, resetPassword }
  * @param {Response} res
  * @param {VoidFunction} next
  */
-async function signup (req, res, next) {
+async function signup(req, res, next) {
     try {
         const uncreatedAccount = req.body
         const date = new Date()
@@ -37,6 +37,9 @@ async function signup (req, res, next) {
         await sendVerifyEmail(hash, email)
         res.send({ message: 'Please check your email to verify', token })
     } catch (error) {
+        if (error.message.indexOf('duplicate key error') !== -1) {
+            error.message = "Please use another email"
+        }
         next(error)
     }
 }
@@ -47,7 +50,7 @@ async function signup (req, res, next) {
  * @param {Response} res
  * @param {VoidFunction} next
  */
-async function signin (req, res, next) {
+async function signin(req, res, next) {
     try {
         const { email, password } = req.body
         const account = await Account.findOne({ email, deletedAt: null, verify: true })
@@ -89,7 +92,7 @@ async function signin (req, res, next) {
  * @param {Response} res
  * @param {VoidFunction} next
  */
-async function verify (req, res, next) {
+async function verify(req, res, next) {
     try {
         const hash = req.query.hash
         if (!hash) throw new BadRequestError('Token missing')
@@ -110,7 +113,7 @@ async function verify (req, res, next) {
  * @param {Response} res
  * @param {VoidFunction} next
  */
-async function forgotPassword (req, res, next) {
+async function forgotPassword(req, res, next) {
     try {
         const { email } = req.body
         if (!email) throw new BadRequestError('Email is required')
@@ -133,7 +136,7 @@ async function forgotPassword (req, res, next) {
  * @param {Response} res
  * @param {VoidFunction} next
  */
-async function resetPassword (req, res, next) {
+async function resetPassword(req, res, next) {
     try {
         const { token } = req.query
         const { password, confirmPassword } = req.body

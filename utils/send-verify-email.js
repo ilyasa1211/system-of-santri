@@ -3,7 +3,7 @@
 /**
  * @type {import('nodemailer').Transporter}
  */
-const nodemailer = require('../config/nodemailer')
+const transporter = require('../config/nodemailer')
 const pug = require('pug')
 const path = require('node:path')
 const domain = process.env.DOMAIN
@@ -13,7 +13,6 @@ const domain = process.env.DOMAIN
  * @param {string} to
  */
 async function sendEmail (hash, to) {
-    const transporter = await nodemailer()
     transporter.sendMail({
         from: process.env.MAIL_USERNAME,
         to,

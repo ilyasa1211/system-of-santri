@@ -7,6 +7,7 @@ const AuthController = require('./auth.controller')
 const ResumeController = require('./resume.controller')
 const WorkController = require('./work.controller')
 const EventController = require('./event.controller')
+const RegisterNotificationController = require('./register-notification.controller')
 
 module.exports = {
     AccountController,
@@ -15,5 +16,6 @@ module.exports = {
     AuthController,
     ResumeController,
     WorkController,
-    EventController
+    EventController,
+    RegisterNotificationController
 }

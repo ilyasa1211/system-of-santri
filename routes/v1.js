@@ -9,7 +9,8 @@ const {
     resumeRoute,
     eventRoute,
     trashRoute,
-    testRoute
+    testRoute,
+    notificationRoute
 } = require('./api/v1')
 
 module.exports = router
@@ -23,3 +24,4 @@ router.use('/resume', resumeRoute)
 router.use('/event', eventRoute)
 router.use('/trash', trashRoute)
 router.use('/test', testRoute)
+router.use('/notification', notificationRoute)

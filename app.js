@@ -8,10 +8,12 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 
 const schedule = require('node-schedule')
-const { Calendar, Account } = require('./models')
+const { Calendar, Account, Role } = require('./models')
 const { error, notFound } = require('./middlewares')
 const { v1, landingRoute } = require('./routes')
-const { refreshCalendar, findOrCreate } = require('./utils')
+const { refreshCalendar, findOrCreate, refreshRole } = require('./utils')
+
+refreshRole(Role, findOrCreate).then(() => console.log('Role Refreshed!'))
 
 // Define the cron expression for January 1st at 00:00
 const everyYear = '0 0 0 1 1 *'

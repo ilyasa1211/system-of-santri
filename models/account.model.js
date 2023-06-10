@@ -5,9 +5,6 @@ const mongoose = require('mongoose')
 require('./role.model')
 require('./resume.model')
 
-/**
- * @type {import('mongoose').Schema}
- */
 const accountSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -84,6 +81,10 @@ const accountSchema = new mongoose.Schema({
     hash: {
         type: String,
         default: null
+    },
+    blocked: {
+        type: Boolean,
+        default: false
     },
     deletedAt: {
         type: Date,

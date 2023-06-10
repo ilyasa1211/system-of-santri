@@ -9,5 +9,6 @@ const workRoute = require('./work')
 const trashRoute = require('./trash')
 const noteRoute = require('./note')
 const testRoute = require('./test')
+const notificationRoute = require('./notification')
 
-module.exports = { absenseRoute, accountRoute, authRoute, eventRoute, learningRoute, resumeRoute, workRoute, trashRoute, noteRoute, testRoute }
+module.exports = { absenseRoute, accountRoute, authRoute, eventRoute, learningRoute, resumeRoute, workRoute, trashRoute, noteRoute, testRoute, notificationRoute }

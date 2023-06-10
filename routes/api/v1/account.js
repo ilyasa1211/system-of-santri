@@ -42,4 +42,10 @@ router.put('/:id', AccountController.update)
 // Delete one account not permanently
 router.delete('/:id', AccountController.destroy)
 
+// Verify a registered account
+router.put('/:id/verify', middleware.accountIs(ADMIN), AccountController.verifyRegisteredAccount)
+
+// reject a registered account
+router.put('/:id/rejectVerify', middleware.accountIs(ADMIN), AccountController.rejectRegisteredAccount)
+
 module.exports = router

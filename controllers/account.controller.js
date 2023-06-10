@@ -6,7 +6,7 @@ const path = require('node:path')
 const { StatusCodes } = require('http-status-codes')
 const { NotFoundError } = require('../errors')
 const argon2 = require('argon2')
-const { Account, Resume, Work } = require('../models')
+const { Account, Resume, Work, RegisterNotification } = require('../models')
 const { authorize } = require('../utils')
 const trimAllBody = require('../utils/trim-all-body')
 
@@ -30,7 +30,9 @@ module.exports = {
     insert,
     workIndex,
     workShow,
-    resume
+    resume,
+    verifyRegisteredAccount,
+    rejectRegisteredAccount
 }
 
 /**
@@ -247,6 +249,43 @@ async function resume (req, res, next) {
         const resume = await Resume.findOne({ account_id: id })
         if (!resume) throw new NotFoundError('Resume Not Found')
         res.status(StatusCodes.OK).send({ resume })
+    } catch (error) {
+        next(error)
+    }
+}
+
+/**
+ * verify registered account by admin
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+async function verifyRegisteredAccount (req, res, next) {
+    try {
+        const { id } = req.params
+        const notification = await RegisterNotification.findById(id)
+        if (!notification) throw new NotFoundError('Notification not found')
+        await Account.findOneAndUpdate({ _id: notification.account_id }, { verify: true })
+        await notification.deleteOne()
+        res.status(StatusCodes.OK).send({ message: 'Account verified' })
+    } catch (error) {
+        next(error)
+    }
+}
+
+/**
+ * reject registered account by admin
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+async function rejectRegisteredAccount (req, res, next) {
+    try {
+        const { id } = req.params
+        const notification = await RegisterNotification.findById(id)
+        if (!notification) throw new NotFoundError('Notification not found')
+        await Account.findByIdAndUpdate({ _id: notification.account_id }, { blocked: true })
+        res.status(StatusCodes.OK).send({ message: 'Account rejected' })
     } catch (error) {
         next(error)
     }

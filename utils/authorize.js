@@ -12,7 +12,9 @@ module.exports = function (User, Id, RoleException = [ADMIN]) {
   const hasTheRights = RoleException.find((role) => User.role.id === role);
   const theOwner = Id === User.id;
   if (!hasTheRights && !theOwner) {
-    throw new UnauthorizedError("You have no rights");
+    throw new UnauthorizedError(
+      "Access Is Refused. We regret to inform you that the requested action is not one for which you are authorized.",
+    );
   }
   return true;
 };

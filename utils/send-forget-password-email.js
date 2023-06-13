@@ -12,19 +12,14 @@ const appUrl = process.env.APP_URL;
  * @param {string} forgetToken
  * @param {string} to
  */
-async function sendForgetPasswordEmail(forgetToken, to) {
+async function sendForgetPasswordEmail(token, to) {
   transporter.sendMail({
     from: process.env.MAIL_USERNAME,
     to,
     subject: "Reset Password",
-    text: "Reset Your Password",
     html: pug.renderFile(
       path.join(__dirname, "..", "views", "forget-password-email.pug"),
-      {
-        forgetToken,
-        appUrl,
-        title: "Reset Password",
-      },
+      { token, appUrl },
     ),
   });
 }

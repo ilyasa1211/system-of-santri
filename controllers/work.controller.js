@@ -15,7 +15,7 @@ module.exports = { index, insert, update, destroy, show };
 async function index(request, response, next) {
   try {
     const works = await Work.find({}, {}, { sort: { createdAt: "desc" } });
-    response.status(StatusCodes.OK).json({ works });
+    return response.status(StatusCodes.OK).json({ works });
   } catch (error) {
     next(error);
   }
@@ -30,7 +30,7 @@ async function index(request, response, next) {
 async function show(request, response, next) {
   try {
     const work = await Work.findOne({ _id: request.params.id });
-    response.status(StatusCodes.OK).json({ work });
+    return response.status(StatusCodes.OK).json({ work });
   } catch (error) {
     next(error);
   }
@@ -49,8 +49,9 @@ async function insert(request, response, next) {
     const account = await Account.findById(request.user.id);
     account.work.push(works.id);
     await account.save();
-    response.status(StatusCodes.OK).json({
-      message: "Success creating!",
+    return response.status(StatusCodes.OK).json({
+      message:
+        "Congratulations on completing your work successfully! This is a noteworthy accomplishment that highlights your talent and commitment.",
       works,
     });
   } catch (error) {
@@ -75,7 +76,10 @@ async function update(request, response, next) {
     if (link) work.link = link;
     work.updatedAt = Date.now();
     await work.save();
-    response.status(StatusCodes.OK).json({ message: "Success updating!" });
+    return response.status(StatusCodes.OK).json({
+      message:
+        "Congratulations on finishing your work update! Your dedication to honing and enhancing your work is admirable. ",
+    });
   } catch (error) {
     next(error);
   }
@@ -94,7 +98,10 @@ async function destroy(request, response, next) {
     const work = await Work.findById(id);
     authorize(user, work.account_id.toString());
     await work.deleteOne();
-    response.status(StatusCodes.OK).json({ message: "Success deleting!" });
+    return response.status(StatusCodes.OK).json({
+      message:
+        "Your writing has been effectively erased. All related information has been permanently deleted, and it has been taken out of our records.",
+    });
   } catch (error) {
     next(error);
   }

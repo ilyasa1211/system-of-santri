@@ -35,7 +35,7 @@ async function index(request, response, next) {
           STATUSES[status - 1];
       });
     });
-    response.status(StatusCodes.OK).json({ absenses });
+    return response.status(StatusCodes.OK).json({ absenses });
   } catch (error) {
     next(error);
   }
@@ -67,7 +67,7 @@ async function me(request, response, next) {
       account.absense.months[MONTHS[month - 1]][day - 1].status =
         STATUSES[status - 1];
     });
-    response.status(StatusCodes.OK).json({ account });
+    return response.status(StatusCodes.OK).json({ account });
   } catch (error) {
     next(error);
   }
@@ -98,7 +98,7 @@ async function show(request, response, next) {
       account.absense.months[MONTHS[month - 1]][day - 1].status =
         STATUSES[status - 1];
     });
-    response.status(StatusCodes.OK).json({ account });
+    return response.status(StatusCodes.OK).json({ account });
   } catch (error) {
     next(error);
   }
@@ -120,7 +120,8 @@ async function insert(request, response, next) {
     const lessonHours = 8;
     if (currentHours !== lessonHours) {
       throw new BadRequestError(
-        "Sorry, absense closed! Please come back at " + lessonHours + "am." +
+        "You are referring to an absence that is officially over and closed. For additional assistance or to address any upcoming absences, kindly come back at " +
+          lessonHours + "am." +
           "Current server time: " + currentServerTime,
       );
     }
@@ -135,10 +136,17 @@ async function insert(request, response, next) {
       array.slice(array.lastIndexOf("/")).toString() ===
         now.slice(now.lastIndexOf("/")).toString()
     );
-    if (alreadyAbsent) throw new ConflictError("Already Absent");
+    if (alreadyAbsent) {
+      throw new ConflictError(
+        "You have a unique presence that cannot be replicated or measured twice.",
+      );
+    }
     account.absenses.push(now);
     await account.save();
-    response.status(StatusCodes.OK).json({ message: "Successfully Absent" });
+    return response.status(StatusCodes.OK).json({
+      message:
+        "Thank you for your successful presence; it has had a significant impact.",
+    });
   } catch (error) {
     next(error);
   }

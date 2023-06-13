@@ -12,17 +12,16 @@ const appUrl = process.env.APP_URL;
  * @param {string} hash
  * @param {string} to
  */
-async function sendEmail(hash, to) {
+async function sendVerifyEmail(hash, to) {
   transporter.sendMail({
     from: process.env.MAIL_USERNAME,
     to,
-    subject: "Verify your email",
-    text: "Click The Verify Button To Verify",
+    subject: "Account Verification - Action Required",
     html: pug.renderFile(
       path.join(__dirname, "..", "views", "verify-email.pug"),
-      { hash, appUrl, title: "Email Verification" },
+      { hash, appUrl },
     ),
   });
 }
 
-module.exports = sendEmail;
+module.exports = sendVerifyEmail;

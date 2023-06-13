@@ -17,7 +17,7 @@ module.exports = { index, insert, update, destroy, show };
 async function index(request, response, next) {
   try {
     const learnings = await Learning.find();
-    response.status(StatusCodes.OK).json({ learnings });
+    return response.status(StatusCodes.OK).json({ learnings });
   } catch (error) {
     next(error);
   }
@@ -32,7 +32,7 @@ async function index(request, response, next) {
 async function show(request, response, next) {
   try {
     const learning = await Learning.findById(request.params.id);
-    response.status(StatusCodes.OK).json({ learning });
+    return response.status(StatusCodes.OK).json({ learning });
   } catch (error) {
     next(error);
   }
@@ -50,7 +50,10 @@ async function insert(request, response, next) {
       request.body.thumbnail = request.file.filename;
     }
     await Learning.create(request.body);
-    response.status(StatusCodes.OK).json({ message: "Success Created!" });
+    return response.status(StatusCodes.OK).json({
+      message:
+        "Congratulations on developing a lesson successfully! Your commitment to education and knowledge sharing is admirable. ",
+    });
   } catch (error) {
     next(error);
   }
@@ -68,10 +71,17 @@ async function update(request, response, next) {
       request.body.thumbnail = request.file.filename;
     }
     const learning = await Learning.findById(request.params.id);
-    if (!learning) throw NotFoundError("Learning not found");
+    if (!learning) {
+      throw NotFoundError(
+        "We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available. ",
+      );
+    }
     Object.assign(learning, request.body);
     await learning.save();
-    response.status(StatusCodes.OK).json({ message: "Success Updated!" });
+    return response.status(StatusCodes.OK).json({
+      message:
+        "Congratulations on finishing up your lesson update! Your commitment to enhancing and perfecting the instructional materials is admirable.",
+    });
   } catch (error) {
     next(error);
   }
@@ -86,7 +96,11 @@ async function update(request, response, next) {
 async function destroy(request, response, next) {
   try {
     const learning = await Learning.findById(request.params.id);
-    if (!learning) throw new NotFoundError("Learning not found");
+    if (!learning) {
+      throw new NotFoundError(
+        "We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available.",
+      );
+    }
     const { thumbnail } = learning;
     if (thumbnail && thumbnail !== "default-thumbnail.jpg") {
       fs.unlink(
@@ -104,7 +118,9 @@ async function destroy(request, response, next) {
       );
     }
     await learning.deleteOne();
-    response.status(StatusCodes.OK).json({ message: "Success Deleted!" });
+    return response.status(StatusCodes.OK).json({
+      message: "The deletion of your lesson was successful. The learning platform has removed it, and all associated data has been permanently deleted.",
+    });
   } catch (error) {
     next(error);
   }

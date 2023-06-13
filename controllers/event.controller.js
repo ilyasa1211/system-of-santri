@@ -56,7 +56,7 @@ async function insert(request, response, next) {
   try {
     await Event.create(request.body);
     response.status(StatusCodes.OK).json({
-      message: "Event successfully created",
+      message: "Congratulations! It was successful creating the event. ",
     });
   } catch (error) {
     next(error);
@@ -73,11 +73,16 @@ async function update(request, response, next) {
   try {
     const { id } = request.params;
     const event = await Event.findById(id);
-    if (!event) throw new NotFoundError("Event not found");
+    if (!event) {
+      throw new NotFoundError(
+        "We regret the inconvenience, but we were unable to locate the requested event. Please double-check the event details or make sure you have provided accurate information.",
+      );
+    }
     Object.assign(event, request.body);
     await event.save();
     response.status(StatusCodes.OK).json({
-      message: "Event successfully updated",
+      message:
+        "Congratulations! The most recent changes have been successfully updated for the event. The required updates have been made.",
     });
   } catch (error) {
     next(error);
@@ -94,8 +99,9 @@ async function destroy(request, response, next) {
   try {
     const { id } = request.params;
     await Event.findOneAndDelete({ _id: id });
-    response.status(StatusCodes.OK).json({
-      message: "Event successfully deleted",
+    return response.status(StatusCodes.OK).json({
+      message:
+        "Congratulations! The most recent changes have been successfully updated for the event. The required updates have been made.",
     });
   } catch (error) {
     next(error);

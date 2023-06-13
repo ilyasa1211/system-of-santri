@@ -17,7 +17,7 @@ const accountSchema = new mongoose.Schema({
     type: String,
     maxLength: [255, "Email cannot be longer than 255 characters"],
     required: [true, "Email field required"],
-    unique: [true, "Please use another email"],
+    unique: true,
     match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   },
   password: {

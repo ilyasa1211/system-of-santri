@@ -1,1 +1,1 @@
-module.exports = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+module.exports = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

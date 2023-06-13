@@ -1,14 +1,14 @@
-'use strict'
+"use strict";
 
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const roleSchema = new mongoose.Schema({
-    id: {
-        type: Number
-    },
-    name: {
-        type: String
-    }
-})
+  id: {
+    type: Number,
+  },
+  name: {
+    type: String,
+  },
+});
 
-module.exports = new mongoose.model('Role', roleSchema)
+module.exports = new mongoose.model("Role", roleSchema);

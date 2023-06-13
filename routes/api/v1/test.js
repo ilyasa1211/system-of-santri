@@ -1,22 +1,25 @@
+"use strict";
 
-'use strict'
+const express = require("express");
+const router = express.Router();
 
-const express = require('express')
-const router = express.Router()
+const passport = require("passport");
+const { findOrCreate, refreshCalendar, refreshRole } = require(
+  "../../../utils",
+);
+const { Calendar, Role } = require("../../../models");
 
-const passport = require('passport')
-const { findOrCreate, refreshCalendar, refreshRole } = require('../../../utils')
-const { Calendar, Role } = require('../../../models')
+module.exports = router;
 
-module.exports = router
-
-router.use(passport.authenticate('jwt', { session: false }))
-router.get('/', async (req, res, next) => {
-    try {
-        await refreshCalendar(Calendar, findOrCreate)
-        await refreshRole(Role, findOrCreate)
-        res.send({ message: 'Testing Succeed, Calendar refreshed, Role refreshed' })
-    } catch (error) {
-        next(error)
-    }
-})
+router.use(passport.authenticate("jwt", { session: false }));
+router.get("/", async (request, response, next) => {
+  try {
+    await refreshCalendar(Calendar, findOrCreate);
+    await refreshRole(Role, findOrCreate);
+    response.json({
+      message: "Testing Succeed, Calendar refreshed, Role refreshed",
+    });
+  } catch (error) {
+    next(error);
+  }
+});

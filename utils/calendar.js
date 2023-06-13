@@ -1,12 +1,12 @@
-'use strict'
+"use strict";
 
 /**
  * Add date by a spesific number
  * @param {Date} date
  * @param {Integer} number
  */
-function addDay (date, number) {
-    date.setDate(date.getDate() + number)
+function addDay(date, number) {
+  date.setDate(date.getDate() + number);
 }
 
 /**
@@ -15,8 +15,8 @@ function addDay (date, number) {
  * @param {String} locale
  * @returns String
  */
-function getMonthName (date, locale) {
-    return new Intl.DateTimeFormat(locale, { month: 'long' }).format(date)
+function getMonthName(date, locale) {
+  return new Intl.DateTimeFormat(locale, { month: "long" }).format(date);
 }
 
 /**
@@ -25,8 +25,8 @@ function getMonthName (date, locale) {
  * @param {String} locale
  * @returns String
  */
-function getDayName (date, locale) {
-    return new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(date)
+function getDayName(date, locale) {
+  return new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
 }
 
 /**
@@ -35,35 +35,35 @@ function getDayName (date, locale) {
  * @param {Integer} year
  * @returns Object
  */
-function getCalendar (year = null, locale = 'id') {
-    const date = new Date()
-    date.setMonth(0)
-    date.setDate(1)
+function getCalendar(year = null, locale = "id") {
+  const date = new Date();
+  date.setMonth(0);
+  date.setDate(1);
 
-    const YEAR = date.getFullYear()
-    const bulan = {}
+  const YEAR = date.getFullYear();
+  const bulan = {};
 
-    while (YEAR === date.getFullYear()) {
-        const month = date.getMonth()
-        const nameOfMonth = getMonthName(date, locale)
+  while (YEAR === date.getFullYear()) {
+    const month = date.getMonth();
+    const nameOfMonth = getMonthName(date, locale);
 
-        bulan[nameOfMonth] = []
+    bulan[nameOfMonth] = [];
 
-        while (month === date.getMonth()) {
-            const day = {
-                date: date.getDate(),
-                day: getDayName(date, locale),
-                status: null,
-                event: []
-            }
+    while (month === date.getMonth()) {
+      const day = {
+        date: date.getDate(),
+        day: getDayName(date, locale),
+        status: null,
+        event: [],
+      };
 
-            bulan[nameOfMonth].push(day)
+      bulan[nameOfMonth].push(day);
 
-            addDay(date, 1)
-        }
+      addDay(date, 1);
     }
+  }
 
-    return bulan
+  return bulan;
 }
 
-module.exports = getCalendar
+module.exports = getCalendar;

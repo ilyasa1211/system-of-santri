@@ -1,12 +1,12 @@
-'use strict'
+"use strict";
 
-module.exports = (req, res, next) => {
-    try {
-        if (req.user) {
-            res.send({ message: 'Already Login' })
-        }
-        next()
-    } catch (err) {
-        next(err)
+module.exports = (request, response, next) => {
+  try {
+    if (request.user) {
+      response.json({ message: "Already Login" });
     }
-}
+    next();
+  } catch (error) {
+    next(error);
+  }
+};

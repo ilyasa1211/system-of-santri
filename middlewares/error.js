@@ -1,6 +1,8 @@
-'use strict'
+"use strict";
 
-module.exports = (err, req, res, next) => {
-    if (typeof err.code !== "number" || err.code > 500 || err.code < 100) err.code = 500
-    res.status(err.code || 500).send({ message: err.message })
-}
+module.exports = (error, request, response, next) => {
+  if (typeof error.code !== "number" || error.code > 500 || error.code < 100) {
+    error.code = 500;
+  }
+  response.status(error.code || 500).json({ message: error.message });
+};

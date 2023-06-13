@@ -35,37 +35,37 @@ module.exports = {
 
 /**
  *  Get All Accounts, everyone has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {Function} next
  */
-async function index (req, res, next) {
+async function index (request, response, next) {
     try {
-        const withTrashed = req.query.trashed
+        const withTrashed = request.query.trashed
         const option = { deletedAt: null }
         if (withTrashed) option.deletedAt = { $ne: null }
         const accounts = await Account.find(option, projection)
-        res.status(StatusCodes.OK).send({ accounts })
+        response.status(StatusCodes.OK).json({ accounts })
     } catch (error) {
         next(error)
     }
 }
 /**
  * Create an account to the database, only admin has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function insert (req, res, next) {
+async function insert (request, response, next) {
     try {
-        if (req.file) req.body.avatar = req.file.filename
+        if (request.file) request.body.avatar = request.file.filename
         trimAllBody(req)
-        req.body.verify = true
-        req.body.password = await argon2.hash(req.body.password, { type: argon2.argon2i })
-        const account = await Account.create(req.body)
+        request.body.verify = true
+        request.body.password = await argon2.hash(request.body.password, { type: argon2.argon2i })
+        const account = await Account.create(request.body)
         const { id } = account
-        const token = jwt.sign({ id, name: req.body.name }, process.env.JWT_SECRET)
-        res.status(StatusCodes.OK).send({ token })
+        const token = jwt.sign({ id, name: request.body.name }, process.env.JWT_SECRET)
+        response.status(StatusCodes.OK).json({ token })
     } catch (error) {
         next(error)
     }
@@ -73,15 +73,15 @@ async function insert (req, res, next) {
 
 /**
  * Show one account, everyone has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function show (req, res, next) {
+async function show (request, response, next) {
     try {
-        const { id } = req.params
+        const { id } = request.params
         const account = await Account.findOne({ _id: id, deletedAt: null }, projection)
-        res.status(StatusCodes.OK).send({ account })
+        response.status(StatusCodes.OK).json({ account })
     } catch (error) {
         next(error)
     }
@@ -89,20 +89,20 @@ async function show (req, res, next) {
 
 /**
  * Update the existing account, the user of the account and admin has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function update (req, res, next) {
+async function update (request, response, next) {
     try {
-        const { id } = req.params
-        authorize(req.user, id)
-        req.body.updatedAt = Date.now()
+        const { id } = request.params
+        authorize(request.user, id)
+        request.body.updatedAt = Date.now()
         await Account.findOneAndUpdate(
             { _id: id, deletedAt: null },
-            req.body
+            request.body
         )
-        res.status(StatusCodes.OK).send({ message: 'Success Update Account' })
+        response.status(StatusCodes.OK).json({ message: 'Success Update Account' })
     } catch (error) {
         next(error)
     }
@@ -110,33 +110,33 @@ async function update (req, res, next) {
 
 /**
  * Delete one account not permanently, the user of the account and admin has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function destroy (req, res, next) {
+async function destroy (request, response, next) {
     try {
-        const { id } = req.params
-        authorize(req.user, id)
+        const { id } = request.params
+        authorize(request.user, id)
         await Account.findOneAndUpdate(
             { _id: id, deletedAt: null },
             { deletedAt: Date.now() }
         )
-        res.status(StatusCodes.OK).send({ message: 'Account Deleted!' })
+        response.status(StatusCodes.OK).json({ message: 'Account Deleted!' })
     } catch (error) {
         next(error)
     }
 }
 /**
  * Show all deleted account, admin has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function trash (req, res, next) {
+async function trash (request, response, next) {
     try {
         const accounts = await Account.find({ deletedAt: { $ne: null } })
-        res.status(StatusCodes.OK).send({ accounts })
+        response.status(StatusCodes.OK).json({ accounts })
     } catch (error) {
         next(error)
     }
@@ -144,28 +144,28 @@ async function trash (req, res, next) {
 
 /**
  * Restore one of the deleted account, admin has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function restore (req, res, next) {
+async function restore (request, response, next) {
     try {
-        const { id } = req.params
+        const { id } = request.params
         await Account.findByIdAndUpdate(id, { deletedAt: null })
-        res.status(StatusCodes.OK).send({ message: 'Account restored' })
+        response.status(StatusCodes.OK).json({ message: 'Account restored' })
     } catch (error) {
         next(error)
     }
 }
 /**
- * Delete one account PERMANENTLY becareful, admin has rights
- * @param {Request} req
- * @param {Response} res
+ * Delete one account PERMANENTLY be careful, admin has rights
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function eliminate (req, res, next) {
+async function eliminate (request, response, next) {
     try {
-        const { id } = req.params
+        const { id } = request.params
         const account = await Account.findById(id)
         const { photo } = account
         await account.deleteOne()
@@ -177,22 +177,22 @@ async function eliminate (req, res, next) {
                 }
             )
         }
-        res.status(StatusCodes.OK).send({ message: 'Account Clear' })
+        response.status(StatusCodes.OK).json({ message: 'Account Clear' })
     } catch (error) {
         next(error)
     }
 }
 /**
  * Get information about my account, everyone has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function profile (req, res, next) {
+async function profile (request, response, next) {
     try {
-        const { id } = req.user
+        const { id } = request.user
         const account = await Account.findById(id, projection)
-        res.status(StatusCodes.OK).send({ account })
+        response.status(StatusCodes.OK).json({ account })
     } catch (error) {
         next(error)
     }
@@ -200,15 +200,15 @@ async function profile (req, res, next) {
 
 /**
  * Get all works about an account, everyone has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function workIndex (req, res, next) {
+async function workIndex (request, response, next) {
     try {
-        const { id } = req.params
+        const { id } = request.params
         const works = await Work.find({ account_id: id, deletedAt: null })
-        res.send({ works })
+        response.json({ works })
     } catch (error) {
         next(error)
     }
@@ -216,20 +216,20 @@ async function workIndex (req, res, next) {
 
 /**
  * Get a work about an account, everyone has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function workShow (req, res, next) {
+async function workShow (request, response, next) {
     try {
-        const { workId, id } = req.params
+        const { workId, id } = request.params
         const works = await Work.find({
             _id: workId,
             account_id: id,
             deletedAt: null
         })
         if (!works) throw new NotFoundError('Work Not Found')
-        res.status(StatusCodes.OK).send({ works })
+        response.status(StatusCodes.OK).json({ works })
     } catch (error) {
         next(error)
     }
@@ -237,16 +237,16 @@ async function workShow (req, res, next) {
 
 /**
  * Get a resume of an account, everyone has rights
- * @param {Request} req
- * @param {Response} res
+ * @param {Request} request
+ * @param {Response} response
  * @param {VoidFunction} next
  */
-async function resume (req, res, next) {
+async function resume (request, response, next) {
     try {
-        const { id } = req.params
+        const { id } = request.params
         const resume = await Resume.findOne({ account_id: id })
         if (!resume) throw new NotFoundError('Resume Not Found')
-        res.status(StatusCodes.OK).send({ resume })
+        response.status(StatusCodes.OK).json({ resume })
     } catch (error) {
         next(error)
     }

@@ -8,6 +8,7 @@ const pug = require("pug");
 const path = require("node:path");
 const { default: mongoose } = require("mongoose");
 const getAccountUsername = require('./get-account-username');
+const appUrl = process.env.APP_URL;
 /**
  * Sending email
  * @param {string} hash

@@ -68,7 +68,7 @@ async function insert(request, response, next) {
 async function update(request, response, next) {
   try {
     const { id } = request.params;
-    const { user } = req;
+    const { user } = request
     const { title, link } = request.body;
     const work = await Work.findById(id);
     authorize(user, work.account_id.toString());
@@ -94,7 +94,7 @@ async function update(request, response, next) {
 async function destroy(request, response, next) {
   try {
     const { id } = request.params;
-    const { user } = req;
+    const { user } = request
     const work = await Work.findById(id);
     authorize(user, work.account_id.toString());
     await work.deleteOne();

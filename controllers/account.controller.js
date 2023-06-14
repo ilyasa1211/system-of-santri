@@ -59,7 +59,7 @@ async function index(request, response, next) {
 async function insert(request, response, next) {
   try {
     if (request.file) request.body.avatar = request.file.filename;
-    trimAllBody(req);
+    trimAllBody(request);
     request.body.verify = true;
     request.body.password = await argon2.hash(request.body.password, {
       type: argon2.argon2i,

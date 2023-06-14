@@ -28,7 +28,7 @@ async function signup(request, response, next) {
     const { name, email, password } = request.body;
     if (request.file) request.body.photo = request.file.filename;
     const hash = generateToken();
-    trimAllBody(req);
+    trimAllBody(request);
     uncreatedAccount.verify = false;
     uncreatedAccount.verifyExpiration = date.setDate(date.getDate() + 1);
     uncreatedAccount.role_id = SANTRI;

@@ -16,7 +16,7 @@ router.get("/", async (request, response, next) => {
   try {
     await refreshCalendar(Calendar, findOrCreate);
     await refreshRole(Role, findOrCreate);
-    response.json({
+    return response.json({
       message: "Testing Succeed, Calendar refreshed, Role refreshed",
     });
   } catch (error) {

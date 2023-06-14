@@ -8,7 +8,7 @@ const crypto = require("node:crypto");
  * @returns string
  */
 function generateToken(length = 20) {
-  return crypto.randomBytes(length).toString("base64url");
+  return crypto.randomBytes(length).toString("hex").toUpperCase();
 }
 
 module.exports = generateToken;

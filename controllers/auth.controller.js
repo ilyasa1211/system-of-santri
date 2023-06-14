@@ -6,15 +6,27 @@ const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, UnauthorizedError, BadRequestError } = require(
   "../errors",
 );
-const { Account } = require("../models");
-const { sendVerifyEmail, sendForgetPasswordEmail, generateToken } = require(
+const { Account, Configuration } = require("../models");
+const {
+  sendVerifyEmail,
+  sendForgetPasswordEmail,
+  generateToken,
+  getAccessCode,
+} = require(
   "../utils",
 );
 const trimAllBody = require("../utils/trim-all-body");
 const { SANTRI } = require("../traits/role");
 const emailPattern = require("../traits/email-pattern");
 
-module.exports = { signup, signin, verify, forgotPassword, resetPassword };
+module.exports = {
+  signup,
+  signin,
+  verify,
+  forgotPassword,
+  resetPassword,
+  resendVerifyEmail,
+};
 
 /**
  * Register an account
@@ -25,7 +37,7 @@ module.exports = { signup, signin, verify, forgotPassword, resetPassword };
 async function signup(request, response, next) {
   try {
     const date = new Date();
-    const { name, email, password } = request.body;
+    const { name, email, password, accessCode: accessCodeInput } = request.body;
     if (!email) {
       throw new BadRequestError(
         "Please enter a working email address. Email is a necessary field.",
@@ -44,6 +56,19 @@ async function signup(request, response, next) {
         "Please pick a password that is at least 8 characters long for the security of your account.",
       );
     }
+    if (!accessCodeInput) {
+      throw new BadRequestError(
+        "Please enter the needed access code to continue.",
+      );
+    }
+    const accessCode = await getAccessCode(Configuration);
+
+    if (!accessCodeInput !== accessCode) {
+      throw new UnauthorizedError(
+        "Denied access. The access code you entered is inapplicable. Please check the code and try once more.",
+      );
+    }
+
     if (request.file) request.body.photo = request.file.filename;
 
     const hash = generateToken();
@@ -89,6 +114,7 @@ async function signup(request, response, next) {
 async function signin(request, response, next) {
   try {
     const { email, password } = request.body;
+
     if (!email) {
       throw new BadRequestError(
         "Please enter a working email address. Email is a necessary field.",
@@ -102,10 +128,12 @@ async function signin(request, response, next) {
         "Please type in your password.",
       );
     }
+
     const account = await Account.findOne({
       email,
       deletedAt: null,
     });
+
     if (!account) {
       throw new NotFoundError(
         "We apologize, but the requested account was not found.",
@@ -116,13 +144,17 @@ async function signin(request, response, next) {
         "Please be aware that your account has not yet been verified, which we regret. A critical step in ensuring the safety and reliability of our platform is account verification. Please check your registered email for a verification link or further instructions before continuing. Please double-check your spam or junk folder if you haven't received a verification email. ",
       );
     }
+
     const valid = await argon2.verify(account.password, password);
+
     if (!valid) {
       throw new UnauthorizedError(
         "Sorry, but the password you provided is unreliable. Please try again after double-checking your password.",
       );
     }
-    const token = jwt.sign({ id: account.id }, process.env.JWT_SECRET);
+    const { id, name } = account;
+    const token = jwt.sign({ id, email, name }, process.env.JWT_SECRET);
+
     return response.status(StatusCodes.OK).json({
       message:
         "Welcome! Your account has been successfully logged into. Enjoy yourself and feel free to explore the features and services that are offered. ",
@@ -134,26 +166,51 @@ async function signin(request, response, next) {
 }
 
 /**
- * coming soon
  *  Used to resend email verification token
- * @param {*} req
- * @param {*} res
- * @param {*} next
+ * @param {Request} request
+ * @param {Response} response
+ * @param {any} next
  */
-// async function resendVerifyEmail (request, response, next) {
-//     try {
-//         const { user: account } = req
-//         const { email } = account
-//         if (!email) throw new NotFoundError('Account not found')
-//         const hash = generateToken()
-//         account.hash = hash
-//         await account.save()
-//         await sendVerifyEmail(hash, account)
-//         response.status(StatusCodes.OK).json({ message: 'Success resend verification email' })
-//     } catch (error) {
-//         next(error)
-//     }
-// }
+async function resendVerifyEmail(request, response, next) {
+  try {
+    let authToken = undefined;
+    let email = undefined;
+    if (
+      request.headers.authorization &&
+      request.headers.authorization.split(" ")[0] === "Bearer"
+    ) {
+      authToken = request.headers.authorization.split(" ")[1];
+    }
+    if (!authToken) {
+      throw new BadRequestError("Please provide authorization header.");
+    }
+
+    jwt.verify(
+      authToken,
+      process.env.JWT_SECRET,
+      function (error, decoded) {
+        if (error) {
+          throw BadRequestError(
+            "Verification of token failed. Check the details provided, then try once more.",
+          );
+        }
+        email = decoded.email;
+      },
+    );
+
+    const account = await Account.findOne({ email });
+    const hash = generateToken();
+    account.hash = hash;
+    await account.save();
+    await sendVerifyEmail(hash, account);
+    return response.status(StatusCodes.OK).json({
+      message:
+        "Your confirmation email was successfully sent again. Check your inbox, then adhere to the directions to finish the verification process. Don't forget to look in your spam or junk folder if you don't see the email in your inbox.",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 /**
  * Verify an account
@@ -207,10 +264,8 @@ async function forgotPassword(request, response, next) {
         "We apologize, but the requested account was not found.",
       );
     }
-    const token = generateToken();
-    const forgetToken = jwt.sign({ token }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = generateToken(3);
+    const forgetToken = token;
     account.forgetToken = token;
     await account.save();
     await sendForgetPasswordEmail(forgetToken, account);
@@ -230,10 +285,9 @@ async function forgotPassword(request, response, next) {
  */
 async function resetPassword(request, response, next) {
   try {
-    const { forgetToken } = request.body;
+    const { token: forgetToken } = request.body;
     const { password, confirmPassword } = request.body;
-
-    if (!token) {
+    if (!forgetToken) {
       throw new BadRequestError(
         "The supplied token is not valid. Make sure token field is entered correctly.",
       );
@@ -257,7 +311,7 @@ async function resetPassword(request, response, next) {
     account.password = await argon2.hash(password, { type: argon2.argon2i });
     account.forgetToken = null;
     await account.save();
-    response.status(StatusCodes.OK).json({
+    return response.status(StatusCodes.OK).json({
       message: "Your new password was changed successfully.",
     });
   } catch (error) {

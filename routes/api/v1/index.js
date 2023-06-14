@@ -8,6 +8,7 @@ const workRoute = require("./work");
 const trashRoute = require("./trash");
 const noteRoute = require("./note");
 const testRoute = require("./test");
+const configRoute = require("./config");
 
 module.exports = {
   absenseRoute,
@@ -20,4 +21,5 @@ module.exports = {
   trashRoute,
   noteRoute,
   testRoute,
+  configRoute
 };

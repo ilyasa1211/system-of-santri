@@ -6,6 +6,7 @@ const Note = require("./note.model");
 const Role = require("./role.model");
 const Work = require("./work.model");
 const Resume = require("./resume.model");
+const Configuration = require("./configuration.model");
 
 module.exports = {
   Account,
@@ -16,4 +17,5 @@ module.exports = {
   Role,
   Work,
   Resume,
+  Configuration,
 };

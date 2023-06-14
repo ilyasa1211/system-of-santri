@@ -11,6 +11,7 @@ router.use(middleware.guest);
 router.post("/signin", AuthController.signin);
 
 router.get("/verify", AuthController.verify);
+router.get("/re-verify", AuthController.resendVerifyEmail);
 
 router.post("/forgot-password", AuthController.forgotPassword);
 router.put("/forgot-password", AuthController.resetPassword);

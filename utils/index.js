@@ -6,6 +6,8 @@ const sendForgetPasswordEmail = require("./send-forget-password-email");
 const refreshCalendar = require("./refresh-calendar");
 const refreshRole = require("./refresh-role");
 const authorize = require("./authorize");
+const getAccountUsername = require("./get-account-username");
+const getAccessCode = require("./get-access-code");
 
 module.exports = {
   calendar,
@@ -16,4 +18,6 @@ module.exports = {
   refreshCalendar,
   refreshRole,
   authorize,
+  getAccountUsername,
+  getAccessCode
 };

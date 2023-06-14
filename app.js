@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("./middlewares/morgan");
 
 const schedule = require("node-schedule");
-const { Calendar, Account } = require("./models");
+const { Calendar, Account, Configuration } = require("./models");
 const { error, notFound } = require("./middlewares");
 const { v1, landingRoute } = require("./routes");
 const { refreshCalendar, findOrCreate } = require("./utils");
@@ -32,6 +32,11 @@ const job2 = schedule.scheduleJob(everyDay, async () => {
   console.log("Deleted unverfied account! count: ", deleted.deletedCount);
 });
 job.invoke();
+
+(async function () {
+  await findOrCreate(Configuration, { key: 'access_code' });
+  console.log("Refreshed Access Code!")
+})();
 
 const app = express();
 

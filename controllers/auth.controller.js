@@ -12,6 +12,7 @@ const { sendVerifyEmail, sendForgetPasswordEmail, generateToken } = require(
 );
 const trimAllBody = require("../utils/trim-all-body");
 const { SANTRI } = require("../traits/role");
+const emailPattern = require("../traits/email-pattern");
 
 module.exports = { signup, signin, verify, forgotPassword, resetPassword };
 
@@ -23,13 +24,15 @@ module.exports = { signup, signin, verify, forgotPassword, resetPassword };
  */
 async function signup(request, response, next) {
   try {
-    // const uncreatedAccount = request.body;
     const date = new Date();
     const { name, email, password } = request.body;
     if (!email) {
       throw new BadRequestError(
         "Please enter a working email address. Email is a necessary field.",
       );
+    }
+    if (!emailPattern.test(email)) {
+      throw new BadRequestError("Please enter a correct email address.");
     }
     if (!password) {
       throw new BadRequestError(
@@ -81,6 +84,19 @@ async function signup(request, response, next) {
 async function signin(request, response, next) {
   try {
     const { email, password } = request.body;
+    if (!email) {
+      throw new BadRequestError(
+        "Please enter a working email address. Email is a necessary field.",
+      );
+    }
+    if (!emailPattern.test(email)) {
+      throw new BadRequestError("Please enter a correct email address.");
+    }
+    if (!password) {
+      throw new BadRequestError(
+        "Please type in your password.",
+      );
+    }
     const account = await Account.findOne({
       email,
       deletedAt: null,

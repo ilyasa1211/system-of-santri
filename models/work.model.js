@@ -9,7 +9,7 @@ const workSchema = new mongoose.Schema({
   },
   title: {
     type: String,
-    required: [true, "Title field required"],
+    required: [true, "For the required field, kindly enter a title."],
   },
   link: {
     type: String,

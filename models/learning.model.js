@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const learningSchema = new mongoose.Schema({
   division: {
     type: String,
-    required: [true, "Please Insert the Division"],
+    required: [true, "Please choose a division to continue."],
   },
   thumbnail: {
     type: String,
@@ -13,11 +13,11 @@ const learningSchema = new mongoose.Schema({
   },
   title: {
     type: String,
-    required: [true, "Please Insert the Title"],
+    required: [true, "Please include the entry's title."],
   },
   content: {
     type: String,
-    required: [true, "Please Insert the Content"],
+    required: [true, "Enter your entry's content please."],
   },
   goal: {
     type: String,

@@ -1,6 +1,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const emailPattern = require("../traits/email-pattern");
 
 require("./role.model");
 require("./resume.model");
@@ -11,28 +12,47 @@ require("./resume.model");
 const accountSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "Name field required"],
+    required: [true, "To continue, please enter your name."],
   },
   email: {
     type: String,
-    maxLength: [255, "Email cannot be longer than 255 characters"],
-    required: [true, "Email field required"],
+    maxLength: [
+      320, // Email address maximum length
+      "Email length is too long. Please type an email address that is no longer than 320 characters.",
+    ],
+    required: [
+      true,
+      "Please enter a working email address. Email is a necessary field.",
+    ],
     unique: true,
-    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    match: emailPattern,
   },
   password: {
     type: String,
-    minLength: [8, "Password cannot be less than 8 characters"],
-    required: [true, "Password field required"],
+    minLength: [
+      8,
+      "Please pick a password that is at least 8 characters long for the security of your account.",
+    ],
+    maxLength: [
+      128,
+      "Please select a password with a maximum of 128 characters",
+    ],
+    required: [
+      true,
+      "To ensure the security of your account, kindly provide a password.",
+    ],
   },
   phoneNumber: {
     type: String,
-    maxLength: [20, "Phone number cannot be longer than 20 characters"],
-    required: [true, "Phone number field required"],
+    maxLength: [
+      15,
+      "Please enter a working phone number up to 15 characters in length.",
+    ],
+    required: [true, "Please enter a working phone number before continuing."],
   },
   division: {
     type: String,
-    required: [true, "Division field required"],
+    required: [true, "Please choose a division to continue."],
   },
   status: {
     type: String,

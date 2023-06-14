@@ -9,7 +9,7 @@ const noteSchema = new mongoose.Schema({
   },
   note: {
     type: Number,
-    require: [true, "Insert Note"],
+    require: [true, "Please type in your message."],
   },
 });
 

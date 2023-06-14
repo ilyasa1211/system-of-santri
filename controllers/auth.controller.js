@@ -23,20 +23,39 @@ module.exports = { signup, signin, verify, forgotPassword, resetPassword };
  */
 async function signup(request, response, next) {
   try {
-    const uncreatedAccount = request.body;
+    // const uncreatedAccount = request.body;
     const date = new Date();
     const { name, email, password } = request.body;
+    if (!email) {
+      throw new BadRequestError(
+        "Please enter a working email address. Email is a necessary field.",
+      );
+    }
+    if (!password) {
+      throw new BadRequestError(
+        "To ensure the security of your account, kindly provide a password.",
+      );
+    }
     if (request.file) request.body.photo = request.file.filename;
+
     const hash = generateToken();
+
     trimAllBody(request);
-    uncreatedAccount.verify = false;
-    uncreatedAccount.verifyExpiration = date.setDate(date.getDate() + 1);
-    uncreatedAccount.role_id = SANTRI;
-    uncreatedAccount.hash = hash;
-    uncreatedAccount.password = await argon2.hash(password, {
-      type: argon2.argon2i,
-    });
-    const account = await Account.create(uncreatedAccount);
+
+    const defaultValue = {
+      verify: false,
+      verifyExpiration: date.setDate(date.getDate() + 1),
+      role_id: SANTRI,
+      hash: hash,
+      password: await argon2.hash(password, {
+        type: argon2.argon2i,
+      }),
+    };
+
+    Object.assign(req.body, defaultValue);
+
+    const account = await Account.create(req.body);
+
     const { id } = account;
     const token = jwt.sign({ id, email, name }, process.env.JWT_SECRET);
     await sendVerifyEmail(hash, email);

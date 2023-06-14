@@ -66,7 +66,7 @@ async function signup(request, response, next) {
 
     const { id } = account;
     const token = jwt.sign({ id, email, name }, process.env.JWT_SECRET);
-    await sendVerifyEmail(hash, email);
+    await sendVerifyEmail(hash, account);
     return response.status(StatusCodes.OK).json({
       message: "Please check your email for any additional instructions",
       token,
@@ -148,7 +148,7 @@ async function signin(request, response, next) {
 //         const hash = generateToken()
 //         account.hash = hash
 //         await account.save()
-//         await sendVerifyEmail(hash, email)
+//         await sendVerifyEmail(hash, account)
 //         response.status(StatusCodes.OK).json({ message: 'Success resend verification email' })
 //     } catch (error) {
 //         next(error)
@@ -213,7 +213,7 @@ async function forgotPassword(request, response, next) {
     });
     account.forgetToken = token;
     await account.save();
-    await sendForgetPasswordEmail(forgetToken, email);
+    await sendForgetPasswordEmail(forgetToken, account);
     return response.status(StatusCodes.OK).json({
       message: "Please check your email for any additional instructions",
     });

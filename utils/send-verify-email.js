@@ -6,20 +6,26 @@
 const transporter = require("../config/nodemailer");
 const pug = require("pug");
 const path = require("node:path");
-const appUrl = process.env.APP_URL;
+const { default: mongoose } = require("mongoose");
+const getAccountUsername = require('./get-account-username');
 /**
  * Sending email
  * @param {string} hash
- * @param {string} to
+ * @param {Account} account
  */
-async function sendVerifyEmail(hash, to) {
+async function sendVerifyEmail(hash, account) {
+  const { name, email } = account;
   transporter.sendMail({
     from: process.env.MAIL_USERNAME,
-    to,
+    to: email,
     subject: "Account Verification - Action Required",
     html: pug.renderFile(
       path.join(__dirname, "..", "views", "verify-email.pug"),
-      { hash, appUrl },
+      {
+        hash,
+        appUrl,
+        username: getAccountUsername(name)
+      },
     ),
   });
 }

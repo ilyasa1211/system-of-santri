@@ -39,6 +39,11 @@ async function signup(request, response, next) {
         "To ensure the security of your account, kindly provide a password.",
       );
     }
+    if (password.length < 8) {
+      throw new BadRequestError(
+        "Please pick a password that is at least 8 characters long for the security of your account.",
+      );
+    }
     if (request.file) request.body.photo = request.file.filename;
 
     const hash = generateToken();

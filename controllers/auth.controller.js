@@ -55,9 +55,9 @@ async function signup(request, response, next) {
       }),
     };
 
-    Object.assign(req.body, defaultValue);
+    Object.assign(request.body, defaultValue);
 
-    const account = await Account.create(req.body);
+    const account = await Account.create(request.body);
 
     const { id } = account;
     const token = jwt.sign({ id, email, name }, process.env.JWT_SECRET);

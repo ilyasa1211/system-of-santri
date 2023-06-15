@@ -1,17 +1,17 @@
 "use strict";
 
-const { ForbiddenError } = require("../errors");
+const { ForbiddenError, UnauthorizedError } = require("../errors");
 
 module.exports = (...roles) => (request, response, next) => {
   try {
     if (request.isUnauthenticated()) {
-      throw new ForbiddenError(
+      throw new UnauthorizedError(
         "Please log in with your credentials to continue with any account-related actions. You can perform a variety of tasks by logging in, which will give you the access and permissions you need.",
       );
     }
     const hasRole = roles.find((role) => request.user.role.id === role);
     if (!hasRole) {
-      throw new ForbiddenError(
+      throw new UnauthorizedError(
         "We regret any inconvenience this may have caused. Unfortunately, it seems that you lack the access rights needed to complete this task. ",
       );
     }

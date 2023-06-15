@@ -12,7 +12,7 @@ async function getAccessCode(request, response, next) {
         "The Access Code configuration could not be found by the system. Please check your settings once more and try again.",
       );
     }
-    return response.status(StatusCodes.OK).json({ access_code: config.value });
+    return response.status(StatusCodes.OK).json(config);
   } catch (error) {
     next(error);
   }

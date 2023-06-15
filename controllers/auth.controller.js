@@ -285,7 +285,7 @@ async function forgotPassword(request, response, next) {
  */
 async function resetPassword(request, response, next) {
   try {
-    const { token: forgetToken } = request.params;
+    const { token: forgetToken } = request.query;
     const { password, confirmPassword } = request.body;
     if (!forgetToken) {
       throw new BadRequestError(

@@ -16,6 +16,7 @@ passport.use(
     ) {
       try {
         const { id } = payload;
+        console.log(id);
         const account = await Account.findOne({
           _id: id,
           deletedAt: null,

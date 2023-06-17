@@ -36,6 +36,8 @@ const router = (0, express_1.Router)();
 router.use(upload.single("avatar"));
 // Get All Accounts
 router.get("/", controllers_1.AccountController.index);
+// Get information about my account
+router.get("/me", passport_1.default.authenticate("jwt", { session: false }), controllers_1.AccountController.profile);
 // Show one account
 router.get("/:id", controllers_1.AccountController.show);
 // Get all works about an account
@@ -46,8 +48,6 @@ router.get("/:id/work/:workId", controllers_1.AccountController.workShow);
 router.get("/:id/resume", controllers_1.AccountController.resume);
 // All route below this will work for authenticated user only
 router.use(passport_1.default.authenticate("jwt", { session: false }));
-// Get information about my account
-router.get("/me", controllers_1.AccountController.profile);
 // Create an account to the database
 router.post("/", middleware.accountIs(role_1.ROLES.ADMIN), controllers_1.AccountController.insert);
 // Update the existing account

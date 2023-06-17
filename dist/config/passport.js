@@ -25,6 +25,7 @@ passport_1.default.use(new JwtStrategy(options, function (payload, done) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = payload;
+            console.log(id);
             const account = yield models_1.Account.findOne({
                 _id: id,
                 deletedAt: null,

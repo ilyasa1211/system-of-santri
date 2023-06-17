@@ -12,6 +12,9 @@ router.use(upload.single("avatar"));
 // Get All Accounts
 router.get("/", AccountController.index);
 
+// Get information about my account
+router.get("/me", passport.authenticate("jwt", { session: false }), AccountController.profile);
+
 // Show one account
 router.get("/:id", AccountController.show);
 
@@ -26,9 +29,6 @@ router.get("/:id/resume", AccountController.resume);
 
 // All route below this will work for authenticated user only
 router.use(passport.authenticate("jwt", { session: false }));
-
-// Get information about my account
-router.get("/me", AccountController.profile);
 
 // Create an account to the database
 router.post("/", middleware.accountIs(ROLES.ADMIN), AccountController.insert);

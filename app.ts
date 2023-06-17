@@ -8,10 +8,21 @@ import cookieParser from "cookie-parser";
 import logger from "./middlewares/morgan";
 
 import schedule from "node-schedule";
-import { Calendar, Account, Configuration, IConfiguration } from "./models";
+import {
+  Account,
+  Calendar,
+  Configuration,
+  IConfiguration,
+  Role,
+} from "./models";
 import { error, notFound } from "./middlewares";
-import { v1, landingRoute } from "./routes";
-import { refreshCalendar, findOrCreate, generateToken } from "./utils";
+import { landingRoute, v1 } from "./routes";
+import {
+  findOrCreate,
+  generateToken,
+  refreshCalendar,
+  refreshRole,
+} from "./utils";
 
 // Define the cron expression for January 1st at 00:00
 const everyYear = "0 0 0 1 1 *";
@@ -40,7 +51,9 @@ job.invoke();
 
 (async function () {
   await findOrCreate<IConfiguration>(Configuration, { key: "access_code" });
+  await refreshRole(Role, findOrCreate);
   console.log("Refreshed Access Code!");
+  console.log("Refreshed Role!");
 })();
 
 const app = express();

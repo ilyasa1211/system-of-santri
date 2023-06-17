@@ -45,7 +45,9 @@ job.invoke();
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         yield (0, utils_1.findOrCreate)(models_1.Configuration, { key: "access_code" });
+        yield (0, utils_1.refreshRole)(models_1.Role, utils_1.findOrCreate);
         console.log("Refreshed Access Code!");
+        console.log("Refreshed Role!");
     });
 })();
 const app = (0, express_1.default)();

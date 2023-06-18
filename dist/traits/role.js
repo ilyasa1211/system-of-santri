@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ROLES = void 0;
+exports.ROLES = exports.ROLES_OFFSET = void 0;
+exports.ROLES_OFFSET = 1;
 var ROLES;
 (function (ROLES) {
     ROLES[ROLES["ADMIN"] = 1] = "ADMIN";

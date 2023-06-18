@@ -12,9 +12,13 @@ router.use(passport.authenticate("jwt", { session: false }));
 router.get("/me", AbsenseController.me);
 router.get("/:id", AbsenseController.show);
 
-router.get("/", middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER), AbsenseController.index);
+router.get(
+  "/",
+  middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER),
+  AbsenseController.index,
+);
 
 router.use(middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER, ROLES.SANTRI));
-router.post("/", AbsenseController.insert);
+router.post("/", middleware.accountIs(ROLES.SANTRI), AbsenseController.insert);
 
 export default router;

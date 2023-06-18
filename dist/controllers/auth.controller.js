@@ -22,6 +22,8 @@ const utils_1 = require("../utils");
 const trim_all_body_1 = __importDefault(require("../utils/trim-all-body"));
 const role_1 = require("../traits/role");
 const email_pattern_1 = __importDefault(require("../traits/email-pattern"));
+const get_role_name_1 = __importDefault(require("../utils/get-role-name"));
+const filterProperties_1 = __importDefault(require("../utils/filterProperties"));
 /**
  * Register an account
  */
@@ -68,13 +70,20 @@ function signup(request, response, next) {
             const { id } = account;
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
             yield (0, utils_1.sendVerifyEmail)(hash, account);
-            return response.status(http_status_codes_1.StatusCodes.OK).json({
+            const filteredAccount = (0, filterProperties_1.default)(account, [
+                "name",
+                "email",
+                "role",
+            ], { role: (0, get_role_name_1.default)(Number(account.role)) });
+            return response.status(http_status_codes_1.StatusCodes.CREATED).json({
                 message: "Please check your email for any additional instructions",
+                account: filteredAccount,
                 token,
             });
         }
         catch (error) {
             if (((_a = error.message) === null || _a === void 0 ? void 0 : _a.indexOf("duplicate key error")) !== -1) {
+                error.code = http_status_codes_1.StatusCodes.CONFLICT;
                 error.message =
                     "We apologize, but it appears that the email address you provided is already registered. To complete the registration process, kindly enter a different email address.";
             }
@@ -115,8 +124,14 @@ function signin(request, response, next) {
             }
             const { id, name } = account;
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
+            const filteredAccount = (0, filterProperties_1.default)(account, [
+                "name",
+                "email",
+                "role",
+            ], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Welcome! Your account has been successfully logged into. Enjoy yourself and feel free to explore the features and services that are offered. ",
+                account: filteredAccount,
                 token,
             });
         }

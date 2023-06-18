@@ -121,10 +121,6 @@ exports.show = show;
 function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { token } = request.query;
-            if (!token) {
-                throw new errors_1.BadRequestError("The supplied token is not valid. Make sure token field is entered correctly.");
-            }
             const currentServerTime = new Intl.DateTimeFormat("id", {
                 timeStyle: "short",
             }).format();
@@ -149,7 +145,8 @@ function insert(request, response, next) {
             }
             account.absenses.push(now);
             yield account.save();
-            return response.status(http_status_codes_1.StatusCodes.OK).json({
+            return response.status(http_status_codes_1.StatusCodes.CREATED).json({
+                statusCode: http_status_codes_1.StatusCodes.CREATED,
                 message: "Thank you for your successful presence; it has had a significant impact.",
             });
         }

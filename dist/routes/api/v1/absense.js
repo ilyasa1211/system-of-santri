@@ -37,5 +37,5 @@ router.get("/me", controllers_1.AbsenseController.me);
 router.get("/:id", controllers_1.AbsenseController.show);
 router.get("/", middleware.accountIs(role_1.ROLES.ADMIN, role_1.ROLES.MANAGER), controllers_1.AbsenseController.index);
 router.use(middleware.accountIs(role_1.ROLES.ADMIN, role_1.ROLES.MANAGER, role_1.ROLES.SANTRI));
-router.post("/", controllers_1.AbsenseController.insert);
+router.post("/", middleware.accountIs(role_1.ROLES.SANTRI), controllers_1.AbsenseController.insert);
 exports.default = router;

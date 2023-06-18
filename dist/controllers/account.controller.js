@@ -119,7 +119,7 @@ function destroy(request, response, next) {
             const { id } = request.params;
             (0, utils_1.authorize)(request.user, id);
             yield models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, { deletedAt: Date.now() });
-            return response.status(http_status_codes_1.StatusCodes.OK).json({
+            return response.status(http_status_codes_1.StatusCodes.ACCEPTED).json({
                 message: "That your account has been deleted, we apologize. Please let us know if you need any help or if you have any questions.",
             });
         }

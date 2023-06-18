@@ -8,3 +8,4 @@ export { default as refreshRole } from "./refresh-role";
 export { default as authorize } from "./authorize";
 export { default as getAccountUsername } from "./get-account-username";
 export { default as getAccessCode } from "./get-access-code";
+export { default as getRoleName } from "./get-role-name";

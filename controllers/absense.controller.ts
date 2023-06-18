@@ -106,13 +106,6 @@ async function insert(
   next: NextFunction,
 ) {
   try {
-    const { token } = request.query;
-    if (!token) {
-      throw new BadRequestError(
-        "The supplied token is not valid. Make sure token field is entered correctly.",
-      );
-    }
-
     const currentServerTime = new Intl.DateTimeFormat("id", {
       timeStyle: "short",
     }).format();
@@ -145,7 +138,8 @@ async function insert(
     }
     account.absenses.push(now);
     await account.save();
-    return response.status(StatusCodes.OK).json({
+    return response.status(StatusCodes.CREATED).json({
+      statusCode: StatusCodes.CREATED,
       message:
         "Thank you for your successful presence; it has had a significant impact.",
     });

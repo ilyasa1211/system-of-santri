@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAccessCode = exports.getAccountUsername = exports.authorize = exports.refreshRole = exports.refreshCalendar = exports.sendForgetPasswordEmail = exports.sendVerifyEmail = exports.generateToken = exports.findOrCreate = exports.calendar = void 0;
+exports.getRoleName = exports.getAccessCode = exports.getAccountUsername = exports.authorize = exports.refreshRole = exports.refreshCalendar = exports.sendForgetPasswordEmail = exports.sendVerifyEmail = exports.generateToken = exports.findOrCreate = exports.calendar = void 0;
 var calendar_1 = require("./calendar");
 Object.defineProperty(exports, "calendar", { enumerable: true, get: function () { return __importDefault(calendar_1).default; } });
 var find_or_create_1 = require("./find-or-create");
@@ -24,3 +24,5 @@ var get_account_username_1 = require("./get-account-username");
 Object.defineProperty(exports, "getAccountUsername", { enumerable: true, get: function () { return __importDefault(get_account_username_1).default; } });
 var get_access_code_1 = require("./get-access-code");
 Object.defineProperty(exports, "getAccessCode", { enumerable: true, get: function () { return __importDefault(get_access_code_1).default; } });
+var get_role_name_1 = require("./get-role-name");
+Object.defineProperty(exports, "getRoleName", { enumerable: true, get: function () { return __importDefault(get_role_name_1).default; } });

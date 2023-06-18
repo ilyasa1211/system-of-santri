@@ -131,7 +131,7 @@ async function destroy(
       { _id: id, deletedAt: null },
       { deletedAt: Date.now() },
     );
-    return response.status(StatusCodes.OK).json({
+    return response.status(StatusCodes.ACCEPTED).json({
       message:
         "That your account has been deleted, we apologize. Please let us know if you need any help or if you have any questions.",
     });

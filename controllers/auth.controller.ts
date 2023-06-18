@@ -7,7 +7,7 @@ import jwt, {
 import argon2 from "argon2";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError, NotFoundError, UnauthorizedError } from "../errors";
-import { Account, Configuration } from "../models";
+import { Account, Configuration, IAccount } from "../models";
 import {
   generateToken,
   getAccessCode,
@@ -18,6 +18,8 @@ import trimAllBody from "../utils/trim-all-body";
 import { ROLES } from "../traits/role";
 import emailPattern from "../traits/email-pattern";
 import { NextFunction, Request, Response } from "express";
+import getRoleName from "../utils/get-role-name";
+import filterProperties from "../utils/filterProperties";
 
 export {
   forgotPassword,
@@ -88,17 +90,26 @@ async function signup(
 
     Object.assign(request.body, defaultValue);
 
-    const account = await Account.create(request.body);
+    const account = await Account.create(request.body) as IAccount;
 
     const { id } = account;
     const token = jwt.sign({ id, email, name }, String(process.env.JWT_SECRET));
     await sendVerifyEmail(hash, account);
-    return response.status(StatusCodes.OK).json({
+
+    const filteredAccount: Record<string, any> = filterProperties(account, [
+      "name",
+      "email",
+      "role",
+    ], { role: getRoleName(Number(account.role)) });
+
+    return response.status(StatusCodes.CREATED).json({
       message: "Please check your email for any additional instructions",
+      account: filteredAccount,
       token,
     });
   } catch (error: any) {
     if (error.message?.indexOf("duplicate key error") !== -1) {
+      error.code = StatusCodes.CONFLICT;
       error.message =
         "We apologize, but it appears that the email address you provided is already registered. To complete the registration process, kindly enter a different email address.";
     }
@@ -155,11 +166,19 @@ async function signin(
       );
     }
     const { id, name } = account;
+
     const token = jwt.sign({ id, email, name }, String(process.env.JWT_SECRET));
+
+    const filteredAccount: Record<string, any> = filterProperties(account, [
+      "name",
+      "email",
+      "role",
+    ], { role: getRoleName(Number(account.role)) });
 
     return response.status(StatusCodes.OK).json({
       message:
         "Welcome! Your account has been successfully logged into. Enjoy yourself and feel free to explore the features and services that are offered. ",
+      account: filteredAccount,
       token,
     });
   } catch (error: any) {

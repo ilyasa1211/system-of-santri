@@ -1,7 +1,6 @@
 import transporter from "../config/nodemailer";
 import pug from "pug";
 import path from "node:path";
-import { default as mongoose } from "mongoose";
 import getAccountUsername from "./get-account-username";
 import { IAccount } from "../models";
 const appUrl = process.env.APP_URL;

@@ -55,4 +55,4 @@ export default function getCalendar(
   }
 
   return bulan;
-};
+}

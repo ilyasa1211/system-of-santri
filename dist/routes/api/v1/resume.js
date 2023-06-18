@@ -29,7 +29,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const passport_1 = __importDefault(require("passport"));
 const router = express_1.default.Router();
-const ResumeController = __importStar(require("../../../controllers/resume.controller"));
+const ResumeController = __importStar(require("../../../controllers/resume"));
 router.get("/", ResumeController.index);
 router.get("/:id", ResumeController.show);
 router.use(passport_1.default.authenticate("jwt", { session: false }));

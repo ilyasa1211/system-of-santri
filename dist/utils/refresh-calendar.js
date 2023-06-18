@@ -16,4 +16,3 @@ function default_1(model, method) {
     });
 }
 exports.default = default_1;
-;

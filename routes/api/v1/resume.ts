@@ -4,7 +4,7 @@ import express from "express";
 import passport from "passport";
 const router = express.Router();
 
-import * as ResumeController from "../../../controllers/resume.controller";
+import * as ResumeController from "../../../controllers/resume";
 
 router.get("/", ResumeController.index);
 router.get("/:id", ResumeController.show);

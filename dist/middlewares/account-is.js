@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const errors_1 = require("../errors");
+const errors_1 = require("../traits/errors");
 exports.default = (...roles) => (request, response, next) => {
     try {
         if (request.isUnauthenticated()) {

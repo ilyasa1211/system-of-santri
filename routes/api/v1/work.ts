@@ -1,5 +1,5 @@
 import { Router } from "express";
-import * as WorkController from "../../../controllers/work.controller";
+import * as WorkController from "../../../controllers/work";
 import * as middleware from "../../../middlewares";
 import passport from "passport";
 import { ROLES } from "../../../traits/role";

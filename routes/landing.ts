@@ -6,7 +6,9 @@ const router = Router();
 export default router;
 
 router.get("/", (request: Request, response: Response, next: NextFunction) => {
+  const { onlineSince } = request as Request & { onlineSince: string };
   return response.status(StatusCodes.OK).json({
-    message: "Welcome to System of Santri",
+    message: "Welcome to System of Santri!",
+    onlineSince,
   });
 });

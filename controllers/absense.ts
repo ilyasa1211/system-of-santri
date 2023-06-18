@@ -1,28 +1,24 @@
-import { Account } from "../models";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, ConflictError } from "../errors";
+import { BadRequestError, ConflictError, NotFoundError } from "../traits/errors";
 import { ATTENDANCE_STATUS } from "../traits/attendance-status";
 import { MONTHS, STATUSES } from "../traits";
 import { NextFunction, Request, Response } from "express";
-import { Document, Model } from "mongoose";
-import { ICalendar } from "../models/calendar.model";
-import { IAccount } from "../models/account.model";
+import { ICalendar } from "../models/calendar";
+import Account, { IAccount } from "../models/account";
 
 export { index, insert, me, show };
 
 async function index(request: Request, response: Response, next: NextFunction) {
   try {
-    const currentYear = new Date().getFullYear();
-    const accounts = await Account.find({}, {
-      name: 1,
-      absense_id: 1,
-      absenses: 1,
-    })
+    const currentYear: number = new Date().getFullYear();
+    const accounts: Array<IAccount> = await Account.find()
+      .select("name absense_id absenses")
       .populate({
         path: "absense",
         foreignField: "id",
         select: "months year -_id -id",
       }) as Array<IAccount>;
+
     accounts?.forEach((account: IAccount) => {
       account.absenses.forEach((absense: string) => {
         const [day, month, year, status] = absense.split("/");
@@ -45,16 +41,21 @@ async function me(request: Request, response: Response, next: NextFunction) {
   try {
     const { id } = request.user as IAccount;
     const currentYear: number = new Date().getFullYear();
-    const account = await Account.findById(id, {
-      name: 1,
-      absense: 1,
-      absenses: 1,
-      year: 1,
-    }).populate({
-      path: "absense",
-      foreignField: "id",
-      select: "months year -_id -id",
-    });
+    const account = await Account.findById(id)
+      .select("name absense absenses year")
+      .populate({
+        path: "absense",
+        foreignField: "id",
+        select: "months year -_id -id",
+        match: { year: currentYear },
+      });
+
+    if (!account) {
+      throw new NotFoundError(
+        "We apologize, but the requested account was not found.",
+      );
+    }
+
     account?.absenses?.forEach((absense) => {
       const [day, month, year, status] = absense.split("/");
       if (year !== currentYear.toString()) return;
@@ -62,6 +63,7 @@ async function me(request: Request, response: Response, next: NextFunction) {
         .months[MONTHS[Number(month) - 1]][Number(day) - 1].status =
           STATUSES[Number(status) - 1];
     });
+
     return response.status(StatusCodes.OK).json({ account });
   } catch (error: any) {
     next(error);
@@ -74,16 +76,17 @@ async function me(request: Request, response: Response, next: NextFunction) {
 async function show(request: Request, response: Response, next: NextFunction) {
   try {
     const { id } = request.params;
-    const currentYear = new Date().getFullYear();
-    const account = await Account.findById(id, {
-      name: 1,
-      absense: 1,
-      absenses: 1,
-    }).populate({
-      path: "absense",
-      foreignField: "id",
-      select: "months -_id -id",
-    }) as IAccount;
+    const currentYear: number = new Date().getFullYear();
+
+    const account: IAccount = await Account.findById(id)
+      .select("name absense absenses")
+      .populate({
+        path: "absense",
+        foreignField: "id",
+        select: "months -_id -id",
+        match: { year: currentYear },
+      }) as IAccount;
+
     account.absenses.forEach((absense: string) => {
       const [day, month, year, status] = absense.split("/");
       if (year !== currentYear.toString()) return;
@@ -91,6 +94,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
         .months[MONTHS[Number(month) - 1]][Number(day) - 1]
         .status = STATUSES[Number(status) - 1];
     });
+
     return response.status(StatusCodes.OK).json({ account });
   } catch (error: any) {
     next(error);
@@ -106,12 +110,12 @@ async function insert(
   next: NextFunction,
 ) {
   try {
-    const currentServerTime = new Intl.DateTimeFormat("id", {
+    const currentServerTime: string = new Intl.DateTimeFormat("id", {
       timeStyle: "short",
     }).format();
-    const currentDate = new Date();
-    const currentHours = currentDate.getHours();
-    const lessonHours = 8;
+    const currentDate: Date = new Date();
+    const currentHours: number = currentDate.getHours();
+    const lessonHours: number = 8;
     if (currentHours !== lessonHours) {
       throw new BadRequestError(
         "You are referring to an absence that is officially over and closed. For additional assistance or to address any upcoming absences, kindly come back at " +
@@ -119,13 +123,13 @@ async function insert(
           "Current server time: " + currentServerTime,
       );
     }
-    const account = request.user as IAccount;
+    const account: IAccount = request.user as IAccount;
     const status: number = ATTENDANCE_STATUS.ATTEND;
     const date: string = new Intl.DateTimeFormat("id").format();
 
     // day / month / year / status
     // 3/6/2023/1
-    const now = date.concat("/", status.toString());
+    const now: string = date.concat("/", status.toString());
 
     const alreadyAbsent = account.absenses.find((absense: string) =>
       absense.slice(absense.lastIndexOf("/")).toString() ===
@@ -138,6 +142,7 @@ async function insert(
     }
     account.absenses.push(now);
     await account.save();
+
     return response.status(StatusCodes.CREATED).json({
       statusCode: StatusCodes.CREATED,
       message:

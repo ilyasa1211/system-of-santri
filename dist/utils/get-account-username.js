@@ -9,4 +9,3 @@ function getAccountUsername(account) {
     return getAccountUsername(account.name);
 }
 exports.default = getAccountUsername;
-;

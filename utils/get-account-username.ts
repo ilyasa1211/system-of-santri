@@ -7,4 +7,4 @@ export default function getAccountUsername(account: IAccount | string): string {
       : account.split(" ")[1];
   }
   return getAccountUsername(account.name);
-};
+}

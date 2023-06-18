@@ -1,8 +1,8 @@
-export * as AccountController from "./account.controller";
-export * as LearningController from "./learning.controller";
-export * as AbsenseController from "./absense.controller";
-export * as AuthController from "./auth.controller";
-export * as ResumeController from "./resume.controller";
-export * as WorkController from "./work.controller";
-export * as EventController from "./event.controller";
-export * as ConfigurationController from "./configuration.controller";
+export * as AccountController from "./account";
+export * as LearningController from "./learning";
+export * as AbsenseController from "./absense";
+export * as AuthController from "./auth";
+export * as ResumeController from "./resume";
+export * as WorkController from "./work";
+export * as EventController from "./event";
+export * as ConfigurationController from "./configuration";

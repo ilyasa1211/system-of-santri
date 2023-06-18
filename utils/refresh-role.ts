@@ -10,4 +10,4 @@ export default async function (
       await method(model, { id: +index + 1, name })
     );
   }
-};
+}

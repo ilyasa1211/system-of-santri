@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
 import path from "node:path";
 import { NextFunction, Request, Response } from "express";
-import NotFoundError from "../errors/not-found";
+import { NotFoundError } from "../traits/errors";
 
 export { destroy, index, insert, show, update };
 
@@ -99,7 +99,8 @@ async function destroy(
     }
     const { thumbnail } = learning;
     if (thumbnail && thumbnail !== "default-thumbnail.jpg") {
-      const saveLearningThumbnail = process.env.SAVE_LEARNING_THUMBNAIL as string;
+      const saveLearningThumbnail = process.env
+        .SAVE_LEARNING_THUMBNAIL as string;
       fs.unlink(
         path.join(
           __dirname,

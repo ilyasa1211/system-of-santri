@@ -3,12 +3,16 @@ import transporter from "../config/nodemailer";
 import pug from "pug";
 import getAccountUsername from "./get-account-username";
 import { IAccount } from "../models";
+
 const appUrl = process.env.APP_URL;
 
 /**
  * Sending a forgot password email
  */
-export default async function sendForgetPasswordEmail(token: string, account: IAccount) {
+export default async function sendForgetPasswordEmail(
+  token: string,
+  account: IAccount,
+) {
   const { name, email } = account;
   transporter.sendMail({
     from: process.env.MAIL_USERNAME,

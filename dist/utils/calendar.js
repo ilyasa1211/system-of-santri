@@ -50,4 +50,3 @@ function getCalendar(year = null, locale = "id") {
     return bulan;
 }
 exports.default = getCalendar;
-;

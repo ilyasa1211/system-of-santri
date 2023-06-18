@@ -1,7 +1,5 @@
-import { ObjectId } from "mongoose";
 import { IAccount } from "../models";
-
-import { UnauthorizedError } from "../errors";
+import { UnauthorizedError } from "../traits/errors";
 import { ROLES } from "../traits/role";
 
 /**
@@ -12,7 +10,7 @@ export default function (
   id: string,
   roleException = [ROLES.ADMIN],
 ) {
-  const hasTheRights = roleException.find((role) => {
+  const hasTheRights = roleException.find((role: number) => {
     const accountRole = <{ id: string; name: string }> account.role;
     return Number(accountRole.id) === role;
   });
@@ -23,4 +21,4 @@ export default function (
     );
   }
   return true;
-};
+}

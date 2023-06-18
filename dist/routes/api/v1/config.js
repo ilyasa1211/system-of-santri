@@ -27,13 +27,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const router = (0, express_1.Router)();
 const passport_1 = __importDefault(require("passport"));
 const middleware = __importStar(require("../../../middlewares"));
-const controllers_1 = require("../../../controllers");
+const configuration_1 = require("../../../controllers/configuration");
 const role_1 = require("../../../traits/role");
+const router = (0, express_1.Router)();
+const accessCode = new configuration_1.AccessCode();
 router.use(passport_1.default.authenticate("jwt", { session: false }));
 router.use(middleware.accountIs(role_1.ROLES.ADMIN));
-router.get("/access-code", controllers_1.ConfigurationController.getAccessCode);
-router.put("/access-code", controllers_1.ConfigurationController.setAccessCode);
+router.get("/access-code", accessCode.getAccessCode);
+router.put("/access-code", accessCode.setAccessCode);
 exports.default = router;

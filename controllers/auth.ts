@@ -1,12 +1,7 @@
-import jwt, {
-  JsonWebTokenError,
-  JwtPayload,
-  VerifyErrors,
-  VerifyOptions,
-} from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import argon2 from "argon2";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, NotFoundError, UnauthorizedError } from "../errors";
+import { BadRequestError, NotFoundError, UnauthorizedError } from "../traits/errors";
 import { Account, Configuration, IAccount } from "../models";
 import {
   generateToken,

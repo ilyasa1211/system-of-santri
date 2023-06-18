@@ -6,4 +6,4 @@ export default async function findOrCreate<T>(
 ): Promise<any> {
   const model = await Model.findOne(filterOrCreate);
   return (!model) ? await Model.create(filterOrCreate) : model;
-};
+}

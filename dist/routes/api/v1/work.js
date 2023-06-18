@@ -27,7 +27,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const WorkController = __importStar(require("../../../controllers/work.controller"));
+const WorkController = __importStar(require("../../../controllers/work"));
 const middleware = __importStar(require("../../../middlewares"));
 const passport_1 = __importDefault(require("passport"));
 const role_1 = require("../../../traits/role");

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const errors_1 = require("../errors");
+const errors_1 = require("../traits/errors");
 const role_1 = require("../traits/role");
 /**
  * Check if the account have the rights to do an action
@@ -17,4 +17,3 @@ function default_1(account, id, roleException = [role_1.ROLES.ADMIN]) {
     return true;
 }
 exports.default = default_1;
-;

@@ -2,7 +2,7 @@ require("dotenv").config();
 require("./config/db");
 require("./config/passport");
 
-import express from "express";
+import express, { Express } from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "./middlewares/morgan";
@@ -24,18 +24,21 @@ import {
   refreshRole,
 } from "./utils";
 
+const onlineSince: string = new Date().toString();
+
 // Define the cron expression for January 1st at 00:00
-const everyYear = "0 0 0 1 1 *";
+const everyYear: string = "0 0 0 1 1 *";
 
 // Define the cron expression for everyDay at 00:00
-const everyDay = "0 0 0 * * *";
-// Schedule the task to run on the defined cron expression
+const everyDay: string = "0 0 0 * * *";
+
 const job = schedule.scheduleJob(everyYear, async () => {
   await refreshCalendar(Calendar, findOrCreate);
-  console.log("Calendar Refreshed!");
+  console.info("Calendar Refreshed!");
 });
+
 const job2 = schedule.scheduleJob(everyDay, async () => {
-  const today = new Date().getTime();
+  const today: number = new Date().getTime();
   const deleted = await Account.deleteMany({
     verifyExpiration: { $lt: today },
     verify: false,
@@ -45,26 +48,29 @@ const job2 = schedule.scheduleJob(everyDay, async () => {
     { value: generateToken(3) },
     { upsert: true },
   );
-  console.log("Deleted unverfied account! count: ", deleted.deletedCount);
+  console.info("Deleted unverfied account! count: ", deleted.deletedCount);
 });
 job.invoke();
 
 (async function () {
   await findOrCreate<IConfiguration>(Configuration, { key: "access_code" });
   await refreshRole(Role, findOrCreate);
-  console.log("Refreshed Access Code!");
-  console.log("Refreshed Role!");
+  console.info("Refreshed Access Code!");
+  console.info("Refreshed Role!");
 })();
 
-const app = express();
+const app: Express = express();
 
 app.use(logger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/", (req, res, next) => {
+  Object.defineProperty(req, "onlineSince", { value: onlineSince });
+  next();
+}, landingRoute);
 
-app.use("/", landingRoute);
 app.use("/api/v1", v1);
 
 app.use(notFound);

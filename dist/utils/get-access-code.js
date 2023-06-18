@@ -9,10 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const errors_1 = require("../errors");
+const errors_1 = require("../traits/errors");
 function default_1(Model) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { value } = yield Model.findOne({ key: "access_code" });
+        const { value } = yield Model.findOne({
+            key: "access_code",
+        });
         if (!value) {
             throw new errors_1.NotFoundError("The Access Code configuration could not be found by the system. Please check your settings once more and try again.");
         }
@@ -20,4 +22,3 @@ function default_1(Model) {
     });
 }
 exports.default = default_1;
-;

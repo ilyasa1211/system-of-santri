@@ -2,7 +2,7 @@ import { Account, IAccount, Work } from "../models";
 import { StatusCodes } from "http-status-codes";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
-import { NotFoundError } from "../errors";
+import { NotFoundError } from "../traits/errors";
 
 export { destroy, index, insert, show, update };
 

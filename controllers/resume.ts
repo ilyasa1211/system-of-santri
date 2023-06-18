@@ -1,6 +1,6 @@
 import { IAccount, Resume } from "../models";
 import { StatusCodes } from "http-status-codes";
-import { ConflictError, NotFoundError } from "../errors";
+import { ConflictError, NotFoundError } from "../traits/errors";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
 

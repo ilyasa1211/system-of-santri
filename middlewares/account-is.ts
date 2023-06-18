@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-
-import { ForbiddenError, UnauthorizedError } from "../errors";
+import { UnauthorizedError } from "../traits/errors";
 import { IAccount } from "../models";
 import { ObjectId } from "mongoose";
 
@@ -13,7 +12,7 @@ export default (...roles: Array<number>) =>
       );
     }
     const account = request.user as IAccount;
-    const hasRole: number | undefined = roles.find((role) =>
+    const hasRole: number | undefined = roles.find((role: number) =>
       (account.role as { id: ObjectId | number; name: string }).id === role
     );
     if (!hasRole) {

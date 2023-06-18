@@ -36,7 +36,7 @@ function calendar(request, response, next) {
                     slug,
                 });
             });
-            response.status(http_status_codes_1.StatusCodes.OK).json({ calendar });
+            return response.status(http_status_codes_1.StatusCodes.OK).json({ calendar });
         }
         catch (error) {
             next(error);
@@ -51,7 +51,7 @@ function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const events = yield models_1.Event.find();
-            response.status(http_status_codes_1.StatusCodes.OK).json({ events });
+            return response.status(http_status_codes_1.StatusCodes.OK).json({ events });
         }
         catch (error) {
             next(error);
@@ -66,7 +66,7 @@ function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield models_1.Event.create(request.body);
-            response.status(http_status_codes_1.StatusCodes.OK).json({
+            return response.status(http_status_codes_1.StatusCodes.CREATED).json({
                 message: "Congratulations! It was successful creating the event. ",
             });
         }
@@ -89,7 +89,7 @@ function update(request, response, next) {
             }
             Object.assign(event, request.body);
             yield event.save();
-            response.status(http_status_codes_1.StatusCodes.OK).json({
+            return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations! The most recent changes have been successfully updated for the event. The required updates have been made.",
             });
         }

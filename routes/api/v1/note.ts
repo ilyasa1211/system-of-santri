@@ -4,7 +4,7 @@ import express from "express";
 import passport from "passport";
 const router = express.Router();
 
-import * as NoteController from "../../../controllers/note.controller";
+import * as NoteController from "../../../controllers/note";
 import { accountIs } from "../../../middlewares";
 import { ROLES } from "../../../traits/role";
 

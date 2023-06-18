@@ -23,14 +23,14 @@ const models_1 = require("./models");
 const middlewares_1 = require("./middlewares");
 const routes_1 = require("./routes");
 const utils_1 = require("./utils");
+const onlineSince = new Date().toString();
 // Define the cron expression for January 1st at 00:00
 const everyYear = "0 0 0 1 1 *";
 // Define the cron expression for everyDay at 00:00
 const everyDay = "0 0 0 * * *";
-// Schedule the task to run on the defined cron expression
 const job = node_schedule_1.default.scheduleJob(everyYear, () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, utils_1.refreshCalendar)(models_1.Calendar, utils_1.findOrCreate);
-    console.log("Calendar Refreshed!");
+    console.info("Calendar Refreshed!");
 }));
 const job2 = node_schedule_1.default.scheduleJob(everyDay, () => __awaiter(void 0, void 0, void 0, function* () {
     const today = new Date().getTime();
@@ -39,15 +39,15 @@ const job2 = node_schedule_1.default.scheduleJob(everyDay, () => __awaiter(void 
         verify: false,
     });
     const absenseToken = yield models_1.Configuration.updateOne({ key: "absense_token" }, { value: (0, utils_1.generateToken)(3) }, { upsert: true });
-    console.log("Deleted unverfied account! count: ", deleted.deletedCount);
+    console.info("Deleted unverfied account! count: ", deleted.deletedCount);
 }));
 job.invoke();
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         yield (0, utils_1.findOrCreate)(models_1.Configuration, { key: "access_code" });
         yield (0, utils_1.refreshRole)(models_1.Role, utils_1.findOrCreate);
-        console.log("Refreshed Access Code!");
-        console.log("Refreshed Role!");
+        console.info("Refreshed Access Code!");
+        console.info("Refreshed Role!");
     });
 })();
 const app = (0, express_1.default)();
@@ -56,7 +56,10 @@ app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: false }));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.static(path_1.default.join(__dirname, "public")));
-app.use("/", routes_1.landingRoute);
+app.use("/", (req, res, next) => {
+    Object.defineProperty(req, "onlineSince", { value: onlineSince });
+    next();
+}, routes_1.landingRoute);
 app.use("/api/v1", routes_1.v1);
 app.use(middlewares_1.notFound);
 app.use(middlewares_1.error);

@@ -16,4 +16,3 @@ function findOrCreate(Model, filterOrCreate = { id: 0 }) {
     });
 }
 exports.default = findOrCreate;
-;

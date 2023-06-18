@@ -1,12 +1,9 @@
-
-
-import Note from "../models/note.model";
-
+import Note from "../models/note";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, NotFoundError } from "../errors";
+import { BadRequestError, NotFoundError } from "../traits/errors";
 import { NextFunction, Request, Response } from "express";
 
-export { index, insert, update, destroy, show };
+export { destroy, index, insert, show, update };
 
 /**
  * Get all manager's notes
@@ -35,7 +32,11 @@ async function show(request: Request, response: Response, next: NextFunction) {
 /**
  * Create a new notes, manager has rights
  */
-async function insert(request: Request, response: Response, next: NextFunction) {
+async function insert(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
   try {
     const { id, note } = request.body;
     if (!id) {
@@ -68,7 +69,11 @@ async function insert(request: Request, response: Response, next: NextFunction) 
 /**
  * Update the existing note, manager has rights
  */
-async function update(request: Request, response: Response, next: NextFunction) {
+async function update(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
   try {
     const notes = await Note.findByIdAndUpdate(request.params.id, request.body);
     return response.status(StatusCodes.OK).json({
@@ -84,7 +89,11 @@ async function update(request: Request, response: Response, next: NextFunction) 
 /**
  * Delete a note permanently, manager has rights
  */
-async function destroy(request: Request, response: Response, next: NextFunction) {
+async function destroy(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
   try {
     const notes = await Note.findByIdAndDelete(request.params.id);
     return response.status(StatusCodes.OK).json({

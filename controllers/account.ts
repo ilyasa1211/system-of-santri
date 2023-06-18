@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import fs from "node:fs";
 import path from "node:path";
 import { StatusCodes } from "http-status-codes";
-import { NotFoundError } from "../errors";
+import { NotFoundError } from "../traits/errors";
 import argon2 from "argon2";
 import { Account, IAccount, Resume, Work } from "../models";
 import { authorize } from "../utils";

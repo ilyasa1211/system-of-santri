@@ -13,19 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const models_1 = require("../models");
-const errors_1 = require("../errors");
+const errors_1 = require("../traits/errors");
 const passport_1 = __importDefault(require("passport"));
-const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
+const passport_jwt_1 = require("passport-jwt");
 const options = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.JWT_SECRET,
 };
-passport_1.default.use(new JwtStrategy(options, function (payload, done) {
+const verifyCallback = function (payload, done) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = payload;
-            console.log(id);
             const account = yield models_1.Account.findOne({
                 _id: id,
                 deletedAt: null,
@@ -39,8 +37,8 @@ passport_1.default.use(new JwtStrategy(options, function (payload, done) {
             return done(null, account);
         }
         catch (error) {
-            console.log(error);
             done(error, false);
         }
     });
-}));
+};
+passport_1.default.use(new passport_jwt_1.Strategy(options, verifyCallback));

@@ -1,6 +1,6 @@
 import { Calendar, Event, IEvent } from "../models";
 import { StatusCodes } from "http-status-codes";
-import { NotFoundError } from "../errors";
+import { NotFoundError } from "../traits/errors";
 import findOrCreate from "../utils/find-or-create";
 import MONTHS from "../traits/month";
 import { NextFunction, Request, Response } from "express";
@@ -28,7 +28,7 @@ async function calendar(
       });
     });
 
-    response.status(StatusCodes.OK).json({ calendar });
+    return response.status(StatusCodes.OK).json({ calendar });
   } catch (error: any) {
     next(error);
   }
@@ -40,7 +40,7 @@ async function calendar(
 async function index(request: Request, response: Response, next: NextFunction) {
   try {
     const events = await Event.find();
-    response.status(StatusCodes.OK).json({ events });
+    return response.status(StatusCodes.OK).json({ events });
   } catch (error: any) {
     next(error);
   }
@@ -56,7 +56,7 @@ async function insert(
 ) {
   try {
     await Event.create(request.body);
-    response.status(StatusCodes.OK).json({
+    return response.status(StatusCodes.CREATED).json({
       message: "Congratulations! It was successful creating the event. ",
     });
   } catch (error: any) {
@@ -82,7 +82,7 @@ async function update(
     }
     Object.assign(event, request.body);
     await event.save();
-    response.status(StatusCodes.OK).json({
+    return response.status(StatusCodes.OK).json({
       message:
         "Congratulations! The most recent changes have been successfully updated for the event. The required updates have been made.",
     });

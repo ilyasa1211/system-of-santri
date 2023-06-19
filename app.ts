@@ -54,8 +54,10 @@ job.invoke();
 
 (async function () {
   await findOrCreate<IConfiguration>(Configuration, { key: "access_code" });
+  await findOrCreate<IConfiguration>(Configuration, { key: "absense_token" });
   await refreshRole(Role, findOrCreate);
   console.info("Refreshed Access Code!");
+  console.info("Refreshed Absense Token!");
   console.info("Refreshed Role!");
 })();
 

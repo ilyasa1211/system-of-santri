@@ -3,7 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRoleName = exports.getAccessCode = exports.getAccountUsername = exports.authorize = exports.refreshRole = exports.refreshCalendar = exports.sendForgetPasswordEmail = exports.sendVerifyEmail = exports.generateToken = exports.findOrCreate = exports.calendar = void 0;
+exports.getRoleName = exports.getAccessCode = exports.getAccountUsername = exports.authorize = exports.refreshRole = exports.refreshCalendar = exports.sendForgetPasswordEmail = exports.sendVerifyEmail = exports.generateToken = exports.findOrCreate = exports.calendar = exports.CaseStyle = void 0;
+var case_style_1 = require("./case-style");
+Object.defineProperty(exports, "CaseStyle", { enumerable: true, get: function () { return case_style_1.CaseStyle; } });
 var calendar_1 = require("./calendar");
 Object.defineProperty(exports, "calendar", { enumerable: true, get: function () { return __importDefault(calendar_1).default; } });
 var find_or_create_1 = require("./find-or-create");

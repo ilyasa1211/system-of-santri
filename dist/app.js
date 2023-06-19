@@ -45,8 +45,10 @@ job.invoke();
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         yield (0, utils_1.findOrCreate)(models_1.Configuration, { key: "access_code" });
+        yield (0, utils_1.findOrCreate)(models_1.Configuration, { key: "absense_token" });
         yield (0, utils_1.refreshRole)(models_1.Role, utils_1.findOrCreate);
         console.info("Refreshed Access Code!");
+        console.info("Refreshed Absense Token!");
         console.info("Refreshed Role!");
     });
 })();

@@ -2,56 +2,65 @@ import { StatusCodes } from "http-status-codes";
 import { Configuration } from "../models/configuration";
 import { BadRequestError, NotFoundError } from "../traits/errors";
 import { NextFunction, Request, Response } from "express";
+import { CaseStyle } from "../utils";
 
-export class AccessCode {
-  public async getAccessCode(
-    request: Request,
-    response: Response,
-    next: NextFunction,
-  ) {
-    try {
-      const config = await Configuration.findOne({ key: "access_code" });
-      if (!config) {
-        throw new NotFoundError(
-          "The Access Code configuration could not be found by the system. Please check your settings once more and try again.",
-        );
+export class ConfigurationController {
+  public getConfiguration(key: string) {
+    return async function getAccessCode(
+      request: Request,
+      response: Response,
+      next: NextFunction,
+    ) {
+      try {
+        const KEY: CaseStyle = new CaseStyle(key);
+
+        const config = await Configuration.findOne({
+          key: KEY.toSnakeCase(),
+        });
+        if (!config) {
+          throw new NotFoundError(
+            `The ${key} configuration could not be found by the system. Please check your settings once more and try again.`,
+          );
+        }
+        return response.status(StatusCodes.OK).json(config);
+      } catch (error: any) {
+        next(error);
       }
-      return response.status(StatusCodes.OK).json(config);
-    } catch (error: any) {
-      next(error);
-    }
+    };
   }
+  public setConfiguration(key: string) {
+    return async function setAccessCode(
+      request: Request,
+      response: Response,
+      next: NextFunction,
+    ) {
+      try {
+        const KEY = new CaseStyle(key);
+        const inputKey = request.body[KEY.toCamelCase()];
+        if (!inputKey) {
+          throw new BadRequestError(
+            `Please enter the needed ${key} to continue.`,
+          );
+        }
+        const { modifiedCount } = await Configuration.updateOne({
+          key: KEY.toSnakeCase(),
+        }, {
+          value: inputKey,
+        });
 
-  public async setAccessCode(
-    request: Request,
-    response: Response,
-    next: NextFunction,
-  ) {
-    try {
-      const { accessCode } = request.body;
-      if (!accessCode) {
-        throw new BadRequestError(
-          "Please enter the needed access code to continue.",
-        );
+        if (!modifiedCount) {
+          throw new Error(
+            `Unfortunately, we must let you know that the attempt to set a new ${key} was unsuccessful.`,
+          );
+        }
+
+        return response.status(StatusCodes.OK).json({
+          message:
+            `The ${key} has been successfully updated. The adjustments have been made.`,
+        });
+      } catch (error: any) {
+        next(error);
       }
-      const { modifiedCount } = await Configuration.updateOne({
-        key: "access_code",
-      }, {
-        value: accessCode,
-      });
-
-      if (!modifiedCount) {
-        throw new Error(
-          "Unfortunately, we must let you know that the attempt to set a new access code was unsuccessful.",
-        );
-      }
-
-      return response.status(StatusCodes.OK).json({
-        message:
-          "The access code has been successfully updated. The adjustments have been made.",
-      });
-    } catch (error: any) {
-      next(error);
-    }
+    };
   }
 }

@@ -1,5 +1,9 @@
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, ConflictError, NotFoundError } from "../traits/errors";
+import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from "../traits/errors";
 import { ATTENDANCE_STATUS } from "../traits/attendance-status";
 import { MONTHS, STATUSES } from "../traits";
 import { NextFunction, Request, Response } from "express";
@@ -110,6 +114,13 @@ async function insert(
   next: NextFunction,
 ) {
   try {
+    const { token } = request.query;
+    if (!token) {
+      throw new BadRequestError(
+        "The supplied token is not valid. Make sure token field is entered correctly.",
+      );
+    }
+
     const currentServerTime: string = new Intl.DateTimeFormat("id", {
       timeStyle: "short",
     }).format();

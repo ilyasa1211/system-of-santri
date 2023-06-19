@@ -118,6 +118,10 @@ exports.show = show;
 function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            const { token } = request.query;
+            if (!token) {
+                throw new errors_1.BadRequestError("The supplied token is not valid. Make sure token field is entered correctly.");
+            }
             const currentServerTime = new Intl.DateTimeFormat("id", {
                 timeStyle: "short",
             }).format();

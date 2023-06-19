@@ -14,7 +14,7 @@ import { ROLES } from "../traits/role";
 import emailPattern from "../traits/email-pattern";
 import { NextFunction, Request, Response } from "express";
 import getRoleName from "../utils/get-role-name";
-import filterProperties from "../utils/filterProperties";
+import filterProperties from "../utils/filter-properties";
 
 export {
   forgotPassword,
@@ -93,7 +93,6 @@ async function signup(
 
     const filteredAccount: Record<string, any> = filterProperties(account, [
       "name",
-      "email",
       "role",
     ], { role: getRoleName(Number(account.role)) });
 
@@ -166,7 +165,6 @@ async function signin(
 
     const filteredAccount: Record<string, any> = filterProperties(account, [
       "name",
-      "email",
       "role",
     ], { role: getRoleName(Number(account.role)) });
 

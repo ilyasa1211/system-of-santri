@@ -23,7 +23,7 @@ const trim_all_body_1 = __importDefault(require("../utils/trim-all-body"));
 const role_1 = require("../traits/role");
 const email_pattern_1 = __importDefault(require("../traits/email-pattern"));
 const get_role_name_1 = __importDefault(require("../utils/get-role-name"));
-const filterProperties_1 = __importDefault(require("../utils/filterProperties"));
+const filter_properties_1 = __importDefault(require("../utils/filter-properties"));
 /**
  * Register an account
  */
@@ -70,9 +70,8 @@ function signup(request, response, next) {
             const { id } = account;
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
             yield (0, utils_1.sendVerifyEmail)(hash, account);
-            const filteredAccount = (0, filterProperties_1.default)(account, [
+            const filteredAccount = (0, filter_properties_1.default)(account, [
                 "name",
-                "email",
                 "role",
             ], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.CREATED).json({
@@ -124,9 +123,8 @@ function signin(request, response, next) {
             }
             const { id, name } = account;
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
-            const filteredAccount = (0, filterProperties_1.default)(account, [
+            const filteredAccount = (0, filter_properties_1.default)(account, [
                 "name",
-                "email",
                 "role",
             ], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.OK).json({

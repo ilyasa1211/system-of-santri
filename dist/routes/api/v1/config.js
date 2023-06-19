@@ -34,7 +34,7 @@ const role_1 = require("../../../traits/role");
 const router = (0, express_1.Router)();
 const accessCode = new configuration_1.AccessCode();
 router.use(passport_1.default.authenticate("jwt", { session: false }));
-router.use(middleware.accountIs(role_1.ROLES.ADMIN));
+router.use(middleware.accountIs(role_1.ROLES.ADMIN, role_1.ROLES.MANAGER));
 router.get("/access-code", accessCode.getAccessCode);
 router.put("/access-code", accessCode.setAccessCode);
 exports.default = router;

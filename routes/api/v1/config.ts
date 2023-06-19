@@ -8,7 +8,7 @@ const router = Router();
 const accessCode = new AccessCode();
 
 router.use(passport.authenticate("jwt", { session: false }));
-router.use(middleware.accountIs(ROLES.ADMIN));
+router.use(middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER));
 
 router.get("/access-code", accessCode.getAccessCode);
 router.put("/access-code", accessCode.setAccessCode);

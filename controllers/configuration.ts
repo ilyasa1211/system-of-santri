@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import Configuration from "../models/configuration";
+import { Configuration } from "../models/configuration";
 import { BadRequestError, NotFoundError } from "../traits/errors";
 import { NextFunction, Request, Response } from "express";
 

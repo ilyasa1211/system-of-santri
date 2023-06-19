@@ -1,4 +1,4 @@
-import Note from "../models/note";
+import { Note } from "../models/note";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError, NotFoundError } from "../traits/errors";
 import { NextFunction, Request, Response } from "express";

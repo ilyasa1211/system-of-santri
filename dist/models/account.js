@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Account = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const email_pattern_1 = __importDefault(require("../traits/email-pattern"));
-require("./role.model");
-require("./resume.model");
+require("./role");
+require("./resume");
 const accountSchema = new mongoose_1.default.Schema({
     name: {
         type: String,

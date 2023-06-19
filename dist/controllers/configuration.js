@@ -8,19 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AccessCode = void 0;
 const http_status_codes_1 = require("http-status-codes");
-const configuration_1 = __importDefault(require("../models/configuration"));
+const configuration_1 = require("../models/configuration");
 const errors_1 = require("../traits/errors");
 class AccessCode {
     getAccessCode(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const config = yield configuration_1.default.findOne({ key: "access_code" });
+                const config = yield configuration_1.Configuration.findOne({ key: "access_code" });
                 if (!config) {
                     throw new errors_1.NotFoundError("The Access Code configuration could not be found by the system. Please check your settings once more and try again.");
                 }
@@ -38,7 +35,7 @@ class AccessCode {
                 if (!accessCode) {
                     throw new errors_1.BadRequestError("Please enter the needed access code to continue.");
                 }
-                const { modifiedCount } = yield configuration_1.default.updateOne({
+                const { modifiedCount } = yield configuration_1.Configuration.updateOne({
                     key: "access_code",
                 }, {
                     value: accessCode,

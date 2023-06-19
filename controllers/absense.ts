@@ -4,7 +4,7 @@ import { ATTENDANCE_STATUS } from "../traits/attendance-status";
 import { MONTHS, STATUSES } from "../traits";
 import { NextFunction, Request, Response } from "express";
 import { ICalendar } from "../models/calendar";
-import Account, { IAccount } from "../models/account";
+import { Account, IAccount } from "../models/account";
 
 export { index, insert, me, show };
 
@@ -56,7 +56,7 @@ async function me(request: Request, response: Response, next: NextFunction) {
       );
     }
 
-    account?.absenses?.forEach((absense) => {
+    account.absenses?.forEach((absense: string) => {
       const [day, month, year, status] = absense.split("/");
       if (year !== currentYear.toString()) return;
       (<ICalendar> account.absense)

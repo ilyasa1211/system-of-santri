@@ -8,21 +8,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.show = exports.me = exports.insert = exports.index = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const errors_1 = require("../traits/errors");
 const attendance_status_1 = require("../traits/attendance-status");
 const traits_1 = require("../traits");
-const account_1 = __importDefault(require("../models/account"));
+const account_1 = require("../models/account");
 function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const currentYear = new Date().getFullYear();
-            const accounts = yield account_1.default.find()
+            const accounts = yield account_1.Account.find()
                 .select("name absense_id absenses")
                 .populate({
                 path: "absense",
@@ -56,7 +53,7 @@ function me(request, response, next) {
         try {
             const { id } = request.user;
             const currentYear = new Date().getFullYear();
-            const account = yield account_1.default.findById(id)
+            const account = yield account_1.Account.findById(id)
                 .select("name absense absenses year")
                 .populate({
                 path: "absense",
@@ -67,7 +64,7 @@ function me(request, response, next) {
             if (!account) {
                 throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
             }
-            (_a = account === null || account === void 0 ? void 0 : account.absenses) === null || _a === void 0 ? void 0 : _a.forEach((absense) => {
+            (_a = account.absenses) === null || _a === void 0 ? void 0 : _a.forEach((absense) => {
                 const [day, month, year, status] = absense.split("/");
                 if (year !== currentYear.toString())
                     return;
@@ -91,7 +88,7 @@ function show(request, response, next) {
         try {
             const { id } = request.params;
             const currentYear = new Date().getFullYear();
-            const account = yield account_1.default.findById(id)
+            const account = yield account_1.Account.findById(id)
                 .select("name absense absenses")
                 .populate({
                 path: "absense",

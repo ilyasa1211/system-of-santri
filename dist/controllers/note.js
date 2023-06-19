@@ -8,12 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.update = exports.show = exports.insert = exports.index = exports.destroy = void 0;
-const note_1 = __importDefault(require("../models/note"));
+const note_1 = require("../models/note");
 const http_status_codes_1 = require("http-status-codes");
 const errors_1 = require("../traits/errors");
 /**
@@ -22,7 +19,7 @@ const errors_1 = require("../traits/errors");
 function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const notes = yield note_1.default.find();
+            const notes = yield note_1.Note.find();
             return response.status(http_status_codes_1.StatusCodes.OK).json({ notes });
         }
         catch (error) {
@@ -37,7 +34,7 @@ exports.index = index;
 function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const note = yield note_1.default.findById(request.params.id);
+            const note = yield note_1.Note.findById(request.params.id);
             return response.status(http_status_codes_1.StatusCodes.OK).json({ note });
         }
         catch (error) {
@@ -59,11 +56,11 @@ function insert(request, response, next) {
             if (!note) {
                 throw new errors_1.BadRequestError("We apologize for the oversight. It seems that the note field is a required field for this operation. Please make sure to provide a note or additional information related to the lesson. ");
             }
-            const learningExists = yield note_1.default.exists({ _id: id });
+            const learningExists = yield note_1.Note.exists({ _id: id });
             if (!learningExists) {
                 throw new errors_1.NotFoundError("We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available.");
             }
-            const notes = yield note_1.default.create(request.body);
+            const notes = yield note_1.Note.create(request.body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "You've done a great job making the notes, congratulations! Your thorough writing will make a significant difference in how well students learn.",
                 notes,
@@ -81,7 +78,7 @@ exports.insert = insert;
 function update(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const notes = yield note_1.default.findByIdAndUpdate(request.params.id, request.body);
+            const notes = yield note_1.Note.findByIdAndUpdate(request.params.id, request.body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations on finishing the note update! It is admirable how dedicated you are to keeping the information current and pertinent.",
                 notes,
@@ -99,7 +96,7 @@ exports.update = update;
 function destroy(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const notes = yield note_1.default.findByIdAndDelete(request.params.id);
+            const notes = yield note_1.Note.findByIdAndDelete(request.params.id);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "The note was effectively erased. All related data has been permanently deleted and it has been removed from the system.",
                 notes,

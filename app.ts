@@ -1,5 +1,5 @@
 require("dotenv").config();
-require("./config/db");
+require("./config/database");
 require("./config/passport");
 
 import express, { Express } from "express";

@@ -2,8 +2,8 @@ import mongoose, { Date, Document, ObjectId } from "mongoose";
 import emailPattern from "../traits/email-pattern";
 import { ICalendar } from "./calendar";
 
-require("./role.model");
-require("./resume.model");
+require("./role");
+require("./resume");
 
 export interface IAccount extends Document {
   id: ObjectId | string;

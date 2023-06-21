@@ -20,7 +20,7 @@ const errors_1 = require("../traits/errors");
 function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const works = yield models_1.Work.find({}, {}, { sort: { createdAt: "desc" } });
+            const works = yield models_1.Work.find().sort({ createdAt: "desc" });
             return response.status(http_status_codes_1.StatusCodes.OK).json({ works });
         }
         catch (error) {
@@ -35,7 +35,11 @@ exports.index = index;
 function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const work = yield models_1.Work.findOne({ _id: request.params.id });
+            const { id } = request.params;
+            const work = yield models_1.Work.findById(id);
+            if (!work) {
+                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
+            }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ work });
         }
         catch (error) {
@@ -50,6 +54,10 @@ exports.show = show;
 function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            const { title } = request.body;
+            if (!title) {
+                throw new errors_1.BadRequestError("Please enter the needed Title to continue.");
+            }
             const user = request.user;
             request.body.account_id = user.id;
             const works = yield models_1.Work.create(request.body);
@@ -73,19 +81,16 @@ exports.insert = insert;
 function update(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { id } = request.params;
-            const { title, link } = request.body;
-            const user = request.user;
+            const { params, body, user: account } = request;
+            const { id } = params;
+            const { title, link } = body;
             const work = yield models_1.Work.findById(id);
             if (!work) {
-                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again. Please don't hesitate to contact our support staff if you need more help.");
+                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
             }
-            (0, utils_1.authorize)(user, work.account_id.toString());
-            if (title)
-                work.title = title;
-            if (link)
-                work.link = link;
-            work.updatedAt = Date.now().toString();
+            const updatedWork = { title, link };
+            Object.assign(work, updatedWork);
+            (0, utils_1.authorize)(account, work.account_id.toString());
             yield work.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations on finishing your work update! Your dedication to honing and enhancing your work is admirable. ",
@@ -107,7 +112,7 @@ function destroy(request, response, next) {
             const user = request.user;
             const work = yield models_1.Work.findById(id);
             if (!work) {
-                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again. Please don't hesitate to contact our support staff if you need more help.");
+                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
             }
             (0, utils_1.authorize)(user, work.account_id.toString());
             yield work.deleteOne();

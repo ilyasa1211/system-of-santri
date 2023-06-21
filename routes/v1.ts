@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as route from "./api/v1";
 
-const router = Router();
+const router: Router =  Router();
 
 export default router;
 

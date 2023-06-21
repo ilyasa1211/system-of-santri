@@ -21,7 +21,6 @@ const errors_1 = require("../traits/errors");
 const argon2_1 = __importDefault(require("argon2"));
 const models_1 = require("../models");
 const utils_1 = require("../utils");
-const trim_all_body_1 = __importDefault(require("../utils/trim-all-body"));
 const projection = {
     password: 0,
     verify: 0,
@@ -35,13 +34,8 @@ const projection = {
 function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const withTrashed = request.query.trashed;
-            const option = {
-                deletedAt: null,
-            };
-            if (withTrashed)
-                option.deletedAt = { $ne: null };
-            const accounts = yield models_1.Account.find(option, projection);
+            const accounts = yield models_1.Account.find({ deletedAt: null })
+                .select("name email phoneNumber division status avatar santriPeriod generation generationYear role work absenses");
             return response.status(http_status_codes_1.StatusCodes.OK).json({ accounts });
         }
         catch (error) {
@@ -56,16 +50,18 @@ exports.index = index;
 function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (request.file)
-                request.body.avatar = request.file.filename;
-            (0, trim_all_body_1.default)(request);
-            request.body.verify = true;
-            request.body.password = yield argon2_1.default.hash(request.body.password, {
+            const { body, file } = request;
+            const { name, email } = body;
+            !body.avatar && delete body.avatar;
+            if (file)
+                body.avatar = file.filename;
+            body.verify = true;
+            body.password = yield argon2_1.default.hash(body.password, {
                 type: argon2_1.default.argon2i,
             });
-            const account = yield models_1.Account.create(request.body);
+            const account = yield models_1.Account.create(body);
             const { id } = account;
-            const token = jsonwebtoken_1.default.sign({ id, name: request.body.name }, String(process.env.JWT_SECRET));
+            const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
             return response.status(http_status_codes_1.StatusCodes.OK).json({ token });
         }
         catch (error) {
@@ -81,10 +77,15 @@ function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            const account = yield models_1.Account.findOne({ _id: id, deletedAt: null }, projection);
+            const account = yield models_1.Account.findOne({ _id: id.replace(/[\W_]/g, ""), deletedAt: null }).select("name email phoneNumber division status avatar santriPeriod generation generationYear role work absenses");
             return response.status(http_status_codes_1.StatusCodes.OK).json({ account });
         }
         catch (error) {
+            if (error.message.startsWith("Cast to ObjectId failed")) {
+                error.message =
+                    "We apologize for the inconvenience, but the provided Account ID appears to be invalid. Please double-check the ID and ensure its accuracy.";
+                error.code = http_status_codes_1.StatusCodes.BAD_REQUEST;
+            }
             next(error);
         }
     });
@@ -98,7 +99,6 @@ function update(request, response, next) {
         try {
             const { id } = request.params;
             (0, utils_1.authorize)(request.user, id);
-            request.body.updatedAt = Date.now();
             yield models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, request.body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations on finishing up your account update! Your suggestions have been carried out.",
@@ -175,8 +175,8 @@ function eliminate(request, response, next) {
             }
             const { avatar } = account;
             yield account.deleteOne();
-            if (avatar !== "default-avatar.jpg") {
-                node_fs_1.default.unlink(node_path_1.default.join(__dirname, "..", "public", "images", "account", avatar), (error) => {
+            if (!avatar.endsWith(String(process.env.DEFAULT_AVATAR_NAME))) {
+                node_fs_1.default.unlink(node_path_1.default.join(__dirname, "..", "public", avatar), (error) => {
                     if (error)
                         throw error;
                 });
@@ -198,7 +198,7 @@ function profile(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.user;
-            const account = yield models_1.Account.findById(id, projection);
+            const account = yield models_1.Account.findById(id).select("name email phoneNumber divison status avatar santriPeriod generation generationYear role absense work absense");
             if (!account) {
                 throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
             }
@@ -238,7 +238,7 @@ function workShow(request, response, next) {
                 account_id: id,
             });
             if (!works) {
-                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again. Please don't hesitate to contact our support staff if you need more help.");
+                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
             }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ works });
         }

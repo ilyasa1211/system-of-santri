@@ -5,7 +5,7 @@ import * as middleware from "../../../middlewares";
 import { ROLES } from "../../../traits/role";
 
 const upload = require("../../../config/multer")("account");
-const router = Router();
+const router: Router =  Router();
 
 router.use(upload.single("avatar"));
 

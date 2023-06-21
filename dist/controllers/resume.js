@@ -35,7 +35,11 @@ exports.index = index;
 function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const resume = yield models_1.Resume.findOne({ _id: request.params.id });
+            const { id } = request.params;
+            const resume = yield models_1.Resume.findById(id);
+            if (!resume) {
+                throw new errors_1.NotFoundError("We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.");
+            }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ data: resume });
         }
         catch (error) {
@@ -56,10 +60,10 @@ function insert(request, response, next) {
                 throw new errors_1.ConflictError("We've noted that your resume is already on file. We are unable to produce new resumes for you repeatedly in accordance with our policy.");
             }
             request.body.account_id = id;
-            const resumes = yield models_1.Resume.create(request.body);
+            const resume = yield models_1.Resume.create(request.body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations on creating a successful resume! This crucial document will aid in showcasing your abilities, credentials, and experiences. ",
-                data: resumes,
+                resume,
             });
         }
         catch (error) {
@@ -75,20 +79,19 @@ function update(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            const { technicalSkill, education, personalBackground, experience } = request.body;
+            const { technicalSkill: technical_skill, education, personalBackground: personal_background, experience, } = request.body;
+            const updatedValue = {
+                technical_skill,
+                education,
+                personal_background,
+                experience,
+            };
             const resume = yield models_1.Resume.findById(id);
             if (!resume) {
                 throw new errors_1.NotFoundError("We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.");
             }
             (0, utils_1.authorize)(request.user, resume.account_id.toString());
-            if (technicalSkill)
-                resume.technical_skill = technicalSkill;
-            if (education)
-                resume.education = education;
-            if (personalBackground)
-                resume.personal_background = personalBackground;
-            if (experience)
-                resume.experience = experience;
+            Object.assign(resume, updatedValue);
             yield resume.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "You've done a great job updating your resume! You can make sure your resume accurately represents your skills and experiences by keeping it up-to-date and pertinent.",

@@ -6,15 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Account = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const email_pattern_1 = __importDefault(require("../traits/email-pattern"));
+const path_1 = __importDefault(require("path"));
 require("./role");
 require("./resume");
 const accountSchema = new mongoose_1.default.Schema({
     name: {
         type: String,
+        trim: true,
         required: [true, "To continue, please enter your name."],
     },
     email: {
         type: String,
+        trim: true,
         maxLength: [
             320,
             "Email length is too long. Please type an email address that is no longer than 320 characters.",
@@ -43,6 +46,7 @@ const accountSchema = new mongoose_1.default.Schema({
     },
     phoneNumber: {
         type: String,
+        trim: true,
         maxLength: [
             15,
             "Please enter a working phone number up to 15 characters in length.",
@@ -51,28 +55,35 @@ const accountSchema = new mongoose_1.default.Schema({
     },
     division: {
         type: String,
+        trim: true,
         required: [true, "Please choose a division to continue."],
     },
     status: {
         type: String,
+        trim: true,
     },
     avatar: {
         type: String,
-        default: "default-avatar.jpg",
+        trim: true,
+        default: path_1.default.join(String(process.env.SAVE_ACCOUNT_AVATAR), String(process.env.DEFAULT_AVATAR_NAME)),
     },
     santriPeriod: {
         type: String,
+        trim: true,
     },
     generation: {
         type: Number,
         default: 15,
+        trim: true,
     },
     generationYear: {
         type: Number,
+        trim: true,
         default: 2090,
     },
     role: {
         type: Number,
+        trim: true,
         default: 3,
         ref: "Role",
     },

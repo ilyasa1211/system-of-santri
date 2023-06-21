@@ -3,9 +3,9 @@ import { Model } from "mongoose";
 import { NotFoundError } from "../traits/errors";
 import { IConfiguration } from "../models";
 
-export default async function (Model: Model<IConfiguration>): Promise<string> {
+export default async function (Model: Model<IConfiguration>, key: string = "access_code"): Promise<string> {
   const { value } = await Model.findOne({
-    key: "access_code",
+    key,
   }) as IConfiguration;
   if (!value) {
     throw new NotFoundError(

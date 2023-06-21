@@ -23,7 +23,13 @@ async function index(request: Request, response: Response, next: NextFunction) {
  */
 async function show(request: Request, response: Response, next: NextFunction) {
   try {
-    const resume = await Resume.findOne({ _id: request.params.id });
+    const { id } = request.params;
+    const resume = await Resume.findById(id);
+    if (!resume) {
+      throw new NotFoundError(
+        "We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.",
+      );
+    }
     return response.status(StatusCodes.OK).json({ data: resume });
   } catch (error: any) {
     next(error);
@@ -47,11 +53,11 @@ async function insert(
       );
     }
     request.body.account_id = id;
-    const resumes = await Resume.create(request.body);
+    const resume = await Resume.create(request.body);
     return response.status(StatusCodes.OK).json({
       message:
         "Congratulations on creating a successful resume! This crucial document will aid in showcasing your abilities, credentials, and experiences. ",
-      data: resumes,
+      resume,
     });
   } catch (error: any) {
     next(error);
@@ -68,8 +74,19 @@ async function update(
 ) {
   try {
     const { id } = request.params;
-    const { technicalSkill, education, personalBackground, experience } =
-      request.body;
+    const {
+      technicalSkill: technical_skill,
+      education,
+      personalBackground: personal_background,
+      experience,
+    } = request.body;
+
+    const updatedValue = {
+      technical_skill,
+      education,
+      personal_background,
+      experience,
+    };
     const resume = await Resume.findById(id);
     if (!resume) {
       throw new NotFoundError(
@@ -78,11 +95,7 @@ async function update(
     }
 
     authorize(request.user as IAccount, resume.account_id.toString());
-
-    if (technicalSkill) resume.technical_skill = technicalSkill;
-    if (education) resume.education = education;
-    if (personalBackground) resume.personal_background = personalBackground;
-    if (experience) resume.experience = experience;
+    Object.assign(resume, updatedValue);
 
     await resume.save();
 

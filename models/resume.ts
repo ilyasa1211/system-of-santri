@@ -17,19 +17,23 @@ export const resumeSchema = new mongoose.Schema<IResume>({
   },
   technical_skill: {
     type: String,
-    default: "",
+    trim: true,
+    default: null,
   },
   education: {
     type: String,
-    default: "",
+    trim: true,
+    default: null,
   },
   personal_background: {
     type: String,
-    default: "",
+    trim: true,
+    default: null,
   },
   experience: {
     type: String,
-    default: "",
+    trim: true,
+    default: null,
   },
 }, { timestamps: true });
 

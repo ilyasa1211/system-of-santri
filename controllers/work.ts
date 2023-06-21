@@ -2,7 +2,7 @@ import { Account, IAccount, Work } from "../models";
 import { StatusCodes } from "http-status-codes";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
-import { NotFoundError } from "../traits/errors";
+import { BadRequestError, NotFoundError } from "../traits/errors";
 
 export { destroy, index, insert, show, update };
 
@@ -11,7 +11,7 @@ export { destroy, index, insert, show, update };
  */
 async function index(request: Request, response: Response, next: NextFunction) {
   try {
-    const works = await Work.find({}, {}, { sort: { createdAt: "desc" } });
+    const works = await Work.find().sort({ createdAt: "desc" });
     return response.status(StatusCodes.OK).json({ works });
   } catch (error: any) {
     next(error);
@@ -23,7 +23,13 @@ async function index(request: Request, response: Response, next: NextFunction) {
  */
 async function show(request: Request, response: Response, next: NextFunction) {
   try {
-    const work = await Work.findOne({ _id: request.params.id });
+    const { id } = request.params;
+    const work = await Work.findById(id);
+    if (!work) {
+      throw new NotFoundError(
+        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
+      );
+    }
     return response.status(StatusCodes.OK).json({ work });
   } catch (error: any) {
     next(error);
@@ -39,12 +45,21 @@ async function insert(
   next: NextFunction,
 ) {
   try {
+    const { title } = request.body;
+    if (!title) {
+      throw new BadRequestError(
+        "Please enter the needed Title to continue.",
+      );
+    }
     const user = request.user as IAccount;
     request.body.account_id = user.id;
+
     const works = await Work.create(request.body);
     const account = await Account.findById(user.id);
+
     account!.work.push(works.id);
     await account!.save();
+
     return response.status(StatusCodes.OK).json({
       message:
         "Congratulations on completing your work successfully! This is a noteworthy accomplishment that highlights your talent and commitment.",
@@ -64,20 +79,22 @@ async function update(
   next: NextFunction,
 ) {
   try {
-    const { id } = request.params;
-    const { title, link } = request.body;
-    const user = request.user as IAccount;
+    const { params, body, user: account } = request;
+    const { id } = params;
+    const { title, link } = body;
+
     const work = await Work.findById(id);
+
     if (!work) {
       throw new NotFoundError(
-        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again. Please don't hesitate to contact our support staff if you need more help.",
+        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
       );
     }
+    const updatedWork = { title, link };
+    Object.assign(work, updatedWork)
 
-    authorize(user, work.account_id.toString());
-    if (title) work.title = title;
-    if (link) work.link = link;
-    work.updatedAt = Date.now().toString();
+    authorize(account as IAccount, work.account_id.toString());
+
     await work.save();
     return response.status(StatusCodes.OK).json({
       message:
@@ -102,7 +119,7 @@ async function destroy(
     const work = await Work.findById(id);
     if (!work) {
       throw new NotFoundError(
-        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again. Please don't hesitate to contact our support staff if you need more help.",
+        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
       );
     }
     authorize(user, work.account_id.toString());

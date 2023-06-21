@@ -5,7 +5,7 @@
   "scripts": {
     "build": "npx tsc --watch",
     "start": "node dist/bin/www",
-    "dev": "nodemon ./bin/www"
+    "dev": "nodemon dist/bin/www"
   },
   "dependencies": {
     "argon2": "^0.30.3",

@@ -19,7 +19,6 @@ const http_status_codes_1 = require("http-status-codes");
 const errors_1 = require("../traits/errors");
 const models_1 = require("../models");
 const utils_1 = require("../utils");
-const trim_all_body_1 = __importDefault(require("../utils/trim-all-body"));
 const role_1 = require("../traits/role");
 const email_pattern_1 = __importDefault(require("../traits/email-pattern"));
 const get_role_name_1 = __importDefault(require("../utils/get-role-name"));
@@ -55,7 +54,6 @@ function signup(request, response, next) {
             if (request.file)
                 request.body.photo = request.file.filename;
             const hash = (0, utils_1.generateToken)();
-            (0, trim_all_body_1.default)(request);
             const defaultValue = {
                 verify: false,
                 verifyExpiration: date.setDate(date.getDate() + 1),

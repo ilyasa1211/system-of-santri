@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
 import path from "node:path";
 import { NextFunction, Request, Response } from "express";
-import { NotFoundError } from "../traits/errors";
+import { BadRequestError, NotFoundError } from "../traits/errors";
 
 export { destroy, index, insert, show, update };
 
@@ -24,7 +24,13 @@ async function index(request: Request, response: Response, next: NextFunction) {
  */
 async function show(request: Request, response: Response, next: NextFunction) {
   try {
-    const learning = await Learning.findById(request.params.id);
+    const { id } = request.params;
+    const learning = await Learning.findById(id);
+    if (!learning) {
+      throw new NotFoundError(
+        "We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available. ",
+      );
+    }
     return response.status(StatusCodes.OK).json({ learning });
   } catch (error: any) {
     next(error);
@@ -40,10 +46,14 @@ async function insert(
   next: NextFunction,
 ) {
   try {
-    if (request.file) {
-      request.body.thumbnail = request.file.filename;
+    const { body, file } = request;
+
+    !body.thumbnail && delete body.thumbnail;
+    if (file) {
+      const { path } = file;
+      body.thumbnail = path.slice(path.indexOf("images"));
     }
-    await Learning.create(request.body);
+    await Learning.create(body);
     return response.status(StatusCodes.OK).json({
       message:
         "Congratulations on developing a lesson successfully! Your commitment to education and knowledge sharing is admirable. ",
@@ -62,16 +72,19 @@ async function update(
   next: NextFunction,
 ) {
   try {
-    if (request.file) {
-      request.body.thumbnail = request.file.filename;
+    const { body, file, params } = request;
+    const { id } = params;
+    if (file) {
+      const { path } = file;
+      body.thumbnail = path.slice(path.indexOf("images"));
     }
-    const learning = await Learning.findById(request.params.id);
+    const learning = await Learning.findById(id);
     if (!learning) {
       throw new NotFoundError(
         "We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available. ",
       );
     }
-    Object.assign(learning, request.body);
+    Object.assign(learning, body);
     await learning.save();
     return response.status(StatusCodes.OK).json({
       message:
@@ -91,31 +104,26 @@ async function destroy(
   next: NextFunction,
 ) {
   try {
-    const learning = await Learning.findById(request.params.id);
+    const { id } = request.params;
+    const learning = await Learning.findById(id);
     if (!learning) {
       throw new NotFoundError(
         "We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available.",
       );
     }
+
     const { thumbnail } = learning;
-    if (thumbnail && thumbnail !== "default-thumbnail.jpg") {
-      const saveLearningThumbnail = process.env
-        .SAVE_LEARNING_THUMBNAIL as string;
+
+    await learning.deleteOne();
+
+    if (!thumbnail.endsWith(String(process.env.DEFAULT_THUMBNAIL_NAME))) {
       fs.unlink(
-        path.join(
-          __dirname,
-          "..",
-          "public",
-          "images",
-          saveLearningThumbnail,
-          thumbnail,
-        ),
+        path.join(__dirname, "..", "public", thumbnail),
         (error: any) => {
           if (error) throw error;
         },
       );
     }
-    await learning.deleteOne();
     return response.status(StatusCodes.OK).json({
       message:
         "The deletion of your lesson was successful. The learning platform has removed it, and all associated data has been permanently deleted.",

@@ -6,7 +6,6 @@ import { NotFoundError } from "../traits/errors";
 import argon2 from "argon2";
 import { Account, IAccount, Resume, Work } from "../models";
 import { authorize } from "../utils";
-import trimAllBody from "../utils/trim-all-body";
 import { NextFunction, Request, Response } from "express";
 
 const projection = {
@@ -37,12 +36,10 @@ export {
  */
 async function index(request: Request, response: Response, next: NextFunction) {
   try {
-    const withTrashed = request.query.trashed;
-    const option: { deletedAt: null | Record<string, any> } = {
-      deletedAt: null,
-    };
-    if (withTrashed) option.deletedAt = { $ne: null };
-    const accounts = await Account.find(option, projection);
+    const accounts = await Account.find({ deletedAt: null })
+      .select(
+        "name email phoneNumber division status avatar santriPeriod generation generationYear role work absenses",
+      );
     return response.status(StatusCodes.OK).json({ accounts });
   } catch (error: any) {
     next(error);
@@ -57,16 +54,21 @@ async function insert(
   next: NextFunction,
 ) {
   try {
-    if (request.file) request.body.avatar = request.file.filename;
-    trimAllBody(request);
-    request.body.verify = true;
-    request.body.password = await argon2.hash(request.body.password, {
+    const { body, file } = request;
+    const { name, email } = body;
+
+    !body.avatar && delete body.avatar;
+
+    if (file) body.avatar = file.filename;
+
+    body.verify = true;
+    body.password = await argon2.hash(body.password, {
       type: argon2.argon2i,
     });
-    const account = await Account.create(request.body);
+    const account = await Account.create(body);
     const { id } = account;
     const token = jwt.sign(
-      { id, name: request.body.name },
+      { id, email, name },
       String(process.env.JWT_SECRET),
     );
     return response.status(StatusCodes.OK).json({ token });
@@ -82,11 +84,17 @@ async function show(request: Request, response: Response, next: NextFunction) {
   try {
     const { id } = request.params;
     const account = await Account.findOne(
-      { _id: id, deletedAt: null },
-      projection,
+      { _id: id.replace(/[\W_]/g, ""), deletedAt: null },
+    ).select(
+      "name email phoneNumber division status avatar santriPeriod generation generationYear role work absenses",
     );
     return response.status(StatusCodes.OK).json({ account });
   } catch (error: any) {
+    if (error.message.startsWith("Cast to ObjectId failed")) {
+      error.message =
+        "We apologize for the inconvenience, but the provided Account ID appears to be invalid. Please double-check the ID and ensure its accuracy.";
+      error.code = StatusCodes.BAD_REQUEST;
+    }
     next(error);
   }
 }
@@ -102,11 +110,12 @@ async function update(
   try {
     const { id }: { id?: string } = request.params;
     authorize(request.user as IAccount, id);
-    request.body.updatedAt = Date.now();
+
     await Account.findOneAndUpdate(
       { _id: id, deletedAt: null },
       request.body,
     );
+    
     return response.status(StatusCodes.OK).json({
       message:
         "Congratulations on finishing up your account update! Your suggestions have been carried out.",
@@ -190,9 +199,9 @@ async function eliminate(
 
     await account.deleteOne();
 
-    if (avatar !== "default-avatar.jpg") {
+    if (!avatar.endsWith(String(process.env.DEFAULT_AVATAR_NAME))) {
       fs.unlink(
-        path.join(__dirname, "..", "public", "images", "account", avatar),
+        path.join(__dirname, "..", "public", avatar),
         (error) => {
           if (error) throw error;
         },
@@ -216,7 +225,9 @@ async function profile(
 ) {
   try {
     const { id } = request.user as IAccount;
-    const account = await Account.findById(id, projection);
+    const account = await Account.findById(id).select(
+      "name email phoneNumber divison status avatar santriPeriod generation generationYear role absense work absense",
+    );
     if (!account) {
       throw new NotFoundError(
         "We apologize, but the requested account was not found.",
@@ -262,7 +273,7 @@ async function workShow(
     });
     if (!works) {
       throw new NotFoundError(
-        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again. Please don't hesitate to contact our support staff if you need more help.",
+        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
       );
     }
     return response.status(StatusCodes.OK).json({ works });

@@ -8,7 +8,7 @@ import { ROLES } from "../traits/role";
 export default function (
   account: IAccount,
   id: string,
-  roleException = [ROLES.ADMIN],
+  roleException: Array<ROLES> = [ROLES.ADMIN],
 ) {
   const hasTheRights = roleException.find((role: number) => {
     const accountRole = <{ id: string; name: string }> account.role;

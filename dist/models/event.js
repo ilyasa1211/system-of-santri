@@ -18,6 +18,7 @@ exports.eventSchema = new mongoose_1.default.Schema({
     },
     slug: {
         type: String,
+        trim: true,
         unique: true,
     },
 }, { timestamps: true });

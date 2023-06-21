@@ -2,7 +2,7 @@ import mongoose, { ObjectId } from "mongoose";
 
 export interface INote {
   learning_id: ObjectId | string;
-  note: number;
+  note: string;
 }
 
 export const noteSchema = new mongoose.Schema<INote>({
@@ -11,7 +11,8 @@ export const noteSchema = new mongoose.Schema<INote>({
     ref: "Learning",
   },
   note: {
-    type: Number,
+    type: String,
+    trim: true,
     require: [true, "Please type in your message."],
   },
 });

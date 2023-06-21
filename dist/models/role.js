@@ -11,6 +11,7 @@ exports.roleSchema = new mongoose_1.default.Schema({
     },
     name: {
         type: String,
+        trim: true,
     },
 });
 exports.Role = mongoose_1.default.model("Role", exports.roleSchema);

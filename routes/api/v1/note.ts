@@ -1,12 +1,10 @@
-
-
-import express from "express";
+import { Router } from "express";
 import passport from "passport";
-const router = express.Router();
-
 import * as NoteController from "../../../controllers/note";
 import { accountIs } from "../../../middlewares";
 import { ROLES } from "../../../traits/role";
+
+const router: Router = Router();
 
 router.use(passport.authenticate("jwt", { session: false }));
 

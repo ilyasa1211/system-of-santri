@@ -3,7 +3,7 @@ import passport from "passport";
 import { findOrCreate, refreshCalendar, refreshRole } from "../../../utils";
 import { Calendar, Role } from "../../../models";
 
-const router = Router();
+const router: Router =  Router();
 
 export default router;
 

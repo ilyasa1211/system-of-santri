@@ -4,7 +4,7 @@ import { AccountController } from "../../../controllers";
 import { accountIs } from "../../../middlewares";
 import { ROLES } from "../../../traits/role";
 
-const router = Router();
+const router: Router =  Router();
 
 router.use(passport.authenticate("jwt", { session: false }));
 router.use(accountIs(ROLES.ADMIN));

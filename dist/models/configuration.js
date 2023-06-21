@@ -9,11 +9,13 @@ const utils_1 = require("../utils");
 exports.configurationSchema = new mongoose_1.default.Schema({
     key: {
         type: String,
+        trim: true,
         unique: true,
         required: true,
     },
     value: {
         type: String,
+        trim: true,
         default: (0, utils_1.generateToken)(3),
     },
 });

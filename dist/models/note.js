@@ -11,7 +11,8 @@ exports.noteSchema = new mongoose_1.default.Schema({
         ref: "Learning",
     },
     note: {
-        type: Number,
+        type: String,
+        trim: true,
         require: [true, "Please type in your message."],
     },
 });

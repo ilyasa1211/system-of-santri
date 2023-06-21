@@ -1,7 +1,7 @@
 
 
 import { Router } from "express";
-const router = Router();
+const router: Router =  Router();
 
 import { AuthController } from "../../../controllers";
 const upload = require("../../../config/multer")("account");

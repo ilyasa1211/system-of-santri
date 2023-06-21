@@ -9,11 +9,13 @@ export interface IConfiguration {
 export const configurationSchema = new mongoose.Schema<IConfiguration>({
   key: {
     type: String,
+    trim: true,
     unique: true,
     required: true,
   },
   value: {
     type: String,
+    trim: true,
     default: generateToken(3),
   },
 });

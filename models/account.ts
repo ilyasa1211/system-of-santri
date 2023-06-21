@@ -1,6 +1,7 @@
 import mongoose, { Date, Document, ObjectId } from "mongoose";
 import emailPattern from "../traits/email-pattern";
 import { ICalendar } from "./calendar";
+import path from "path";
 
 require("./role");
 require("./resume");
@@ -35,10 +36,12 @@ export interface IAccount extends Document {
 const accountSchema = new mongoose.Schema<IAccount>({
   name: {
     type: String,
+    trim: true,
     required: [true, "To continue, please enter your name."],
   },
   email: {
     type: String,
+    trim: true,
     maxLength: [
       320, // Email address maximum length
       "Email length is too long. Please type an email address that is no longer than 320 characters.",
@@ -67,6 +70,7 @@ const accountSchema = new mongoose.Schema<IAccount>({
   },
   phoneNumber: {
     type: String,
+    trim: true,
     maxLength: [
       15,
       "Please enter a working phone number up to 15 characters in length.",
@@ -75,28 +79,38 @@ const accountSchema = new mongoose.Schema<IAccount>({
   },
   division: {
     type: String,
+    trim: true,
     required: [true, "Please choose a division to continue."],
   },
   status: {
     type: String,
+    trim: true,
   },
   avatar: {
     type: String,
-    default: "default-avatar.jpg",
+    trim: true,
+    default: path.join(
+      String(process.env.SAVE_ACCOUNT_AVATAR),
+      String(process.env.DEFAULT_AVATAR_NAME),
+    ),
   },
   santriPeriod: {
     type: String,
+    trim: true,
   },
   generation: {
     type: Number,
     default: 15,
+    trim: true,
   },
   generationYear: {
     type: Number,
+    trim: true,
     default: 2090,
   },
   role: {
     type: Number,
+    trim: true,
     default: 3,
     ref: "Role",
   },

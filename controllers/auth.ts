@@ -9,7 +9,6 @@ import {
   sendForgetPasswordEmail,
   sendVerifyEmail,
 } from "../utils";
-import trimAllBody from "../utils/trim-all-body";
 import { ROLES } from "../traits/role";
 import emailPattern from "../traits/email-pattern";
 import { NextFunction, Request, Response } from "express";
@@ -59,7 +58,7 @@ async function signup(
         "Please enter the needed access code to continue.",
       );
     }
-    const accessCode = await getAccessCode(Configuration);
+    const accessCode: string = await getAccessCode(Configuration);
 
     if (accessCodeInput !== accessCode) {
       throw new UnauthorizedError(
@@ -70,8 +69,6 @@ async function signup(
     if (request.file) request.body.photo = request.file.filename;
 
     const hash: string = generateToken();
-
-    trimAllBody(request);
 
     const defaultValue = {
       verify: false,

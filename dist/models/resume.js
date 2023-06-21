@@ -12,19 +12,23 @@ exports.resumeSchema = new mongoose_1.default.Schema({
     },
     technical_skill: {
         type: String,
-        default: "",
+        trim: true,
+        default: null,
     },
     education: {
         type: String,
-        default: "",
+        trim: true,
+        default: null,
     },
     personal_background: {
         type: String,
-        default: "",
+        trim: true,
+        default: null,
     },
     experience: {
         type: String,
-        default: "",
+        trim: true,
+        default: null,
     },
 }, { timestamps: true });
 exports.Resume = mongoose_1.default.model("Resume", exports.resumeSchema);

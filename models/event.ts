@@ -21,6 +21,7 @@ export const eventSchema = new mongoose.Schema<IEvent>({
   },
   slug: {
     type: String,
+    trim: true,
     unique: true,
   },
 }, { timestamps: true });

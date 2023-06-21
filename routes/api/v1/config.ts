@@ -4,7 +4,7 @@ import * as middleware from "../../../middlewares";
 import { ConfigurationController } from "../../../controllers/configuration";
 import { ROLES } from "../../../traits/role";
 
-const router = Router();
+const router: Router =  Router();
 const config = new ConfigurationController();
 
 router.use(passport.authenticate("jwt", { session: false }));

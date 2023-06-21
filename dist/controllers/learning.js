@@ -39,7 +39,11 @@ exports.index = index;
 function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const learning = yield models_1.Learning.findById(request.params.id);
+            const { id } = request.params;
+            const learning = yield models_1.Learning.findById(id);
+            if (!learning) {
+                throw new errors_1.NotFoundError("We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available. ");
+            }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ learning });
         }
         catch (error) {
@@ -54,10 +58,13 @@ exports.show = show;
 function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (request.file) {
-                request.body.thumbnail = request.file.filename;
+            const { body, file } = request;
+            !body.thumbnail && delete body.thumbnail;
+            if (file) {
+                const { path } = file;
+                body.thumbnail = path.slice(path.indexOf("images"));
             }
-            yield models_1.Learning.create(request.body);
+            yield models_1.Learning.create(body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations on developing a lesson successfully! Your commitment to education and knowledge sharing is admirable. ",
             });
@@ -74,14 +81,17 @@ exports.insert = insert;
 function update(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (request.file) {
-                request.body.thumbnail = request.file.filename;
+            const { body, file, params } = request;
+            const { id } = params;
+            if (file) {
+                const { path } = file;
+                body.thumbnail = path.slice(path.indexOf("images"));
             }
-            const learning = yield models_1.Learning.findById(request.params.id);
+            const learning = yield models_1.Learning.findById(id);
             if (!learning) {
                 throw new errors_1.NotFoundError("We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available. ");
             }
-            Object.assign(learning, request.body);
+            Object.assign(learning, body);
             yield learning.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations on finishing up your lesson update! Your commitment to enhancing and perfecting the instructional materials is admirable.",
@@ -99,20 +109,19 @@ exports.update = update;
 function destroy(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const learning = yield models_1.Learning.findById(request.params.id);
+            const { id } = request.params;
+            const learning = yield models_1.Learning.findById(id);
             if (!learning) {
                 throw new errors_1.NotFoundError("We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available.");
             }
             const { thumbnail } = learning;
-            if (thumbnail && thumbnail !== "default-thumbnail.jpg") {
-                const saveLearningThumbnail = process.env
-                    .SAVE_LEARNING_THUMBNAIL;
-                node_fs_1.default.unlink(node_path_1.default.join(__dirname, "..", "public", "images", saveLearningThumbnail, thumbnail), (error) => {
+            yield learning.deleteOne();
+            if (!thumbnail.endsWith(String(process.env.DEFAULT_THUMBNAIL_NAME))) {
+                node_fs_1.default.unlink(node_path_1.default.join(__dirname, "..", "public", thumbnail), (error) => {
                     if (error)
                         throw error;
                 });
             }
-            yield learning.deleteOne();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "The deletion of your lesson was successful. The learning platform has removed it, and all associated data has been permanently deleted.",
             });

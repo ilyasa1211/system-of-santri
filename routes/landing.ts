@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-const router = Router();
+const router: Router =  Router();
 
 export default router;
 

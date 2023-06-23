@@ -4,3 +4,4 @@ node_modules/
 .vscode/
 logs/
 dist/public/images/*/*
+!dist/public/images/*/no-thumbnail.png

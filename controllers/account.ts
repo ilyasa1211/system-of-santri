@@ -8,13 +8,20 @@ import { Account, IAccount, Resume, Work } from "../models";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
 
-const projection = {
-  password: 0,
-  verify: 0,
-  hash: 0,
-  forgetToken: 0,
-  __v: 0,
-};
+const projection = [
+  "name",
+  "email",
+  "phoneNumber",
+  "division",
+  "status",
+  "avatar",
+  "santriPeriod",
+  "generation",
+  "generationYear",
+  "role",
+  "work",
+  "absenses",
+];
 
 export {
   destroy,
@@ -38,7 +45,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
   try {
     const accounts = await Account.find({ deletedAt: null })
       .select(
-        "name email phoneNumber division status avatar santriPeriod generation generationYear role work absenses",
+        projection,
       );
     return response.status(StatusCodes.OK).json({ accounts });
   } catch (error: any) {
@@ -85,9 +92,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
     const { id } = request.params;
     const account = await Account.findOne(
       { _id: id.replace(/[\W_]/g, ""), deletedAt: null },
-    ).select(
-      "name email phoneNumber division status avatar santriPeriod generation generationYear role work absenses",
-    );
+    ).select(projection);
     return response.status(StatusCodes.OK).json({ account });
   } catch (error: any) {
     if (error.message.startsWith("Cast to ObjectId failed")) {
@@ -115,7 +120,7 @@ async function update(
       { _id: id, deletedAt: null },
       request.body,
     );
-    
+
     return response.status(StatusCodes.OK).json({
       message:
         "Congratulations on finishing up your account update! Your suggestions have been carried out.",
@@ -225,9 +230,14 @@ async function profile(
 ) {
   try {
     const { id } = request.user as IAccount;
-    const account = await Account.findById(id).select(
-      "name email phoneNumber divison status avatar santriPeriod generation generationYear role absense work absense",
-    );
+    const account = await Account.findById(id)
+      .select(projection)
+      .populate({
+        path: "role",
+        foreignField: "id",
+        select: "-_id id name",
+      })
+      .exec();
     if (!account) {
       throw new NotFoundError(
         "We apologize, but the requested account was not found.",

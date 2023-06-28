@@ -21,13 +21,20 @@ const errors_1 = require("../traits/errors");
 const argon2_1 = __importDefault(require("argon2"));
 const models_1 = require("../models");
 const utils_1 = require("../utils");
-const projection = {
-    password: 0,
-    verify: 0,
-    hash: 0,
-    forgetToken: 0,
-    __v: 0,
-};
+const projection = [
+    "name",
+    "email",
+    "phoneNumber",
+    "division",
+    "status",
+    "avatar",
+    "santriPeriod",
+    "generation",
+    "generationYear",
+    "role",
+    "work",
+    "absenses",
+];
 /**
  *  Get All Accounts, everyone has rights
  */
@@ -35,7 +42,7 @@ function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const accounts = yield models_1.Account.find({ deletedAt: null })
-                .select("name email phoneNumber division status avatar santriPeriod generation generationYear role work absenses");
+                .select(projection);
             return response.status(http_status_codes_1.StatusCodes.OK).json({ accounts });
         }
         catch (error) {
@@ -77,7 +84,7 @@ function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            const account = yield models_1.Account.findOne({ _id: id.replace(/[\W_]/g, ""), deletedAt: null }).select("name email phoneNumber division status avatar santriPeriod generation generationYear role work absenses");
+            const account = yield models_1.Account.findOne({ _id: id.replace(/[\W_]/g, ""), deletedAt: null }).select(projection);
             return response.status(http_status_codes_1.StatusCodes.OK).json({ account });
         }
         catch (error) {
@@ -198,7 +205,14 @@ function profile(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.user;
-            const account = yield models_1.Account.findById(id).select("name email phoneNumber divison status avatar santriPeriod generation generationYear role absense work absense");
+            const account = yield models_1.Account.findById(id)
+                .select(projection)
+                .populate({
+                path: "role",
+                foreignField: "id",
+                select: "-_id id name",
+            })
+                .exec();
             if (!account) {
                 throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
             }

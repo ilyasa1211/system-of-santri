@@ -113,8 +113,13 @@ async function update(
   next: NextFunction,
 ) {
   try {
+    const { body, file } = request;
     const { id }: { id?: string } = request.params;
     authorize(request.user as IAccount, id);
+
+    !body.avatar && delete body.avatar;
+
+    if (file) body.avatar = file.filename;
 
     await Account.findOneAndUpdate(
       { _id: id, deletedAt: null },

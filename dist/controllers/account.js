@@ -104,8 +104,12 @@ exports.show = show;
 function update(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            const { body, file } = request;
             const { id } = request.params;
             (0, utils_1.authorize)(request.user, id);
+            !body.avatar && delete body.avatar;
+            if (file)
+                body.avatar = file.filename;
             yield models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, request.body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations on finishing up your account update! Your suggestions have been carried out.",

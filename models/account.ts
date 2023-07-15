@@ -2,6 +2,8 @@ import mongoose, { Date, Document, ObjectId } from "mongoose";
 import emailPattern from "../traits/email-pattern";
 import { ICalendar } from "./calendar";
 import path from "path";
+import { deletePhoto } from "../utils/delete-photo";
+import { ResponseMessage } from "../traits/response";
 
 require("./role");
 require("./resume");
@@ -48,7 +50,7 @@ const accountSchema = new mongoose.Schema<IAccount>({
     ],
     required: [
       true,
-      "Please enter a working email address. Email is a necessary field.",
+      ResponseMessage.EMPTY_EMAIL,
     ],
     unique: true,
     match: emailPattern,
@@ -57,7 +59,7 @@ const accountSchema = new mongoose.Schema<IAccount>({
     type: String,
     minLength: [
       8,
-      "Please pick a password that is at least 8 characters long for the security of your account.",
+      ResponseMessage.WEAK_PASSWORD,
     ],
     maxLength: [
       128,
@@ -65,7 +67,7 @@ const accountSchema = new mongoose.Schema<IAccount>({
     ],
     required: [
       true,
-      "To ensure the security of your account, kindly provide a password.",
+      ResponseMessage.EMPTY_PASSWORD,
     ],
   },
   phoneNumber: {
@@ -125,6 +127,7 @@ const accountSchema = new mongoose.Schema<IAccount>({
   resume: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: "Resume",
+    default: null,
   },
   verify: {
     type: Boolean,
@@ -153,6 +156,12 @@ accountSchema.pre("save", function (next) {
   this.absense = 0;
   next();
 });
+
+accountSchema.methods.deleteAvatar = async function () {
+  // await this.deleteOne();
+  debugger;
+  // deletePhoto(this.); 
+}
 
 export const Account = mongoose.model<IAccount>("Account", accountSchema);
 

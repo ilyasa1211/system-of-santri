@@ -2,7 +2,7 @@ import { Router } from "express";
 import passport from "passport";
 import * as middleware from "../../../middlewares";
 
-import upload from "../../../config/multer";
+import upload from "../../../configs/multer";
 import { LearningController } from "../../../controllers";
 import { ROLES } from "../../../traits/role";
 

@@ -16,6 +16,7 @@ const models_1 = require("../models");
 const errors_1 = require("../traits/errors");
 const passport_1 = __importDefault(require("passport"));
 const passport_jwt_1 = require("passport-jwt");
+const response_1 = require("../traits/response");
 const options = {
     jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.JWT_SECRET,
@@ -28,11 +29,12 @@ const verifyCallback = function (payload, done) {
                 _id: id,
                 deletedAt: null,
             }).populate({ path: "role", foreignField: "id" });
+            debugger;
             if (!account) {
-                throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
             if (!account.verify) {
-                throw new errors_1.UnauthorizedError("Please be aware that your account has not yet been verified, which we regret. A critical step in ensuring the safety and reliability of our platform is account verification. Please check your registered email for a verification link or further instructions before continuing. Please double-check your spam or junk folder if you haven't received a verification email. ");
+                throw new errors_1.UnauthorizedError(response_1.ResponseMessage.UNVERIFIED_ACCOUNT);
             }
             return done(null, account);
         }

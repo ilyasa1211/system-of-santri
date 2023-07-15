@@ -29,7 +29,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const passport_1 = __importDefault(require("passport"));
 const middleware = __importStar(require("../../../middlewares"));
-const multer_1 = __importDefault(require("../../../config/multer"));
+const multer_1 = __importDefault(require("../../../configs/multer"));
 const controllers_1 = require("../../../controllers");
 const role_1 = require("../../../traits/role");
 const router = (0, express_1.Router)();

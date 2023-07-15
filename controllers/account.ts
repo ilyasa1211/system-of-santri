@@ -7,6 +7,9 @@ import argon2 from "argon2";
 import { Account, IAccount, Resume, Work } from "../models";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
+import { ResponseMessage } from "../traits/response";
+import { deletePhoto } from "../utils/delete-photo";
+import { CallbackError } from "mongoose";
 
 const projection = [
   "name",
@@ -23,25 +26,10 @@ const projection = [
   "absenses",
 ];
 
-export {
-  destroy,
-  eliminate,
-  index,
-  insert,
-  profile,
-  restore,
-  resume,
-  show,
-  trash,
-  update,
-  workIndex,
-  workShow,
-};
-
 /**
  *  Get All Accounts, everyone has rights
  */
-async function index(request: Request, response: Response, next: NextFunction) {
+export async function index(request: Request, response: Response, next: NextFunction) {
   try {
     const accounts = await Account.find({ deletedAt: null })
       .select(
@@ -55,7 +43,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 /**
  * Create an account to the database, only admin has rights
  */
-async function insert(
+export async function insert(
   request: Request,
   response: Response,
   next: NextFunction,
@@ -63,8 +51,6 @@ async function insert(
   try {
     const { body, file } = request;
     const { name, email } = body;
-
-    !body.avatar && delete body.avatar;
 
     if (file) body.avatar = file.filename;
 
@@ -87,7 +73,7 @@ async function insert(
 /**
  * Show one account, everyone has rights
  */
-async function show(request: Request, response: Response, next: NextFunction) {
+export async function show(request: Request, response: Response, next: NextFunction) {
   try {
     const { id } = request.params;
     const account = await Account.findOne(
@@ -107,7 +93,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 /**
  * Update the existing account, the user of the account and admin has rights
  */
-async function update(
+export async function update(
   request: Request,
   response: Response,
   next: NextFunction,
@@ -117,14 +103,17 @@ async function update(
     const { id }: { id?: string } = request.params;
     authorize(request.user as IAccount, id);
 
-    !body.avatar && delete body.avatar;
-
-    if (file) body.avatar = file.filename;
+    let isAvatarUpdate: boolean = false;
+    if (file) {
+      body.avatar = file.filename;
+      isAvatarUpdate = true;
+    };
 
     await Account.findOneAndUpdate(
       { _id: id, deletedAt: null },
       request.body,
     );
+
 
     return response.status(StatusCodes.OK).json({
       message:
@@ -138,7 +127,7 @@ async function update(
 /**
  * Delete one account not permanently, the user of the account and admin has rights
  */
-async function destroy(
+export async function destroy(
   request: Request,
   response: Response,
   next: NextFunction,
@@ -151,8 +140,7 @@ async function destroy(
       { deletedAt: Date.now() },
     );
     return response.status(StatusCodes.ACCEPTED).json({
-      message:
-        "That your account has been deleted, we apologize. Please let us know if you need any help or if you have any questions.",
+      message: ResponseMessage.ACCOUNT_DELETED,
     });
   } catch (error: any) {
     next(error);
@@ -161,7 +149,7 @@ async function destroy(
 /**
  * Show all deleted account, admin has rights
  */
-async function trash(request: Request, response: Response, next: NextFunction) {
+export async function trash(request: Request, response: Response, next: NextFunction) {
   try {
     const accounts = await Account.find({ deletedAt: { $ne: null } });
     return response.status(StatusCodes.OK).json({ accounts });
@@ -173,7 +161,7 @@ async function trash(request: Request, response: Response, next: NextFunction) {
 /**
  * Restore one of the deleted account, admin has rights
  */
-async function restore(
+export async function restore(
   request: Request,
   response: Response,
   next: NextFunction,
@@ -181,10 +169,7 @@ async function restore(
   try {
     const { id }: { id?: string } = request.params;
     await Account.findByIdAndUpdate(id, { deletedAt: null });
-    return response.status(StatusCodes.OK).json({
-      message:
-        "Good news! Your account has been restored successfully. Hello again! Please feel free to ask any questions or for additional help.",
-    });
+    return response.status(StatusCodes.OK).json({ message: ResponseMessage.ACCOUNT_RESTORED });
   } catch (error: any) {
     next(error);
   }
@@ -192,35 +177,23 @@ async function restore(
 /**
  * Delete one account PERMANENTLY be careful, admin has rights
  */
-async function eliminate(
+export async function eliminate(
   request: Request,
   response: Response,
   next: NextFunction,
 ) {
   try {
     const { id }: { id?: string } = request.params;
-    const account = await Account.findById(id);
-    if (!account) {
-      throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
-      );
-    }
-    const { avatar } = account as IAccount;
 
-    await account.deleteOne();
+    Account.findByIdAndDelete(id, null, async (error: CallbackError, account: IAccount | null): Promise<void> => {
+      if (error) throw error;
+      debugger;
+      if (account == null) throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
+      // account.deleteAvatar();
+      debugger;
+    })
 
-    if (!avatar.endsWith(String(process.env.DEFAULT_AVATAR_NAME))) {
-      fs.unlink(
-        path.join(__dirname, "..", "public", avatar),
-        (error) => {
-          if (error) throw error;
-        },
-      );
-    }
-    return response.status(StatusCodes.OK).json({
-      message:
-        "All associated data was successfully deleted and the account was successfully cleared.",
-    });
+    return response.status(StatusCodes.OK).json({ message: ResponseMessage.ACCOUNT_DELETED_PERMANENT });
   } catch (error: any) {
     next(error);
   }
@@ -228,7 +201,7 @@ async function eliminate(
 /**
  * Get information about my account, everyone has rights
  */
-async function profile(
+export async function profile(
   request: Request,
   response: Response,
   next: NextFunction,
@@ -245,7 +218,7 @@ async function profile(
       .exec();
     if (!account) {
       throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
+        ResponseMessage.ACCOUNT_NOT_FOUND,
       );
     }
     return response.status(StatusCodes.OK).json({ account });
@@ -257,14 +230,14 @@ async function profile(
 /**
  * Get all works about an account, everyone has rights
  */
-async function workIndex(
+export async function workIndex(
   request: Request,
   response: Response,
   next: NextFunction,
 ) {
   try {
     const { id } = request.params;
-    const works = await Work.find({ account_id: id });
+    const works = await Work.find({ account_id: id }).exec();
 
     return response.json({ works });
   } catch (error: any) {
@@ -275,7 +248,7 @@ async function workIndex(
 /**
  * Get a work about an account, everyone has rights
  */
-async function workShow(
+export async function workShow(
   request: Request,
   response: Response,
   next: NextFunction,
@@ -285,7 +258,7 @@ async function workShow(
     const works = await Work.find({
       _id: workId,
       account_id: id,
-    });
+    }).exec();
     if (!works) {
       throw new NotFoundError(
         "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
@@ -300,14 +273,14 @@ async function workShow(
 /**
  * Get a resume of an account, everyone has rights
  */
-async function resume(
+export async function resume(
   request: Request,
   response: Response,
   next: NextFunction,
 ) {
   try {
     const { id } = request.params;
-    const resume = await Resume.findOne({ account_id: id });
+    const resume = await Resume.findOne({ account_id: id }).exec();
     if (!resume) {
       throw new NotFoundError(
         "We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.",

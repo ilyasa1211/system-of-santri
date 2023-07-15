@@ -8,6 +8,7 @@ import {
   VerifiedCallback,
   VerifyCallback,
 } from "passport-jwt";
+import { ResponseMessage } from "../traits/response";
 
 const options: StrategyOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -29,15 +30,15 @@ const verifyCallback: VerifyCallback = async function (
       _id: id,
       deletedAt: null,
     }).populate({ path: "role", foreignField: "id" });
-
+    debugger;
     if (!account) {
       throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
+        ResponseMessage.ACCOUNT_NOT_FOUND,
       );
     }
     if (!account.verify) {
       throw new UnauthorizedError(
-        "Please be aware that your account has not yet been verified, which we regret. A critical step in ensuring the safety and reliability of our platform is account verification. Please check your registered email for a verification link or further instructions before continuing. Please double-check your spam or junk folder if you haven't received a verification email. ",
+        ResponseMessage.UNVERIFIED_ACCOUNT,
       );
     }
     return done(null, account);

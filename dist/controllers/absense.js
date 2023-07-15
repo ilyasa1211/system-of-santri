@@ -15,6 +15,7 @@ const errors_1 = require("../traits/errors");
 const attendance_status_1 = require("../traits/attendance-status");
 const traits_1 = require("../traits");
 const account_1 = require("../models/account");
+const response_1 = require("../traits/response");
 function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -62,7 +63,7 @@ function me(request, response, next) {
                 match: { year: currentYear },
             });
             if (!account) {
-                throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
             (_a = account.absenses) === null || _a === void 0 ? void 0 : _a.forEach((absense) => {
                 const [day, month, year, status] = absense.split("/");
@@ -120,7 +121,7 @@ function insert(request, response, next) {
         try {
             const { token } = request.query;
             if (!token) {
-                throw new errors_1.BadRequestError("The supplied token is not valid. Make sure token field is entered correctly.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_TOKEN);
             }
             const currentServerTime = new Intl.DateTimeFormat("id", {
                 timeStyle: "short",

@@ -9,6 +9,7 @@ import { MONTHS, STATUSES } from "../traits";
 import { NextFunction, Request, Response } from "express";
 import { ICalendar } from "../models/calendar";
 import { Account, IAccount } from "../models/account";
+import { ResponseMessage } from "../traits/response";
 
 export { index, insert, me, show };
 
@@ -56,7 +57,7 @@ async function me(request: Request, response: Response, next: NextFunction) {
 
     if (!account) {
       throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
+        ResponseMessage.ACCOUNT_NOT_FOUND,
       );
     }
 
@@ -117,7 +118,7 @@ async function insert(
     const { token } = request.query;
     if (!token) {
       throw new BadRequestError(
-        "The supplied token is not valid. Make sure token field is entered correctly.",
+        ResponseMessage.EMPTY_TOKEN,
       );
     }
 

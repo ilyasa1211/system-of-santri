@@ -4,7 +4,7 @@ import { Router } from "express";
 const router: Router =  Router();
 
 import { AuthController } from "../../../controllers";
-const upload = require("../../../config/multer")("account");
+const upload = require("../../../configs/multer")("account");
 import * as middleware from "../../../middlewares";
 
 router.use(middleware.guest);

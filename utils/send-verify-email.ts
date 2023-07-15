@@ -1,4 +1,4 @@
-import transporter from "../config/nodemailer";
+import transporter from "../configs/nodemailer";
 import pug from "pug";
 import path from "node:path";
 import getAccountUsername from "./get-account-username";

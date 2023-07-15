@@ -14,6 +14,7 @@ import emailPattern from "../traits/email-pattern";
 import { NextFunction, Request, Response } from "express";
 import getRoleName from "../utils/get-role-name";
 import filterProperties from "../utils/filter-properties";
+import { ResponseMessage } from "../traits/response";
 
 export {
   forgotPassword,
@@ -36,34 +37,24 @@ async function signup(
     const date = new Date();
     const { name, email, password, accessCode: accessCodeInput } = request.body;
     if (!email) {
-      throw new BadRequestError(
-        "Please enter a working email address. Email is a necessary field.",
-      );
+      throw new BadRequestError(ResponseMessage.EMPTY_EMAIL);
     }
     if (!emailPattern.test(email)) {
-      throw new BadRequestError("Please enter a correct email address.");
+      throw new BadRequestError(ResponseMessage.INVALID_EMAIL);
     }
     if (!password) {
-      throw new BadRequestError(
-        "To ensure the security of your account, kindly provide a password.",
-      );
+      throw new BadRequestError(ResponseMessage.EMPTY_PASSWORD);
     }
     if (password.length < 8) {
-      throw new BadRequestError(
-        "Please pick a password that is at least 8 characters long for the security of your account.",
-      );
+      throw new BadRequestError(ResponseMessage.WEAK_PASSWORD);
     }
     if (!accessCodeInput) {
-      throw new BadRequestError(
-        "Please enter the needed access code to continue.",
-      );
+      throw new BadRequestError(ResponseMessage.EMPTY_ACCESS_CODE);
     }
     const accessCode: string = await getAccessCode(Configuration);
 
     if (accessCodeInput !== accessCode) {
-      throw new UnauthorizedError(
-        "Denied access. The access code you entered is inapplicable. Please check the code and try once more.",
-      );
+      throw new UnauthorizedError(ResponseMessage.WRONG_ACCESS_CODE);
     }
 
     if (request.file) request.body.photo = request.file.filename;
@@ -94,7 +85,7 @@ async function signup(
     ], { role: getRoleName(Number(account.role)) });
 
     return response.status(StatusCodes.CREATED).json({
-      message: "Please check your email for any additional instructions",
+      message: ResponseMessage.CHECK_EMAIL,
       account: filteredAccount,
       token,
     });
@@ -120,17 +111,13 @@ async function signin(
     const { email, password } = request.body;
 
     if (!email) {
-      throw new BadRequestError(
-        "Please enter a working email address. Email is a necessary field.",
-      );
+      throw new BadRequestError(ResponseMessage.EMPTY_EMAIL);
     }
     if (!emailPattern.test(email)) {
-      throw new BadRequestError("Please enter a correct email address.");
+      throw new BadRequestError(ResponseMessage.INVALID_EMAIL);
     }
     if (!password) {
-      throw new BadRequestError(
-        "Please type in your password.",
-      );
+      throw new BadRequestError(ResponseMessage.EMPTY_PASSWORD);
     }
 
     const account = await Account.findOne({
@@ -139,22 +126,16 @@ async function signin(
     });
 
     if (!account) {
-      throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
-      );
+      throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
     }
-    if (!account.verify) {
-      throw new UnauthorizedError(
-        "Please be aware that your account has not yet been verified, which we regret. A critical step in ensuring the safety and reliability of our platform is account verification. Please check your registered email for a verification link or further instructions before continuing. Please double-check your spam or junk folder if you haven't received a verification email. ",
-      );
+    if (!account.verify) { 
+      throw new UnauthorizedError(ResponseMessage.UNVERIFIED_ACCOUNT);
     }
 
     const valid = await argon2.verify(account.password, password);
 
     if (!valid) {
-      throw new UnauthorizedError(
-        "Sorry, but the password you provided is unreliable. Please try again after double-checking your password.",
-      );
+      throw new UnauthorizedError(ResponseMessage.WRONG_PASSWORD);
     }
     const { id, name } = account;
 
@@ -213,7 +194,7 @@ async function resendVerifyEmail(
     const account = await Account.findOne({ email });
     if (!account) {
       throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
+        ResponseMessage.ACCOUNT_NOT_FOUND,
       );
     }
     const hash: string = generateToken();
@@ -242,13 +223,13 @@ async function verify(
     const { hash } = request.query;
     if (!hash) {
       throw new BadRequestError(
-        "The supplied token is not valid. Make sure token field is entered correctly.",
+        ResponseMessage.EMPTY_TOKEN,
       );
     }
     const account = await Account.findOne({ hash });
     if (!account) {
       throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
+        ResponseMessage.ACCOUNT_NOT_FOUND,
       );
     }
     account.hash = null;
@@ -275,13 +256,13 @@ async function forgotPassword(
     const { email } = request.body;
     if (!email) {
       throw new BadRequestError(
-        "Please enter a working email address. Email is a necessary field.",
+        ResponseMessage.EMPTY_EMAIL,
       );
     }
     const account = await Account.findOne({ email, deletedAt: null });
     if (!account) {
       throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
+        ResponseMessage.ACCOUNT_NOT_FOUND,
       );
     }
     const token: string = generateToken(3);
@@ -290,7 +271,7 @@ async function forgotPassword(
     await account.save();
     await sendForgetPasswordEmail(forgetToken, account);
     return response.status(StatusCodes.OK).json({
-      message: "Please check your email for any additional instructions",
+      message: ResponseMessage.CHECK_EMAIL,
     });
   } catch (error: any) {
     next(error);
@@ -308,11 +289,7 @@ async function resetPassword(
   try {
     const { token: forgetToken } = request.query;
     const { password, confirmPassword } = request.body;
-    if (!forgetToken) {
-      throw new BadRequestError(
-        "The supplied token is not valid. Make sure token field is entered correctly.",
-      );
-    }
+    if (!forgetToken) { throw new BadRequestError(ResponseMessage.EMPTY_TOKEN) }
     if (!password) {
       throw new BadRequestError(
         "Please enter your new password in order to continue.",
@@ -325,9 +302,7 @@ async function resetPassword(
     }
     const account = await Account.findOne({ forgetToken });
     if (!account) {
-      throw new NotFoundError(
-        "We apologize, but the requested account was not found.",
-      );
+      throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
     }
     account.password = await argon2.hash(password, { type: argon2.argon2i });
     account.forgetToken = null;

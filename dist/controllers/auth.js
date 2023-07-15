@@ -23,6 +23,7 @@ const role_1 = require("../traits/role");
 const email_pattern_1 = __importDefault(require("../traits/email-pattern"));
 const get_role_name_1 = __importDefault(require("../utils/get-role-name"));
 const filter_properties_1 = __importDefault(require("../utils/filter-properties"));
+const response_1 = require("../traits/response");
 /**
  * Register an account
  */
@@ -33,23 +34,23 @@ function signup(request, response, next) {
             const date = new Date();
             const { name, email, password, accessCode: accessCodeInput } = request.body;
             if (!email) {
-                throw new errors_1.BadRequestError("Please enter a working email address. Email is a necessary field.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_EMAIL);
             }
             if (!email_pattern_1.default.test(email)) {
-                throw new errors_1.BadRequestError("Please enter a correct email address.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.INVALID_EMAIL);
             }
             if (!password) {
-                throw new errors_1.BadRequestError("To ensure the security of your account, kindly provide a password.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_PASSWORD);
             }
             if (password.length < 8) {
-                throw new errors_1.BadRequestError("Please pick a password that is at least 8 characters long for the security of your account.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.WEAK_PASSWORD);
             }
             if (!accessCodeInput) {
-                throw new errors_1.BadRequestError("Please enter the needed access code to continue.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_ACCESS_CODE);
             }
             const accessCode = yield (0, utils_1.getAccessCode)(models_1.Configuration);
             if (accessCodeInput !== accessCode) {
-                throw new errors_1.UnauthorizedError("Denied access. The access code you entered is inapplicable. Please check the code and try once more.");
+                throw new errors_1.UnauthorizedError(response_1.ResponseMessage.WRONG_ACCESS_CODE);
             }
             if (request.file)
                 request.body.photo = request.file.filename;
@@ -73,7 +74,7 @@ function signup(request, response, next) {
                 "role",
             ], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.CREATED).json({
-                message: "Please check your email for any additional instructions",
+                message: response_1.ResponseMessage.CHECK_EMAIL,
                 account: filteredAccount,
                 token,
             });
@@ -97,27 +98,27 @@ function signin(request, response, next) {
         try {
             const { email, password } = request.body;
             if (!email) {
-                throw new errors_1.BadRequestError("Please enter a working email address. Email is a necessary field.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_EMAIL);
             }
             if (!email_pattern_1.default.test(email)) {
-                throw new errors_1.BadRequestError("Please enter a correct email address.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.INVALID_EMAIL);
             }
             if (!password) {
-                throw new errors_1.BadRequestError("Please type in your password.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_PASSWORD);
             }
             const account = yield models_1.Account.findOne({
                 email,
                 deletedAt: null,
             });
             if (!account) {
-                throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
             if (!account.verify) {
-                throw new errors_1.UnauthorizedError("Please be aware that your account has not yet been verified, which we regret. A critical step in ensuring the safety and reliability of our platform is account verification. Please check your registered email for a verification link or further instructions before continuing. Please double-check your spam or junk folder if you haven't received a verification email. ");
+                throw new errors_1.UnauthorizedError(response_1.ResponseMessage.UNVERIFIED_ACCOUNT);
             }
             const valid = yield argon2_1.default.verify(account.password, password);
             if (!valid) {
-                throw new errors_1.UnauthorizedError("Sorry, but the password you provided is unreliable. Please try again after double-checking your password.");
+                throw new errors_1.UnauthorizedError(response_1.ResponseMessage.WRONG_PASSWORD);
             }
             const { id, name } = account;
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
@@ -160,7 +161,7 @@ function resendVerifyEmail(request, response, next) {
             });
             const account = yield models_1.Account.findOne({ email });
             if (!account) {
-                throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
             const hash = (0, utils_1.generateToken)();
             account.hash = hash;
@@ -184,11 +185,11 @@ function verify(request, response, next) {
         try {
             const { hash } = request.query;
             if (!hash) {
-                throw new errors_1.BadRequestError("The supplied token is not valid. Make sure token field is entered correctly.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_TOKEN);
             }
             const account = yield models_1.Account.findOne({ hash });
             if (!account) {
-                throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
             account.hash = null;
             account.verify = true;
@@ -211,11 +212,11 @@ function forgotPassword(request, response, next) {
         try {
             const { email } = request.body;
             if (!email) {
-                throw new errors_1.BadRequestError("Please enter a working email address. Email is a necessary field.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_EMAIL);
             }
             const account = yield models_1.Account.findOne({ email, deletedAt: null });
             if (!account) {
-                throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
             const token = (0, utils_1.generateToken)(3);
             const forgetToken = token;
@@ -223,7 +224,7 @@ function forgotPassword(request, response, next) {
             yield account.save();
             yield (0, utils_1.sendForgetPasswordEmail)(forgetToken, account);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Please check your email for any additional instructions",
+                message: response_1.ResponseMessage.CHECK_EMAIL,
             });
         }
         catch (error) {
@@ -241,7 +242,7 @@ function resetPassword(request, response, next) {
             const { token: forgetToken } = request.query;
             const { password, confirmPassword } = request.body;
             if (!forgetToken) {
-                throw new errors_1.BadRequestError("The supplied token is not valid. Make sure token field is entered correctly.");
+                throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_TOKEN);
             }
             if (!password) {
                 throw new errors_1.BadRequestError("Please enter your new password in order to continue.");
@@ -251,7 +252,7 @@ function resetPassword(request, response, next) {
             }
             const account = yield models_1.Account.findOne({ forgetToken });
             if (!account) {
-                throw new errors_1.NotFoundError("We apologize, but the requested account was not found.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
             account.password = yield argon2_1.default.hash(password, { type: argon2_1.default.argon2i });
             account.forgetToken = null;

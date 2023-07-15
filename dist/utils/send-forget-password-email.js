@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_path_1 = __importDefault(require("node:path"));
-const nodemailer_1 = __importDefault(require("../config/nodemailer"));
+const nodemailer_1 = __importDefault(require("../configs/nodemailer"));
 const pug_1 = __importDefault(require("pug"));
 const get_account_username_1 = __importDefault(require("./get-account-username"));
 const appUrl = process.env.APP_URL;

@@ -1,0 +1,16 @@
+export enum ResponseMessage {
+    ACCOUNT_DELETED = "That your account has been deleted, we apologize. Please let us know if you need any help or if you have any questions.",
+    ACCOUNT_DELETED_PERMANENT = "All associated data was successfully deleted and the account was successfully cleared.",
+    ACCOUNT_RESTORED = "Good news! Your account has been restored successfully. Hello again! Please feel free to ask any questions or for additional help.",
+    ACCOUNT_NOT_FOUND = "We apologize, but the requested account was not found.",
+    EMPTY_TOKEN = "The supplied token is not valid. Make sure token field is entered correctly.",
+    EMPTY_PASSWORD = "To ensure the security of your account, kindly provide a password.",
+    EMPTY_EMAIL = "Please enter a working email address. Email is a necessary field.",
+    INVALID_EMAIL = "Please enter a correct email address.",
+    CHECK_EMAIL = "Please check your email for any additional instructions",
+    WEAK_PASSWORD = "Please pick a password that is at least 8 characters long for the security of your account.",
+    UNVERIFIED_ACCOUNT = "Please be aware that your account has not yet been verified, which we regret. A critical step in ensuring the safety and reliability of our platform is account verification. Please check your registered email for a verification link or further instructions before continuing. Please double-check your spam or junk folder if you haven't received a verification email. ",
+    WRONG_PASSWORD = "Sorry, but the password you provided is unreliable. Please try again after double-checking your password.",
+    EMPTY_ACCESS_CODE = "Please enter the needed access code to continue.",
+    WRONG_ACCESS_CODE = "Denied access. The access code you entered is inapplicable. Please check the code and try once more.",
+}

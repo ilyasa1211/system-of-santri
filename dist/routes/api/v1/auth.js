@@ -26,7 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const router = (0, express_1.Router)();
 const controllers_1 = require("../../../controllers");
-const upload = require("../../../config/multer")("account");
+const upload = require("../../../configs/multer")("account");
 const middleware = __importStar(require("../../../middlewares"));
 router.use(middleware.guest);
 router.post("/signin", controllers_1.AuthController.signin);

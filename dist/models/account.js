@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,6 +16,7 @@ exports.Account = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const email_pattern_1 = __importDefault(require("../traits/email-pattern"));
 const path_1 = __importDefault(require("path"));
+const response_1 = require("../traits/response");
 require("./role");
 require("./resume");
 const accountSchema = new mongoose_1.default.Schema({
@@ -24,7 +34,7 @@ const accountSchema = new mongoose_1.default.Schema({
         ],
         required: [
             true,
-            "Please enter a working email address. Email is a necessary field.",
+            response_1.ResponseMessage.EMPTY_EMAIL,
         ],
         unique: true,
         match: email_pattern_1.default,
@@ -33,7 +43,7 @@ const accountSchema = new mongoose_1.default.Schema({
         type: String,
         minLength: [
             8,
-            "Please pick a password that is at least 8 characters long for the security of your account.",
+            response_1.ResponseMessage.WEAK_PASSWORD,
         ],
         maxLength: [
             128,
@@ -41,7 +51,7 @@ const accountSchema = new mongoose_1.default.Schema({
         ],
         required: [
             true,
-            "To ensure the security of your account, kindly provide a password.",
+            response_1.ResponseMessage.EMPTY_PASSWORD,
         ],
     },
     phoneNumber: {
@@ -98,6 +108,7 @@ const accountSchema = new mongoose_1.default.Schema({
     resume: {
         type: mongoose_1.default.SchemaTypes.ObjectId,
         ref: "Resume",
+        default: null,
     },
     verify: {
         type: Boolean,
@@ -125,5 +136,12 @@ accountSchema.pre("save", function (next) {
     this.absense = 0;
     next();
 });
+accountSchema.methods.deleteAvatar = function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        // await this.deleteOne();
+        debugger;
+        // deletePhoto(this.); 
+    });
+};
 exports.Account = mongoose_1.default.model("Account", accountSchema);
 exports.default = exports.Account;

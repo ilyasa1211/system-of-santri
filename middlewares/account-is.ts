@@ -12,6 +12,7 @@ export default (...roles: Array<number>) =>
       );
     }
     const account = request.user as IAccount;
+    debugger;
     const hasRole: number | undefined = roles.find((role: number) =>
       (account.role as { id: ObjectId | number; name: string }).id === role
     );

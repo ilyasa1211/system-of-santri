@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ResponseMessage = void 0;
+var ResponseMessage;
+(function (ResponseMessage) {
+    ResponseMessage["ACCOUNT_DELETED"] = "That your account has been deleted, we apologize. Please let us know if you need any help or if you have any questions.";
+    ResponseMessage["ACCOUNT_DELETED_PERMANENT"] = "All associated data was successfully deleted and the account was successfully cleared.";
+    ResponseMessage["ACCOUNT_RESTORED"] = "Good news! Your account has been restored successfully. Hello again! Please feel free to ask any questions or for additional help.";
+    ResponseMessage["ACCOUNT_NOT_FOUND"] = "We apologize, but the requested account was not found.";
+    ResponseMessage["EMPTY_TOKEN"] = "The supplied token is not valid. Make sure token field is entered correctly.";
+    ResponseMessage["EMPTY_PASSWORD"] = "To ensure the security of your account, kindly provide a password.";
+    ResponseMessage["EMPTY_EMAIL"] = "Please enter a working email address. Email is a necessary field.";
+    ResponseMessage["INVALID_EMAIL"] = "Please enter a correct email address.";
+    ResponseMessage["CHECK_EMAIL"] = "Please check your email for any additional instructions";
+    ResponseMessage["WEAK_PASSWORD"] = "Please pick a password that is at least 8 characters long for the security of your account.";
+    ResponseMessage["UNVERIFIED_ACCOUNT"] = "Please be aware that your account has not yet been verified, which we regret. A critical step in ensuring the safety and reliability of our platform is account verification. Please check your registered email for a verification link or further instructions before continuing. Please double-check your spam or junk folder if you haven't received a verification email. ";
+    ResponseMessage["WRONG_PASSWORD"] = "Sorry, but the password you provided is unreliable. Please try again after double-checking your password.";
+    ResponseMessage["EMPTY_ACCESS_CODE"] = "Please enter the needed access code to continue.";
+    ResponseMessage["WRONG_ACCESS_CODE"] = "Denied access. The access code you entered is inapplicable. Please check the code and try once more.";
+})(ResponseMessage || (exports.ResponseMessage = ResponseMessage = {}));

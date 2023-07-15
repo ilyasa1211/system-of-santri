@@ -1,5 +1,5 @@
 import path from "node:path";
-import transporter from "../config/nodemailer";
+import transporter from "../configs/nodemailer";
 import pug from "pug";
 import getAccountUsername from "./get-account-username";
 import { IAccount } from "../models";

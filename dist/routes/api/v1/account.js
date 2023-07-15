@@ -31,7 +31,7 @@ const controllers_1 = require("../../../controllers");
 const passport_1 = __importDefault(require("passport"));
 const middleware = __importStar(require("../../../middlewares"));
 const role_1 = require("../../../traits/role");
-const upload = require("../../../config/multer")("account");
+const upload = require("../../../configs/multer")("account");
 const router = (0, express_1.Router)();
 router.use(upload.single("avatar"));
 // Get All Accounts

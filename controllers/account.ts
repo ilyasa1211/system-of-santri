@@ -53,7 +53,6 @@ export async function insert(
 ) {
   try {
     const { body, file } = request;
-    const { name, email } = body;
 
     if (file) body.avatar = file.filename;
 
@@ -61,8 +60,7 @@ export async function insert(
     body.password = hashPassword(body.password);
 
     const account = await Account.create(body);
-    const { id } = account;
-    const token = generateJwtToken({ id, email, name });
+    const token = generateJwtToken(account);
 
     return response.status(StatusCodes.OK).json({ token });
   } catch (error: any) {
@@ -87,8 +85,7 @@ export async function show(request: Request, response: Response, next: NextFunct
     return response.status(StatusCodes.OK).json({ account });
   } catch (error: any) {
     if (error.message.startsWith("Cast to ObjectId failed")) {
-      error.message =
-        "We apologize for the inconvenience, but the provided Account ID appears to be invalid. Please double-check the ID and ensure its accuracy.";
+      error.message = ResponseMessage.INVALID_ACCOUNT_ID;
       error.code = StatusCodes.BAD_REQUEST;
     }
     next(error);
@@ -104,9 +101,10 @@ export async function update(
   next: NextFunction,
 ) {
   try {
-    const { body, file } = request;
+    const { body, file, user } = request;
     const { id }: { id?: string } = request.params;
-    authorize(request.user as IAccount, id);
+
+    authorize(user as IAccount, id);
 
     let isAvatarUpdate: boolean = false;
     
@@ -126,8 +124,7 @@ export async function update(
     });
 
     return response.status(StatusCodes.OK).json({
-      message:
-        "Congratulations on finishing up your account update! Your suggestions have been carried out.",
+      message: ResponseMessage.ACCOUNT_UPDATED,
     });
   } catch (error: any) {
     next(error);
@@ -267,7 +264,7 @@ export async function workShow(
     }).exec();
 
     if (!works) { 
-      throw new NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
+      throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
     }
 
     return response.status(StatusCodes.OK).json({ works });
@@ -288,7 +285,7 @@ export async function resume(
     const { id } = request.params;
     const resume = await Resume.findOne({ account_id: id }).exec();
     if (!resume) {
-      throw new NotFoundError("We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.");
+      throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
     }
 
     return response.status(StatusCodes.OK).json({ resume });

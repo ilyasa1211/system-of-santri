@@ -14,6 +14,7 @@ const models_1 = require("../models");
 const http_status_codes_1 = require("http-status-codes");
 const utils_1 = require("../utils");
 const errors_1 = require("../traits/errors");
+const response_1 = require("../traits/response");
 /**
  * Get all works from all account, everyone has rights
  */
@@ -38,7 +39,7 @@ function show(request, response, next) {
             const { id } = request.params;
             const work = yield models_1.Work.findById(id);
             if (!work) {
-                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.WORK_NOT_FOUND);
             }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ work });
         }
@@ -86,7 +87,7 @@ function update(request, response, next) {
             const { title, link } = body;
             const work = yield models_1.Work.findById(id);
             if (!work) {
-                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.WORK_NOT_FOUND);
             }
             const updatedWork = { title, link };
             Object.assign(work, updatedWork);
@@ -112,7 +113,7 @@ function destroy(request, response, next) {
             const user = request.user;
             const work = yield models_1.Work.findById(id);
             if (!work) {
-                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.WORK_NOT_FOUND);
             }
             (0, utils_1.authorize)(user, work.account_id.toString());
             yield work.deleteOne();

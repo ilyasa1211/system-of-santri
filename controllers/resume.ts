@@ -3,8 +3,9 @@ import { StatusCodes } from "http-status-codes";
 import { ConflictError, NotFoundError } from "../traits/errors";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
+import { ResponseMessage } from "../traits/response";
 
-export { destroy, index, insert, show, update };
+export { destroy, index, insert, show, update, getByAccount };
 
 /**
  * Get resume from all account, everyone has rights
@@ -27,7 +28,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
     const resume = await Resume.findById(id);
     if (!resume) {
       throw new NotFoundError(
-        "We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.",
+        ResponseMessage.RESUME_NOT_FOUND,
       );
     }
     return response.status(StatusCodes.OK).json({ data: resume });
@@ -48,15 +49,12 @@ async function insert(
     const { id } = request.user as IAccount;
     const hasResume = await Resume.exists({ account_id: id });
     if (hasResume) {
-      throw new ConflictError(
-        "We've noted that your resume is already on file. We are unable to produce new resumes for you repeatedly in accordance with our policy.",
-      );
+      throw new ConflictError(ResponseMessage.RESUME_CONFLICT);
     }
     request.body.account_id = id;
     const resume = await Resume.create(request.body);
     return response.status(StatusCodes.OK).json({
-      message:
-        "Congratulations on creating a successful resume! This crucial document will aid in showcasing your abilities, credentials, and experiences. ",
+      message: ResponseMessage.RESUME_CREATED,
       resume,
     });
   } catch (error: any) {
@@ -90,7 +88,7 @@ async function update(
     const resume = await Resume.findById(id);
     if (!resume) {
       throw new NotFoundError(
-        "We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.",
+        ResponseMessage.RESUME_NOT_FOUND,
       );
     }
 
@@ -100,8 +98,7 @@ async function update(
     await resume.save();
 
     return response.status(StatusCodes.OK).json({
-      message:
-        "You've done a great job updating your resume! You can make sure your resume accurately represents your skills and experiences by keeping it up-to-date and pertinent.",
+      message: ResponseMessage.RESUME_UPDATED,
     });
   } catch (error: any) {
     next(error);
@@ -121,16 +118,30 @@ async function destroy(
     const resume = await Resume.findById(id);
     if (!resume) {
       throw new NotFoundError(
-        "We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.",
+        ResponseMessage.RESUME_NOT_FOUND,
       );
     }
 
     authorize(request.user as IAccount, resume.account_id.toString());
     return response.status(StatusCodes.OK).json({
-      message:
-        "The deletion of your resume was successful. In order to protect the privacy and confidentiality of your information, it has been removed from our system.",
+      message: ResponseMessage.RESUME_DELETED,
     });
   } catch (error: any) {
     next(error);
+  }
+}
+
+async function getByAccount(request: Request, response: Response, next: NextFunction) {
+  try {
+    const { accountUniqueId } = request.params;
+    
+    const resume = await Resume.findOne({ account_id: accountUniqueId }).exec()
+
+    if (!resume) {
+      throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
+    }
+    return response.status(StatusCodes.OK).json({ resume });
+  } catch (error) {
+    next(error)
   }
 }

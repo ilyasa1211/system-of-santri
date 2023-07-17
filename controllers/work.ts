@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
 import { BadRequestError, NotFoundError } from "../traits/errors";
+import { ResponseMessage } from "../traits/response";
 
 export { destroy, index, insert, show, update };
 
@@ -27,7 +28,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
     const work = await Work.findById(id);
     if (!work) {
       throw new NotFoundError(
-        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
+        ResponseMessage.WORK_NOT_FOUND,
       );
     }
     return response.status(StatusCodes.OK).json({ work });
@@ -87,7 +88,7 @@ async function update(
 
     if (!work) {
       throw new NotFoundError(
-        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
+        ResponseMessage.WORK_NOT_FOUND,
       );
     }
     const updatedWork = { title, link };
@@ -119,7 +120,7 @@ async function destroy(
     const work = await Work.findById(id);
     if (!work) {
       throw new NotFoundError(
-        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
+        ResponseMessage.WORK_NOT_FOUND,
       );
     }
     authorize(user, work.account_id.toString());

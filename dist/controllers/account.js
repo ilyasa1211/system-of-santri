@@ -60,14 +60,12 @@ function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { body, file } = request;
-            const { name, email } = body;
             if (file)
                 body.avatar = file.filename;
             body.verify = true;
             body.password = (0, hash_password_1.hashPassword)(body.password);
             const account = yield models_1.Account.create(body);
-            const { id } = account;
-            const token = (0, generate_jwt_token_1.generateJwtToken)({ id, email, name });
+            const token = (0, generate_jwt_token_1.generateJwtToken)(account);
             return response.status(http_status_codes_1.StatusCodes.OK).json({ token });
         }
         catch (error) {
@@ -92,8 +90,7 @@ function show(request, response, next) {
         }
         catch (error) {
             if (error.message.startsWith("Cast to ObjectId failed")) {
-                error.message =
-                    "We apologize for the inconvenience, but the provided Account ID appears to be invalid. Please double-check the ID and ensure its accuracy.";
+                error.message = response_1.ResponseMessage.INVALID_ACCOUNT_ID;
                 error.code = http_status_codes_1.StatusCodes.BAD_REQUEST;
             }
             next(error);
@@ -107,9 +104,9 @@ exports.show = show;
 function update(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { body, file } = request;
+            const { body, file, user } = request;
             const { id } = request.params;
-            (0, utils_1.authorize)(request.user, id);
+            (0, utils_1.authorize)(user, id);
             let isAvatarUpdate = false;
             if (file) {
                 body.avatar = file.filename;
@@ -127,7 +124,7 @@ function update(request, response, next) {
                 }
             });
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations on finishing up your account update! Your suggestions have been carried out.",
+                message: response_1.ResponseMessage.ACCOUNT_UPDATED,
             });
         }
         catch (error) {
@@ -257,7 +254,7 @@ function workShow(request, response, next) {
                 account_id: id,
             }).exec();
             if (!works) {
-                throw new errors_1.NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.WORK_NOT_FOUND);
             }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ works });
         }
@@ -276,7 +273,7 @@ function resume(request, response, next) {
             const { id } = request.params;
             const resume = yield models_1.Resume.findOne({ account_id: id }).exec();
             if (!resume) {
-                throw new errors_1.NotFoundError("We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
             }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ resume });
         }

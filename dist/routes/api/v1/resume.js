@@ -31,6 +31,7 @@ const passport_1 = __importDefault(require("passport"));
 const ResumeController = __importStar(require("../../../controllers/resume"));
 const router = (0, express_1.Router)();
 router.get("/", ResumeController.index);
+router.get("/account/:accountUniqueId", ResumeController.getByAccount);
 router.get("/:id", ResumeController.show);
 router.use(passport_1.default.authenticate("jwt", { session: false }));
 router.post("/", ResumeController.insert);

@@ -13,4 +13,13 @@ export enum ResponseMessage {
     WRONG_PASSWORD = "Sorry, but the password you provided is unreliable. Please try again after double-checking your password.",
     EMPTY_ACCESS_CODE = "Please enter the needed access code to continue.",
     WRONG_ACCESS_CODE = "Denied access. The access code you entered is inapplicable. Please check the code and try once more.",
+    INVALID_ACCOUNT_ID = "We apologize for the inconvenience, but the provided Account ID appears to be invalid. Please double-check the ID and ensure its accuracy.",
+    ACCOUNT_UPDATED = "Congratulations on finishing up your account update! Your suggestions have been carried out.",
+    WORK_NOT_FOUND = "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
+    RESUME_NOT_FOUND = "We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.",
+    RESUME_CREATED = "Congratulations on creating a successful resume! This crucial document will aid in showcasing your abilities, credentials, and experiences. ",
+    RESUME_CONFLICT = "We've noted that your resume is already on file. We are unable to produce new resumes for you repeatedly in accordance with our policy.",
+    RESUME_UPDATED = "You've done a great job updating your resume! You can make sure your resume accurately represents your skills and experiences by keeping it up-to-date and pertinent.",
+    RESUME_DELETED = "The deletion of your resume was successful. In order to protect the privacy and confidentiality of your information, it has been removed from our system.",
+    
 }

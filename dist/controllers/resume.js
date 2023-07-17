@@ -9,11 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.update = exports.show = exports.insert = exports.index = exports.destroy = void 0;
+exports.getByAccount = exports.update = exports.show = exports.insert = exports.index = exports.destroy = void 0;
 const models_1 = require("../models");
 const http_status_codes_1 = require("http-status-codes");
 const errors_1 = require("../traits/errors");
 const utils_1 = require("../utils");
+const response_1 = require("../traits/response");
 /**
  * Get resume from all account, everyone has rights
  */
@@ -38,7 +39,7 @@ function show(request, response, next) {
             const { id } = request.params;
             const resume = yield models_1.Resume.findById(id);
             if (!resume) {
-                throw new errors_1.NotFoundError("We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
             }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ data: resume });
         }
@@ -57,12 +58,12 @@ function insert(request, response, next) {
             const { id } = request.user;
             const hasResume = yield models_1.Resume.exists({ account_id: id });
             if (hasResume) {
-                throw new errors_1.ConflictError("We've noted that your resume is already on file. We are unable to produce new resumes for you repeatedly in accordance with our policy.");
+                throw new errors_1.ConflictError(response_1.ResponseMessage.RESUME_CONFLICT);
             }
             request.body.account_id = id;
             const resume = yield models_1.Resume.create(request.body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations on creating a successful resume! This crucial document will aid in showcasing your abilities, credentials, and experiences. ",
+                message: response_1.ResponseMessage.RESUME_CREATED,
                 resume,
             });
         }
@@ -88,13 +89,13 @@ function update(request, response, next) {
             };
             const resume = yield models_1.Resume.findById(id);
             if (!resume) {
-                throw new errors_1.NotFoundError("We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
             }
             (0, utils_1.authorize)(request.user, resume.account_id.toString());
             Object.assign(resume, updatedValue);
             yield resume.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "You've done a great job updating your resume! You can make sure your resume accurately represents your skills and experiences by keeping it up-to-date and pertinent.",
+                message: response_1.ResponseMessage.RESUME_UPDATED,
             });
         }
         catch (error) {
@@ -112,11 +113,11 @@ function destroy(request, response, next) {
             const { id } = request.params;
             const resume = yield models_1.Resume.findById(id);
             if (!resume) {
-                throw new errors_1.NotFoundError("We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
             }
             (0, utils_1.authorize)(request.user, resume.account_id.toString());
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "The deletion of your resume was successful. In order to protect the privacy and confidentiality of your information, it has been removed from our system.",
+                message: response_1.ResponseMessage.RESUME_DELETED,
             });
         }
         catch (error) {
@@ -125,3 +126,19 @@ function destroy(request, response, next) {
     });
 }
 exports.destroy = destroy;
+function getByAccount(request, response, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { accountUniqueId } = request.params;
+            const resume = yield models_1.Resume.findOne({ account_id: accountUniqueId }).exec();
+            if (!resume) {
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
+            }
+            return response.status(http_status_codes_1.StatusCodes.OK).json({ resume });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+}
+exports.getByAccount = getByAccount;

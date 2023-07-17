@@ -1,12 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+import { isDefaultPhoto } from "./is-default-photo";
 
-
-export function deletePhoto(photoName: string, exceptionName: string): void {
-    if (!photoName.endsWith(exceptionName)) {
-        fs.unlink(
-            path.join(__dirname, "..", "public", photoName),
-            (error: any) => {
+export function deletePhoto(photoName: string): void {
+    if (!isDefaultPhoto(photoName)) {
+        fs.unlink(path.join(__dirname, "..", "public", photoName), (error: any) => {
                 if (error) throw error;
             }
         );

@@ -28,8 +28,9 @@ const verifyCallback = function (payload, done) {
             const account = yield models_1.Account.findOne({
                 _id: id,
                 deletedAt: null,
-            }).populate({ path: "role", foreignField: "id" });
-            debugger;
+            })
+                .populate({ path: "role", foreignField: "id", select: "name id -_id" })
+                .exec();
             if (!account) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }

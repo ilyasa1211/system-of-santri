@@ -29,8 +29,10 @@ const verifyCallback: VerifyCallback = async function (
     const account = await Account.findOne({
       _id: id,
       deletedAt: null,
-    }).populate({ path: "role", foreignField: "id" });
-    debugger;
+    })
+    .populate({ path: "role", foreignField: "id", select: "name id -_id" })
+    .exec();
+    
     if (!account) {
       throw new NotFoundError(
         ResponseMessage.ACCOUNT_NOT_FOUND,

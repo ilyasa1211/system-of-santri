@@ -8,18 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resume = exports.workShow = exports.workIndex = exports.profile = exports.eliminate = exports.restore = exports.trash = exports.destroy = exports.update = exports.show = exports.insert = exports.index = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const http_status_codes_1 = require("http-status-codes");
 const errors_1 = require("../traits/errors");
-const argon2_1 = __importDefault(require("argon2"));
 const models_1 = require("../models");
 const utils_1 = require("../utils");
 const response_1 = require("../traits/response");
+const delete_photo_1 = require("../utils/delete-photo");
+const get_population_options_from_request_query_1 = require("../utils/get-population-options-from-request-query");
+const hash_password_1 = require("../utils/hash-password");
+const generate_jwt_token_1 = require("../utils/generate-jwt-token");
 const projection = [
     "name",
     "email",
@@ -33,6 +32,7 @@ const projection = [
     "role",
     "work",
     "absenses",
+    "absense",
 ];
 /**
  *  Get All Accounts, everyone has rights
@@ -40,8 +40,11 @@ const projection = [
 function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const accounts = yield models_1.Account.find({ deletedAt: null })
-                .select(projection);
+            const fieldsToPopulate = (0, get_population_options_from_request_query_1.getPopulationOptionsFromRequestQuery)(request);
+            const accounts = yield models_1.Account.find({ deletedAt: null, verify: true })
+                .select(projection)
+                .populate(fieldsToPopulate)
+                .exec();
             return response.status(http_status_codes_1.StatusCodes.OK).json({ accounts });
         }
         catch (error) {
@@ -61,12 +64,10 @@ function insert(request, response, next) {
             if (file)
                 body.avatar = file.filename;
             body.verify = true;
-            body.password = yield argon2_1.default.hash(body.password, {
-                type: argon2_1.default.argon2i,
-            });
+            body.password = (0, hash_password_1.hashPassword)(body.password);
             const account = yield models_1.Account.create(body);
             const { id } = account;
-            const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
+            const token = (0, generate_jwt_token_1.generateJwtToken)({ id, email, name });
             return response.status(http_status_codes_1.StatusCodes.OK).json({ token });
         }
         catch (error) {
@@ -82,7 +83,11 @@ function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            const account = yield models_1.Account.findOne({ _id: id.replace(/[\W_]/g, ""), deletedAt: null }).select(projection);
+            const fieldsToPopulate = (0, get_population_options_from_request_query_1.getPopulationOptionsFromRequestQuery)(request);
+            const account = yield models_1.Account.findOne({ _id: id, deletedAt: null, verify: true })
+                .select(projection)
+                .populate(fieldsToPopulate)
+                .exec();
             return response.status(http_status_codes_1.StatusCodes.OK).json({ account });
         }
         catch (error) {
@@ -111,7 +116,16 @@ function update(request, response, next) {
                 isAvatarUpdate = true;
             }
             ;
-            yield models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, request.body);
+            if (body.password) {
+                body.password = yield (0, hash_password_1.hashPassword)(body.password);
+            }
+            models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, request.body, { returnDocument: "before" }, function (error, oldAccount) {
+                if (error)
+                    throw error;
+                if (oldAccount && isAvatarUpdate) {
+                    (0, delete_photo_1.deletePhoto)(oldAccount.avatar);
+                }
+            });
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: "Congratulations on finishing up your account update! Your suggestions have been carried out.",
             });
@@ -130,10 +144,8 @@ function destroy(request, response, next) {
         try {
             const { id } = request.params;
             (0, utils_1.authorize)(request.user, id);
-            yield models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, { deletedAt: Date.now() });
-            return response.status(http_status_codes_1.StatusCodes.ACCEPTED).json({
-                message: response_1.ResponseMessage.ACCOUNT_DELETED,
-            });
+            yield models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, { deletedAt: Date.now() }).exec();
+            return response.status(http_status_codes_1.StatusCodes.ACCEPTED).json({ message: response_1.ResponseMessage.ACCOUNT_DELETED });
         }
         catch (error) {
             next(error);
@@ -147,7 +159,7 @@ exports.destroy = destroy;
 function trash(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const accounts = yield models_1.Account.find({ deletedAt: { $ne: null } });
+            const accounts = yield models_1.Account.find({ deletedAt: { $ne: null } }).exec();
             return response.status(http_status_codes_1.StatusCodes.OK).json({ accounts });
         }
         catch (error) {
@@ -163,7 +175,7 @@ function restore(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            yield models_1.Account.findByIdAndUpdate(id, { deletedAt: null });
+            yield models_1.Account.findByIdAndUpdate(id, { deletedAt: null }).exec();
             return response.status(http_status_codes_1.StatusCodes.OK).json({ message: response_1.ResponseMessage.ACCOUNT_RESTORED });
         }
         catch (error) {
@@ -179,15 +191,13 @@ function eliminate(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            models_1.Account.findByIdAndDelete(id, null, (error, account) => __awaiter(this, void 0, void 0, function* () {
+            models_1.Account.findByIdAndDelete({ _id: id, deletedAt: { $ne: null } }, null, (error, account) => {
                 if (error)
                     throw error;
-                debugger;
-                if (account == null)
+                if (!account)
                     throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
-                // account.deleteAvatar();
-                debugger;
-            }));
+                (0, delete_photo_1.deletePhoto)(account.avatar);
+            });
             return response.status(http_status_codes_1.StatusCodes.OK).json({ message: response_1.ResponseMessage.ACCOUNT_DELETED_PERMANENT });
         }
         catch (error) {
@@ -203,13 +213,10 @@ function profile(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.user;
-            const account = yield models_1.Account.findById(id)
+            const fieldsToPopulate = (0, get_population_options_from_request_query_1.getPopulationOptionsFromRequestQuery)(request);
+            const account = yield models_1.Account.find({ _id: id, deletedAt: null })
                 .select(projection)
-                .populate({
-                path: "role",
-                foreignField: "id",
-                select: "-_id id name",
-            })
+                .populate(fieldsToPopulate)
                 .exec();
             if (!account) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);

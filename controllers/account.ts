@@ -1,15 +1,14 @@
-import jwt from "jsonwebtoken";
-import fs from "node:fs";
-import path from "node:path";
 import { StatusCodes } from "http-status-codes";
 import { NotFoundError } from "../traits/errors";
-import argon2 from "argon2";
 import { Account, IAccount, Resume, Work } from "../models";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
 import { ResponseMessage } from "../traits/response";
 import { deletePhoto } from "../utils/delete-photo";
 import { CallbackError } from "mongoose";
+import { getPopulationOptionsFromRequestQuery } from "../utils/get-population-options-from-request-query";
+import { hashPassword } from "../utils/hash-password";
+import { generateJwtToken } from "../utils/generate-jwt-token";
 
 const projection = [
   "name",
@@ -24,6 +23,7 @@ const projection = [
   "role",
   "work",
   "absenses",
+  "absense",
 ];
 
 /**
@@ -31,12 +31,15 @@ const projection = [
  */
 export async function index(request: Request, response: Response, next: NextFunction) {
   try {
-    const accounts = await Account.find({ deletedAt: null })
-      .select(
-        projection,
-      );
+    const fieldsToPopulate = getPopulationOptionsFromRequestQuery(request);
+
+    const accounts = await Account.find({ deletedAt: null, verify: true })
+    .select(projection)
+    .populate(fieldsToPopulate)
+    .exec();
+
     return response.status(StatusCodes.OK).json({ accounts });
-  } catch (error: any) {
+  } catch (error: any){
     next(error);
   }
 }
@@ -55,15 +58,12 @@ export async function insert(
     if (file) body.avatar = file.filename;
 
     body.verify = true;
-    body.password = await argon2.hash(body.password, {
-      type: argon2.argon2i,
-    });
+    body.password = hashPassword(body.password);
+
     const account = await Account.create(body);
     const { id } = account;
-    const token = jwt.sign(
-      { id, email, name },
-      String(process.env.JWT_SECRET),
-    );
+    const token = generateJwtToken({ id, email, name });
+
     return response.status(StatusCodes.OK).json({ token });
   } catch (error: any) {
     next(error);
@@ -76,9 +76,14 @@ export async function insert(
 export async function show(request: Request, response: Response, next: NextFunction) {
   try {
     const { id } = request.params;
-    const account = await Account.findOne(
-      { _id: id.replace(/[\W_]/g, ""), deletedAt: null },
-    ).select(projection);
+
+    const fieldsToPopulate = getPopulationOptionsFromRequestQuery(request);
+
+    const account = await Account.findOne({ _id: id, deletedAt: null, verify: true })
+    .select(projection)
+    .populate(fieldsToPopulate)
+    .exec();
+
     return response.status(StatusCodes.OK).json({ account });
   } catch (error: any) {
     if (error.message.startsWith("Cast to ObjectId failed")) {
@@ -104,16 +109,21 @@ export async function update(
     authorize(request.user as IAccount, id);
 
     let isAvatarUpdate: boolean = false;
+    
     if (file) {
       body.avatar = file.filename;
       isAvatarUpdate = true;
     };
+    if (body.password) {
+      body.password = await hashPassword(body.password);
+    }
 
-    await Account.findOneAndUpdate(
-      { _id: id, deletedAt: null },
-      request.body,
-    );
-
+    Account.findOneAndUpdate({ _id: id, deletedAt: null }, request.body, { returnDocument: "before" }, function (error: CallbackError, oldAccount: IAccount | null): void {
+      if (error) throw error;
+      if (oldAccount && isAvatarUpdate) {
+        deletePhoto(oldAccount.avatar);
+      }
+    });
 
     return response.status(StatusCodes.OK).json({
       message:
@@ -134,14 +144,15 @@ export async function destroy(
 ) {
   try {
     const { id }: { id?: string } = request.params;
+
     authorize(request.user as IAccount, id);
+
     await Account.findOneAndUpdate(
       { _id: id, deletedAt: null },
       { deletedAt: Date.now() },
-    );
-    return response.status(StatusCodes.ACCEPTED).json({
-      message: ResponseMessage.ACCOUNT_DELETED,
-    });
+    ).exec();
+
+    return response.status(StatusCodes.ACCEPTED).json({ message: ResponseMessage.ACCOUNT_DELETED });
   } catch (error: any) {
     next(error);
   }
@@ -151,7 +162,7 @@ export async function destroy(
  */
 export async function trash(request: Request, response: Response, next: NextFunction) {
   try {
-    const accounts = await Account.find({ deletedAt: { $ne: null } });
+    const accounts = await Account.find({ deletedAt: { $ne: null } }).exec();
     return response.status(StatusCodes.OK).json({ accounts });
   } catch (error: any) {
     next(error);
@@ -168,7 +179,7 @@ export async function restore(
 ) {
   try {
     const { id }: { id?: string } = request.params;
-    await Account.findByIdAndUpdate(id, { deletedAt: null });
+    await Account.findByIdAndUpdate(id, { deletedAt: null }).exec();
     return response.status(StatusCodes.OK).json({ message: ResponseMessage.ACCOUNT_RESTORED });
   } catch (error: any) {
     next(error);
@@ -185,12 +196,10 @@ export async function eliminate(
   try {
     const { id }: { id?: string } = request.params;
 
-    Account.findByIdAndDelete(id, null, async (error: CallbackError, account: IAccount | null): Promise<void> => {
+    Account.findByIdAndDelete({ _id: id, deletedAt: { $ne: null }}, null, (error: CallbackError, account: IAccount | null): void => {
       if (error) throw error;
-      debugger;
-      if (account == null) throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
-      // account.deleteAvatar();
-      debugger;
+      if (!account) throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
+      deletePhoto(account.avatar);
     })
 
     return response.status(StatusCodes.OK).json({ message: ResponseMessage.ACCOUNT_DELETED_PERMANENT });
@@ -208,18 +217,15 @@ export async function profile(
 ) {
   try {
     const { id } = request.user as IAccount;
-    const account = await Account.findById(id)
-      .select(projection)
-      .populate({
-        path: "role",
-        foreignField: "id",
-        select: "-_id id name",
-      })
-      .exec();
+    const fieldsToPopulate = getPopulationOptionsFromRequestQuery(request);
+
+    const account = await Account.find({ _id: id, deletedAt: null })
+    .select(projection)
+    .populate(fieldsToPopulate)
+    .exec();
+
     if (!account) {
-      throw new NotFoundError(
-        ResponseMessage.ACCOUNT_NOT_FOUND,
-      );
+      throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
     }
     return response.status(StatusCodes.OK).json({ account });
   } catch (error: any) {
@@ -259,11 +265,11 @@ export async function workShow(
       _id: workId,
       account_id: id,
     }).exec();
-    if (!works) {
-      throw new NotFoundError(
-        "We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.",
-      );
+
+    if (!works) { 
+      throw new NotFoundError("We're sorry to let you know that we were unable to locate the requested work. Please double-check your entry of accurate information before attempting again.");
     }
+
     return response.status(StatusCodes.OK).json({ works });
   } catch (error: any) {
     next(error);
@@ -282,10 +288,9 @@ export async function resume(
     const { id } = request.params;
     const resume = await Resume.findOne({ account_id: id }).exec();
     if (!resume) {
-      throw new NotFoundError(
-        "We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.",
-      );
+      throw new NotFoundError("We regret the inconvenience, but we were unable to locate the requested resume. Please verify the information provided.");
     }
+
     return response.status(StatusCodes.OK).json({ resume });
   } catch (error: any) {
     next(error);

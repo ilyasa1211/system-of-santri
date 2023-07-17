@@ -27,9 +27,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
     const { id } = request.params;
     const work = await Work.findById(id);
     if (!work) {
-      throw new NotFoundError(
-        ResponseMessage.WORK_NOT_FOUND,
-      );
+      throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
     }
     return response.status(StatusCodes.OK).json({ work });
   } catch (error: any) {
@@ -46,25 +44,18 @@ async function insert(
   next: NextFunction,
 ) {
   try {
-    const { title } = request.body;
-    if (!title) {
-      throw new BadRequestError(
-        "Please enter the needed Title to continue.",
-      );
-    }
     const user = request.user as IAccount;
     request.body.account_id = user.id;
 
-    const works = await Work.create(request.body);
+    const work = await Work.create(request.body);
     const account = await Account.findById(user.id);
 
-    account!.work.push(works.id);
+    account!.work.push(work.id);
     await account!.save();
 
     return response.status(StatusCodes.OK).json({
-      message:
-        "Congratulations on completing your work successfully! This is a noteworthy accomplishment that highlights your talent and commitment.",
-      works,
+      message: ResponseMessage.WORK_CREATED,
+      work,
     });
   } catch (error: any) {
     next(error);
@@ -98,8 +89,7 @@ async function update(
 
     await work.save();
     return response.status(StatusCodes.OK).json({
-      message:
-        "Congratulations on finishing your work update! Your dedication to honing and enhancing your work is admirable. ",
+      message: ResponseMessage.WORK_UPDATED
     });
   } catch (error: any) {
     next(error);
@@ -119,15 +109,14 @@ async function destroy(
     const user = request.user as IAccount;
     const work = await Work.findById(id);
     if (!work) {
-      throw new NotFoundError(
-        ResponseMessage.WORK_NOT_FOUND,
-      );
+      throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
     }
+
     authorize(user, work.account_id.toString());
+
     await work.deleteOne();
     return response.status(StatusCodes.OK).json({
-      message:
-        "Your writing has been effectively erased. All related information has been permanently deleted, and it has been taken out of our records.",
+      message: ResponseMessage.WORK_DELETED
     });
   } catch (error: any) {
     next(error);

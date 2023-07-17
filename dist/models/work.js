@@ -13,7 +13,7 @@ exports.workSchema = new mongoose_1.default.Schema({
     title: {
         type: String,
         trim: true,
-        required: [true, "For the required field, kindly enter a title."],
+        required: [true, "Please enter the needed Title to continue."],
     },
     link: {
         type: String,

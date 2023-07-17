@@ -25,4 +25,7 @@ var ResponseMessage;
     ResponseMessage["RESUME_CONFLICT"] = "We've noted that your resume is already on file. We are unable to produce new resumes for you repeatedly in accordance with our policy.";
     ResponseMessage["RESUME_UPDATED"] = "You've done a great job updating your resume! You can make sure your resume accurately represents your skills and experiences by keeping it up-to-date and pertinent.";
     ResponseMessage["RESUME_DELETED"] = "The deletion of your resume was successful. In order to protect the privacy and confidentiality of your information, it has been removed from our system.";
+    ResponseMessage["WORK_UPDATED"] = "Congratulations on finishing your work update! Your dedication to honing and enhancing your work is admirable. ";
+    ResponseMessage["WORK_DELETED"] = "Your writing has been effectively erased. All related information has been permanently deleted, and it has been taken out of our records.";
+    ResponseMessage["WORK_CREATED"] = "Congratulations on completing your work successfully! This is a noteworthy accomplishment that highlights your talent and commitment.";
 })(ResponseMessage || (exports.ResponseMessage = ResponseMessage = {}));

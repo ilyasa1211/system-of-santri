@@ -55,19 +55,15 @@ exports.show = show;
 function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { title } = request.body;
-            if (!title) {
-                throw new errors_1.BadRequestError("Please enter the needed Title to continue.");
-            }
             const user = request.user;
             request.body.account_id = user.id;
-            const works = yield models_1.Work.create(request.body);
+            const work = yield models_1.Work.create(request.body);
             const account = yield models_1.Account.findById(user.id);
-            account.work.push(works.id);
+            account.work.push(work.id);
             yield account.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations on completing your work successfully! This is a noteworthy accomplishment that highlights your talent and commitment.",
-                works,
+                message: response_1.ResponseMessage.WORK_CREATED,
+                work,
             });
         }
         catch (error) {
@@ -94,7 +90,7 @@ function update(request, response, next) {
             (0, utils_1.authorize)(account, work.account_id.toString());
             yield work.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations on finishing your work update! Your dedication to honing and enhancing your work is admirable. ",
+                message: response_1.ResponseMessage.WORK_UPDATED
             });
         }
         catch (error) {
@@ -118,7 +114,7 @@ function destroy(request, response, next) {
             (0, utils_1.authorize)(user, work.account_id.toString());
             yield work.deleteOne();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Your writing has been effectively erased. All related information has been permanently deleted, and it has been taken out of our records.",
+                message: response_1.ResponseMessage.WORK_DELETED
             });
         }
         catch (error) {

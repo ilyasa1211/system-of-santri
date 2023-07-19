@@ -1,6 +1,6 @@
 export = [
-  "Hadir",
-  "Izin",
-  "Sakit",
-  "Tanpa Keterangan",
+	"Hadir",
+	"Izin",
+	"Sakit",
+	"Tanpa Keterangan",
 ];

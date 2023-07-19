@@ -18,6 +18,7 @@ const http_status_codes_1 = require("http-status-codes");
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 const errors_1 = require("../traits/errors");
+const response_1 = require("../traits/response");
 /**
  * Get all learnings, everyone has rights
  */
@@ -42,7 +43,7 @@ function show(request, response, next) {
             const { id } = request.params;
             const learning = yield models_1.Learning.findById(id);
             if (!learning) {
-                throw new errors_1.NotFoundError("We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available. ");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.LEARNING_NOT_FOUND);
             }
             return response.status(http_status_codes_1.StatusCodes.OK).json({ learning });
         }
@@ -66,7 +67,7 @@ function insert(request, response, next) {
             }
             yield models_1.Learning.create(body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations on developing a lesson successfully! Your commitment to education and knowledge sharing is admirable. ",
+                message: response_1.ResponseMessage.LEARNING_CREATED,
             });
         }
         catch (error) {
@@ -89,12 +90,12 @@ function update(request, response, next) {
             }
             const learning = yield models_1.Learning.findById(id);
             if (!learning) {
-                throw new errors_1.NotFoundError("We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available. ");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.LEARNING_NOT_FOUND);
             }
             Object.assign(learning, body);
             yield learning.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations on finishing up your lesson update! Your commitment to enhancing and perfecting the instructional materials is admirable.",
+                message: response_1.ResponseMessage.LEARNING_UPDATED,
             });
         }
         catch (error) {
@@ -112,7 +113,7 @@ function destroy(request, response, next) {
             const { id } = request.params;
             const learning = yield models_1.Learning.findById(id);
             if (!learning) {
-                throw new errors_1.NotFoundError("We regret any inconvenience this may have caused, but it doesn't seem like the requested lesson was available.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.LEARNING_NOT_FOUND);
             }
             const { thumbnail } = learning;
             yield learning.deleteOne();
@@ -123,7 +124,7 @@ function destroy(request, response, next) {
                 });
             }
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "The deletion of your lesson was successful. The learning platform has removed it, and all associated data has been permanently deleted.",
+                message: response_1.ResponseMessage.LEARNING_DELETED,
             });
         }
         catch (error) {

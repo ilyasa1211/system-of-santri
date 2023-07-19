@@ -10,17 +10,17 @@ const appUrl = process.env.APP_URL;
  * Sending a forgot password email
  */
 export default async function sendForgetPasswordEmail(
-  token: string,
-  account: IAccount,
+	token: string,
+	account: IAccount,
 ) {
-  const { name, email } = account;
-  transporter.sendMail({
-    from: process.env.MAIL_USERNAME,
-    to: email,
-    subject: "Reset Password",
-    html: pug.renderFile(
-      path.join(__dirname, "..", "views", "forget-password-email.pug"),
-      { token, appUrl, username: getAccountUsername(name) },
-    ),
-  });
+	const { name, email } = account;
+	transporter.sendMail({
+		from: process.env.MAIL_USERNAME,
+		to: email,
+		subject: "Reset Password",
+		html: pug.renderFile(
+			path.join(__dirname, "..", "views", "forget-password-email.pug"),
+			{ token, appUrl, username: getAccountUsername(name) },
+		),
+	});
 }

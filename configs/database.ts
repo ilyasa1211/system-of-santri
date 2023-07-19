@@ -6,8 +6,8 @@ const connectionString: string = process.env.MONGODB_CONNECTION_STRING ||
 mongoose.set("strictQuery", true);
 
 mongoose.connect(
-  connectionString,
-  () => console.info("Successfully establishing a database connection."),
+	connectionString,
+	() => console.info("Successfully establishing a database connection."),
 );
 
 export = mongoose;

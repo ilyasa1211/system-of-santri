@@ -22,7 +22,9 @@ class ConfigurationController {
                     const KEY = new utils_1.CaseStyle(key);
                     const config = yield configuration_1.Configuration.findOne({
                         key: KEY.toSnakeCase(),
-                    });
+                    })
+                        .select(["key", "value"])
+                        .exec();
                     if (!config) {
                         throw new errors_1.NotFoundError(`The ${key} configuration could not be found by the system. Please check your settings once more and try again.`);
                     }

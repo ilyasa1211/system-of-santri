@@ -87,10 +87,10 @@ function update(request, response, next) {
             }
             const updatedWork = { title, link };
             Object.assign(work, updatedWork);
-            (0, utils_1.authorize)(account, work.account_id.toString());
+            (0, utils_1.authorize)(account, work.accountId.toString());
             yield work.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: response_1.ResponseMessage.WORK_UPDATED
+                message: response_1.ResponseMessage.WORK_UPDATED,
             });
         }
         catch (error) {
@@ -111,10 +111,10 @@ function destroy(request, response, next) {
             if (!work) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.WORK_NOT_FOUND);
             }
-            (0, utils_1.authorize)(user, work.account_id.toString());
+            (0, utils_1.authorize)(user, work.accountId.toString());
             yield work.deleteOne();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: response_1.ResponseMessage.WORK_DELETED
+                message: response_1.ResponseMessage.WORK_DELETED,
             });
         }
         catch (error) {

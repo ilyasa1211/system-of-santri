@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import passport from "passport";
 import * as ResumeController from "../../../controllers/resume";

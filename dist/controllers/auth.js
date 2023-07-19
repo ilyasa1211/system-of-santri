@@ -82,8 +82,7 @@ function signup(request, response, next) {
         catch (error) {
             if (((_a = error.message) === null || _a === void 0 ? void 0 : _a.indexOf("duplicate key error")) !== -1) {
                 error.code = http_status_codes_1.StatusCodes.CONFLICT;
-                error.message =
-                    "We apologize, but it appears that the email address you provided is already registered. To complete the registration process, kindly enter a different email address.";
+                error.message = response_1.ResponseMessage.SIGNUP_CONFLICT;
             }
             next(error);
         }
@@ -127,7 +126,7 @@ function signin(request, response, next) {
                 "role",
             ], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Welcome! Your account has been successfully logged into. Enjoy yourself and feel free to explore the features and services that are offered. ",
+                message: response_1.ResponseMessage.LOGIN_SUCCEED,
                 account: filteredAccount,
                 token,
             });
@@ -155,7 +154,7 @@ function resendVerifyEmail(request, response, next) {
             }
             jsonwebtoken_1.default.verify(authToken, String(process.env.JWT_SECRET), function (error, decoded) {
                 if (error) {
-                    throw new errors_1.BadRequestError("Verification of token failed. Check the details provided, then try once more.");
+                    throw new errors_1.BadRequestError(response_1.ResponseMessage.TOKEN_FAILED);
                 }
                 email = decoded.email;
             });
@@ -195,7 +194,7 @@ function verify(request, response, next) {
             account.verify = true;
             yield account.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations! Your account has been verified successfully. Now that you have accessed your account, you can use our services as you please.",
+                message: response_1.ResponseMessage.ACCOUNT_VERIFIED,
             });
         }
         catch (error) {

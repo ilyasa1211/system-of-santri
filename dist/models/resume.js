@@ -6,11 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Resume = exports.resumeSchema = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 exports.resumeSchema = new mongoose_1.default.Schema({
-    account_id: {
+    accountId: {
         type: mongoose_1.default.SchemaTypes.ObjectId,
         ref: "Account",
     },
-    technical_skill: {
+    technicalSkill: {
         type: String,
         trim: true,
         default: null,
@@ -20,7 +20,7 @@ exports.resumeSchema = new mongoose_1.default.Schema({
         trim: true,
         default: null,
     },
-    personal_background: {
+    personalBackground: {
         type: String,
         trim: true,
         default: null,

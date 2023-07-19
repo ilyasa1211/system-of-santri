@@ -11,114 +11,114 @@ export { destroy, index, insert, show, update };
  * Get all works from all account, everyone has rights
  */
 async function index(request: Request, response: Response, next: NextFunction) {
-  try {
-    const works = await Work.find().sort({ createdAt: "desc" });
-    return response.status(StatusCodes.OK).json({ works });
-  } catch (error: any) {
-    next(error);
-  }
+	try {
+		const works = await Work.find().sort({ createdAt: "desc" });
+		return response.status(StatusCodes.OK).json({ works });
+	} catch (error: any) {
+		next(error);
+	}
 }
 
 /**
  * Show one work from id, everyone has rights
  */
 async function show(request: Request, response: Response, next: NextFunction) {
-  try {
-    const { id } = request.params;
-    const work = await Work.findById(id);
-    if (!work) {
-      throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
-    }
-    return response.status(StatusCodes.OK).json({ work });
-  } catch (error: any) {
-    next(error);
-  }
+	try {
+		const { id } = request.params;
+		const work = await Work.findById(id);
+		if (!work) {
+			throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
+		}
+		return response.status(StatusCodes.OK).json({ work });
+	} catch (error: any) {
+		next(error);
+	}
 }
 
 /**
  * Create a new work, everyone has rights
  */
 async function insert(
-  request: Request,
-  response: Response,
-  next: NextFunction,
+	request: Request,
+	response: Response,
+	next: NextFunction,
 ) {
-  try {
-    const user = request.user as IAccount;
-    request.body.account_id = user.id;
+	try {
+		const user = request.user as IAccount;
+		request.body.account_id = user.id;
 
-    const work = await Work.create(request.body);
-    const account = await Account.findById(user.id);
+		const work = await Work.create(request.body);
+		const account = await Account.findById(user.id);
 
     account!.work.push(work.id);
     await account!.save();
 
     return response.status(StatusCodes.OK).json({
-      message: ResponseMessage.WORK_CREATED,
-      work,
+    	message: ResponseMessage.WORK_CREATED,
+    	work,
     });
-  } catch (error: any) {
-    next(error);
-  }
+	} catch (error: any) {
+		next(error);
+	}
 }
 
 /**
  * Update the exisiting work, the owner of the work has rights
  */
 async function update(
-  request: Request,
-  response: Response,
-  next: NextFunction,
+	request: Request,
+	response: Response,
+	next: NextFunction,
 ) {
-  try {
-    const { params, body, user: account } = request;
-    const { id } = params;
-    const { title, link } = body;
+	try {
+		const { params, body, user: account } = request;
+		const { id } = params;
+		const { title, link } = body;
 
-    const work = await Work.findById(id);
+		const work = await Work.findById(id);
 
-    if (!work) {
-      throw new NotFoundError(
-        ResponseMessage.WORK_NOT_FOUND,
-      );
-    }
-    const updatedWork = { title, link };
-    Object.assign(work, updatedWork)
+		if (!work) {
+			throw new NotFoundError(
+				ResponseMessage.WORK_NOT_FOUND,
+			);
+		}
+		const updatedWork = { title, link };
+		Object.assign(work, updatedWork);
 
-    authorize(account as IAccount, work.account_id.toString());
+		authorize(account as IAccount, work.accountId.toString());
 
-    await work.save();
-    return response.status(StatusCodes.OK).json({
-      message: ResponseMessage.WORK_UPDATED
-    });
-  } catch (error: any) {
-    next(error);
-  }
+		await work.save();
+		return response.status(StatusCodes.OK).json({
+			message: ResponseMessage.WORK_UPDATED,
+		});
+	} catch (error: any) {
+		next(error);
+	}
 }
 
 /**
  * Delete a work permanently, the owner of the work has rights
  */
 async function destroy(
-  request: Request,
-  response: Response,
-  next: NextFunction,
+	request: Request,
+	response: Response,
+	next: NextFunction,
 ) {
-  try {
-    const { id } = request.params;
-    const user = request.user as IAccount;
-    const work = await Work.findById(id);
-    if (!work) {
-      throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
-    }
+	try {
+		const { id } = request.params;
+		const user = request.user as IAccount;
+		const work = await Work.findById(id);
+		if (!work) {
+			throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
+		}
 
-    authorize(user, work.account_id.toString());
+		authorize(user, work.accountId.toString());
 
-    await work.deleteOne();
-    return response.status(StatusCodes.OK).json({
-      message: ResponseMessage.WORK_DELETED
-    });
-  } catch (error: any) {
-    next(error);
-  }
+		await work.deleteOne();
+		return response.status(StatusCodes.OK).json({
+			message: ResponseMessage.WORK_DELETED,
+		});
+	} catch (error: any) {
+		next(error);
+	}
 }

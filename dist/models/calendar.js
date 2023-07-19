@@ -13,6 +13,7 @@ const calendarSchema = new mongoose_1.default.Schema({
     },
     year: {
         type: Number,
+        unique: true,
     },
     months: {
         type: Object,

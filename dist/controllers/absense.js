@@ -20,21 +20,16 @@ function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const currentYear = new Date().getFullYear();
-            const accounts = yield account_1.Account.find()
+            const accounts = (yield account_1.Account.find()
                 .select("name absense_id absenses")
-                .populate({
-                path: "absense",
-                foreignField: "id",
-                select: "months year -_id -id",
-            });
+                .populate("absense", ["months", "year"])
+                .exec());
             accounts === null || accounts === void 0 ? void 0 : accounts.forEach((account) => {
                 account.absenses.forEach((absense) => {
                     const [day, month, year, status] = absense.split("/");
                     if (year !== currentYear.toString())
                         return;
-                    account.absense
-                        .months[traits_1.MONTHS[Number(month) - 1]][Number(day) - 1]
-                        .status = traits_1.STATUSES[Number(status) - 1];
+                    account.absense.months[traits_1.MONTHS[Number(month) - 1]][Number(day) - 1].status = traits_1.STATUSES[Number(status) - 1];
                 });
             });
             return response.status(http_status_codes_1.StatusCodes.OK).json({ absenses: accounts });
@@ -56,12 +51,8 @@ function me(request, response, next) {
             const currentYear = new Date().getFullYear();
             const account = yield account_1.Account.findById(id)
                 .select("name absense absenses year")
-                .populate({
-                path: "absense",
-                foreignField: "id",
-                select: "months year -_id -id",
-                match: { year: currentYear },
-            });
+                .populate("absense", ["months", "year"], undefined, { year: currentYear })
+                .exec();
             if (!account) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
@@ -69,9 +60,7 @@ function me(request, response, next) {
                 const [day, month, year, status] = absense.split("/");
                 if (year !== currentYear.toString())
                     return;
-                account.absense
-                    .months[traits_1.MONTHS[Number(month) - 1]][Number(day) - 1].status =
-                    traits_1.STATUSES[Number(status) - 1];
+                account.absense.months[traits_1.MONTHS[Number(month) - 1]][Number(day) - 1].status = traits_1.STATUSES[Number(status) - 1];
             });
             return response.status(http_status_codes_1.StatusCodes.OK).json({ account });
         }
@@ -89,21 +78,15 @@ function show(request, response, next) {
         try {
             const { id } = request.params;
             const currentYear = new Date().getFullYear();
-            const account = yield account_1.Account.findById(id)
+            const account = (yield account_1.Account.findById(id)
                 .select("name absense absenses")
-                .populate({
-                path: "absense",
-                foreignField: "id",
-                select: "months -_id -id",
-                match: { year: currentYear },
-            });
+                .populate("absense", ["months"], undefined, { year: currentYear })
+                .exec());
             account.absenses.forEach((absense) => {
                 const [day, month, year, status] = absense.split("/");
                 if (year !== currentYear.toString())
                     return;
-                account.absense
-                    .months[traits_1.MONTHS[Number(month) - 1]][Number(day) - 1]
-                    .status = traits_1.STATUSES[Number(status) - 1];
+                account.absense.months[traits_1.MONTHS[Number(month) - 1]][Number(day) - 1].status = traits_1.STATUSES[Number(status) - 1];
             });
             return response.status(http_status_codes_1.StatusCodes.OK).json({ account });
         }
@@ -131,8 +114,10 @@ function insert(request, response, next) {
             const lessonHours = 8;
             if (currentHours !== lessonHours) {
                 throw new errors_1.BadRequestError("You are referring to an absence that is officially over and closed. For additional assistance or to address any upcoming absences, kindly come back at " +
-                    lessonHours + "am." +
-                    "Current server time: " + currentServerTime);
+                    lessonHours +
+                    "am." +
+                    "Current server time: " +
+                    currentServerTime);
             }
             const account = request.user;
             const status = attendance_status_1.ATTENDANCE_STATUS.ATTEND;

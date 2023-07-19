@@ -4,19 +4,19 @@ import * as middleware from "../../../middlewares";
 import passport from "passport";
 import { ROLES } from "../../../traits/role";
 
-const router: Router =  Router();
+const router: Router = Router();
 
 router.use(passport.authenticate("jwt", { session: false }));
 
 router.get(
-  "/",
-  middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER),
-  WorkController.index,
+	"/",
+	middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER),
+	WorkController.index,
 );
 router.post(
-  "/",
-  middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER, ROLES.SANTRI),
-  WorkController.insert,
+	"/",
+	middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER, ROLES.SANTRI),
+	WorkController.insert,
 );
 
 router.use(middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER, ROLES.SANTRI));

@@ -18,6 +18,7 @@ const http_status_codes_1 = require("http-status-codes");
 const errors_1 = require("../traits/errors");
 const find_or_create_1 = __importDefault(require("../utils/find-or-create"));
 const month_1 = __importDefault(require("../traits/month"));
+const response_1 = require("../traits/response");
 /**
  * Get event calendar
  */
@@ -67,7 +68,7 @@ function insert(request, response, next) {
         try {
             yield models_1.Event.create(request.body);
             return response.status(http_status_codes_1.StatusCodes.CREATED).json({
-                message: "Congratulations! It was successful creating the event. ",
+                message: response_1.ResponseMessage.EVENT_CREATED,
             });
         }
         catch (error) {
@@ -85,12 +86,12 @@ function update(request, response, next) {
             const { id } = request.params;
             const event = yield models_1.Event.findById(id);
             if (!event) {
-                throw new errors_1.NotFoundError("We regret the inconvenience, but we were unable to locate the requested event. Please double-check the event details or make sure you have provided accurate information.");
+                throw new errors_1.NotFoundError(response_1.ResponseMessage.EVENT_NOT_FOUND);
             }
             Object.assign(event, request.body);
             yield event.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations! The most recent changes have been successfully updated for the event. The required updates have been made.",
+                message: response_1.ResponseMessage.EVENT_UPDATED,
             });
         }
         catch (error) {
@@ -108,7 +109,7 @@ function destroy(request, response, next) {
             const { id } = request.params;
             yield models_1.Event.findOneAndDelete({ _id: id });
             return response.status(http_status_codes_1.StatusCodes.OK).json({
-                message: "Congratulations! The most recent changes have been successfully updated for the event. The required updates have been made.",
+                message: response_1.ResponseMessage.EVENT_UPDATED,
             });
         }
         catch (error) {

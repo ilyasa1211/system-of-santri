@@ -5,7 +5,7 @@ import * as middleware from "../../../middlewares";
 import { ROLES } from "../../../traits/role";
 
 const upload = require("../../../configs/multer")("account");
-const router: Router =  Router();
+const router: Router = Router();
 
 router.use(upload.single("avatar"));
 
@@ -13,7 +13,11 @@ router.use(upload.single("avatar"));
 router.get("/", AccountController.index);
 
 // Get information about my account
-router.get("/me", passport.authenticate("jwt", { session: false }), AccountController.profile);
+router.get(
+	"/me",
+	passport.authenticate("jwt", { session: false }),
+	AccountController.profile,
+);
 
 // Show one account
 router.get("/:id", AccountController.show);

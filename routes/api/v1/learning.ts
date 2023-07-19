@@ -17,7 +17,7 @@ router.use(middleware.accountIs(ROLES.ADMIN, ROLES.MANAGER));
 router.delete("/:id", LearningController.destroy);
 
 router.use(
-  upload(String(process.env.SAVE_LEARNING_THUMBNAIL)).single("thumbnail"),
+	upload(String(process.env.SAVE_LEARNING_THUMBNAIL)).single("thumbnail"),
 );
 
 router.post("/", LearningController.insert);

@@ -82,7 +82,11 @@ function show(request, response, next) {
         try {
             const { id } = request.params;
             const fieldsToPopulate = (0, get_population_options_from_request_query_1.getPopulationOptionsFromRequestQuery)(request);
-            const account = yield models_1.Account.findOne({ _id: id, deletedAt: null, verify: true })
+            const account = yield models_1.Account.findOne({
+                _id: id,
+                deletedAt: null,
+                verify: true,
+            })
                 .select(projection)
                 .populate(fieldsToPopulate)
                 .exec();
@@ -112,11 +116,12 @@ function update(request, response, next) {
                 body.avatar = file.filename;
                 isAvatarUpdate = true;
             }
-            ;
             if (body.password) {
                 body.password = yield (0, hash_password_1.hashPassword)(body.password);
             }
-            models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, request.body, { returnDocument: "before" }, function (error, oldAccount) {
+            models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, request.body, {
+                returnDocument: "before",
+            }, function (error, oldAccount) {
                 if (error)
                     throw error;
                 if (oldAccount && isAvatarUpdate) {
@@ -142,7 +147,9 @@ function destroy(request, response, next) {
             const { id } = request.params;
             (0, utils_1.authorize)(request.user, id);
             yield models_1.Account.findOneAndUpdate({ _id: id, deletedAt: null }, { deletedAt: Date.now() }).exec();
-            return response.status(http_status_codes_1.StatusCodes.ACCEPTED).json({ message: response_1.ResponseMessage.ACCOUNT_DELETED });
+            return response.status(http_status_codes_1.StatusCodes.ACCEPTED).json({
+                message: response_1.ResponseMessage.ACCOUNT_DELETED,
+            });
         }
         catch (error) {
             next(error);
@@ -173,7 +180,9 @@ function restore(request, response, next) {
         try {
             const { id } = request.params;
             yield models_1.Account.findByIdAndUpdate(id, { deletedAt: null }).exec();
-            return response.status(http_status_codes_1.StatusCodes.OK).json({ message: response_1.ResponseMessage.ACCOUNT_RESTORED });
+            return response.status(http_status_codes_1.StatusCodes.OK).json({
+                message: response_1.ResponseMessage.ACCOUNT_RESTORED,
+            });
         }
         catch (error) {
             next(error);
@@ -191,11 +200,14 @@ function eliminate(request, response, next) {
             models_1.Account.findByIdAndDelete({ _id: id, deletedAt: { $ne: null } }, null, (error, account) => {
                 if (error)
                     throw error;
-                if (!account)
+                if (!account) {
                     throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
+                }
                 (0, delete_photo_1.deletePhoto)(account.avatar);
             });
-            return response.status(http_status_codes_1.StatusCodes.OK).json({ message: response_1.ResponseMessage.ACCOUNT_DELETED_PERMANENT });
+            return response.status(http_status_codes_1.StatusCodes.OK).json({
+                message: response_1.ResponseMessage.ACCOUNT_DELETED_PERMANENT,
+            });
         }
         catch (error) {
             next(error);

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getByAccount = exports.update = exports.show = exports.insert = exports.index = exports.destroy = void 0;
+exports.update = exports.show = exports.insert = exports.index = exports.getByAccount = exports.destroy = void 0;
 const models_1 = require("../models");
 const http_status_codes_1 = require("http-status-codes");
 const errors_1 = require("../traits/errors");
@@ -21,8 +21,9 @@ const response_1 = require("../traits/response");
 function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const resumes = yield models_1.Resume.find({}, {}, { sort: { createdAt: "desc" } });
-            return response.status(http_status_codes_1.StatusCodes.OK).json({ data: resumes });
+            const resumes = yield models_1.Resume.find({}, null).sort({ createdAt: "desc" })
+                .exec();
+            return response.status(http_status_codes_1.StatusCodes.OK).json({ resumes });
         }
         catch (error) {
             next(error);
@@ -37,11 +38,11 @@ function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            const resume = yield models_1.Resume.findById(id);
+            const resume = yield models_1.Resume.findById(id).exec();
             if (!resume) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
             }
-            return response.status(http_status_codes_1.StatusCodes.OK).json({ data: resume });
+            return response.status(http_status_codes_1.StatusCodes.OK).json({ resume });
         }
         catch (error) {
             next(error);
@@ -55,12 +56,15 @@ exports.show = show;
 function insert(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { id } = request.user;
-            const hasResume = yield models_1.Resume.exists({ account_id: id });
-            if (hasResume) {
-                throw new errors_1.ConflictError(response_1.ResponseMessage.RESUME_CONFLICT);
-            }
-            request.body.account_id = id;
+            const { id: account_id } = request.user;
+            models_1.Resume.exists({ account_id }, (error, resumeId) => {
+                if (error)
+                    throw error;
+                if (resumeId) {
+                    throw new errors_1.ConflictError(response_1.ResponseMessage.RESUME_CONFLICT);
+                }
+            });
+            request.body.account_id = account_id;
             const resume = yield models_1.Resume.create(request.body);
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: response_1.ResponseMessage.RESUME_CREATED,
@@ -80,19 +84,12 @@ function update(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            const { technicalSkill: technical_skill, education, personalBackground: personal_background, experience, } = request.body;
-            const updatedValue = {
-                technical_skill,
-                education,
-                personal_background,
-                experience,
-            };
             const resume = yield models_1.Resume.findById(id);
             if (!resume) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
             }
-            (0, utils_1.authorize)(request.user, resume.account_id.toString());
-            Object.assign(resume, updatedValue);
+            (0, utils_1.authorize)(request.user, resume.accountId.toString());
+            Object.assign(resume, request.body);
             yield resume.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: response_1.ResponseMessage.RESUME_UPDATED,
@@ -110,12 +107,13 @@ exports.update = update;
 function destroy(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { id } = request.params;
-            const resume = yield models_1.Resume.findById(id);
+            const { user, params } = request;
+            const { id } = params;
+            const resume = yield models_1.Resume.findById(id).select("account_id -_id").exec();
             if (!resume) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
             }
-            (0, utils_1.authorize)(request.user, resume.account_id.toString());
+            (0, utils_1.authorize)(user, resume.accountId.toString());
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: response_1.ResponseMessage.RESUME_DELETED,
             });

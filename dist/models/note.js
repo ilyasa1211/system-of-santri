@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Note = exports.noteSchema = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 exports.noteSchema = new mongoose_1.default.Schema({
-    learning_id: {
+    learningId: {
         type: mongoose_1.default.SchemaTypes.ObjectId,
         ref: "Learning",
     },

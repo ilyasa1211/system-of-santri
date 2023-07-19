@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Work = exports.workSchema = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 exports.workSchema = new mongoose_1.default.Schema({
-    account_id: {
+    accountId: {
         type: mongoose_1.default.SchemaTypes.ObjectId,
         ref: "account",
     },
@@ -14,6 +14,10 @@ exports.workSchema = new mongoose_1.default.Schema({
         type: String,
         trim: true,
         required: [true, "Please enter the needed Title to continue."],
+    },
+    verify: {
+        type: Boolean,
+        default: false,
     },
     link: {
         type: String,

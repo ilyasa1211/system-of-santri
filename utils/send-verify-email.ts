@@ -9,18 +9,18 @@ const appUrl = process.env.APP_URL;
  * Send verify email
  */
 export default async function sendVerifyEmail(hash: string, account: IAccount) {
-  const { name, email } = account;
-  transporter.sendMail({
-    from: process.env.MAIL_USERNAME,
-    to: email,
-    subject: "Account Verification - Action Required",
-    html: pug.renderFile(
-      path.join(__dirname, "..", "views", "verify-email.pug"),
-      {
-        hash,
-        appUrl,
-        username: getAccountUsername(name),
-      },
-    ),
-  });
+	const { name, email } = account;
+	transporter.sendMail({
+		from: process.env.MAIL_USERNAME,
+		to: email,
+		subject: "Account Verification - Action Required",
+		html: pug.renderFile(
+			path.join(__dirname, "..", "views", "verify-email.pug"),
+			{
+				hash,
+				appUrl,
+				username: getAccountUsername(name),
+			},
+		),
+	});
 }

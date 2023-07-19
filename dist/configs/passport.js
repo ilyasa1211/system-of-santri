@@ -29,7 +29,7 @@ const verifyCallback = function (payload, done) {
                 _id: id,
                 deletedAt: null,
             })
-                .populate({ path: "role", foreignField: "id", select: "name id -_id" })
+                .populate("role", "id name -_id")
                 .exec();
             if (!account) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);

@@ -25,7 +25,7 @@ export class ConfigurationController {
 					);
 				}
 				return response.status(StatusCodes.OK).json(config);
-			} catch (error: any) {
+			} catch (error: unknown) {
 				next(error);
 			}
 		};
@@ -62,7 +62,7 @@ export class ConfigurationController {
 				return response.status(StatusCodes.OK).json({
 					message: `The ${key} has been successfully updated. The adjustments have been made.`,
 				});
-			} catch (error: any) {
+			} catch (error: unknown) {
 				next(error);
 			}
 		};

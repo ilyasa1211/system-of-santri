@@ -93,10 +93,6 @@ function show(request, response, next) {
             return response.status(http_status_codes_1.StatusCodes.OK).json({ account });
         }
         catch (error) {
-            if (error.message.startsWith("Cast to ObjectId failed")) {
-                error.message = response_1.ResponseMessage.INVALID_ACCOUNT_ID;
-                error.code = http_status_codes_1.StatusCodes.BAD_REQUEST;
-            }
             next(error);
         }
     });

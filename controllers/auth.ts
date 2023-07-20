@@ -96,11 +96,7 @@ async function signup(
 			account: filteredAccount,
 			token,
 		});
-	} catch (error: any) {
-		if (error.message?.indexOf("duplicate key error") !== -1) {
-			error.code = StatusCodes.CONFLICT;
-			error.message = ResponseMessage.SIGNUP_CONFLICT;
-		}
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -164,7 +160,7 @@ async function signin(
 			account: filteredAccount,
 			token,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -214,7 +210,7 @@ async function resendVerifyEmail(
 			message:
 				"Your confirmation email was successfully sent again. Check your inbox, then adhere to the directions to finish the verification process. Don't forget to look in your spam or junk folder if you don't see the email in your inbox.",
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -242,7 +238,7 @@ async function verify(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.ACCOUNT_VERIFIED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -272,7 +268,7 @@ async function forgotPassword(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.CHECK_EMAIL,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -311,7 +307,7 @@ async function resetPassword(
 		return response.status(StatusCodes.OK).json({
 			message: "Your new password was changed successfully.",
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }

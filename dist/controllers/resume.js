@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.update = exports.show = exports.insert = exports.index = exports.getByAccount = exports.destroy = void 0;
+exports.update = exports.show = exports.insert = exports.index = exports.destroy = void 0;
 const models_1 = require("../models");
 const http_status_codes_1 = require("http-status-codes");
 const errors_1 = require("../traits/errors");
@@ -125,7 +125,3 @@ function destroy(request, response, next) {
     });
 }
 exports.destroy = destroy;
-function getByAccount(request, response, next) {
-    return __awaiter(this, void 0, void 0, function* () { });
-}
-exports.getByAccount = getByAccount;

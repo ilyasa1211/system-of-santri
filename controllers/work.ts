@@ -2,7 +2,7 @@ import { Account, IAccount, Work } from "../models";
 import { StatusCodes } from "http-status-codes";
 import { authorize } from "../utils";
 import { NextFunction, Request, Response } from "express";
-import { BadRequestError, NotFoundError } from "../traits/errors";
+import { NotFoundError } from "../traits/errors";
 import { ResponseMessage } from "../traits/response";
 
 export { destroy, index, insert, show, update };
@@ -14,7 +14,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 	try {
 		const works = await Work.find().sort({ createdAt: "desc" });
 		return response.status(StatusCodes.OK).json({ works });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -30,7 +30,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 			throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
 		}
 		return response.status(StatusCodes.OK).json({ work });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -50,14 +50,14 @@ async function insert(
 		const work = await Work.create(request.body);
 		const account = await Account.findById(user.id);
 
-    account!.work.push(work.id);
-    await account!.save();
+		account!.work.push(work.id);
+		await account!.save();
 
-    return response.status(StatusCodes.OK).json({
-    	message: ResponseMessage.WORK_CREATED,
-    	work,
-    });
-	} catch (error: any) {
+		return response.status(StatusCodes.OK).json({
+			message: ResponseMessage.WORK_CREATED,
+			work,
+		});
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -78,9 +78,7 @@ async function update(
 		const work = await Work.findById(id);
 
 		if (!work) {
-			throw new NotFoundError(
-				ResponseMessage.WORK_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
 		}
 		const updatedWork = { title, link };
 		Object.assign(work, updatedWork);
@@ -91,7 +89,7 @@ async function update(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.WORK_UPDATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -118,7 +116,7 @@ async function destroy(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.WORK_DELETED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }

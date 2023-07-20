@@ -20,10 +20,10 @@ const projection = [
 	"santriPeriod",
 	"generation",
 	"generationYear",
-	"role",
-	"work",
+	"roleId",
+	"workId",
 	"absenses",
-	"absense",
+	"absenseId",
 ];
 
 /**
@@ -128,14 +128,19 @@ export async function update(
 			body.password = await hashPassword(body.password);
 		}
 
-		Account.findOneAndUpdate({ _id: id, deletedAt: null }, request.body, {
-			returnDocument: "before",
-		}, function (error: CallbackError, oldAccount: IAccount | null): void {
-			if (error) throw error;
-			if (oldAccount && isAvatarUpdate) {
-				deletePhoto(oldAccount.avatar);
-			}
-		});
+		Account.findOneAndUpdate(
+			{ _id: id, deletedAt: null },
+			request.body,
+			{
+				returnDocument: "before",
+			},
+			function (error: CallbackError, oldAccount: IAccount | null): void {
+				if (error) throw error;
+				if (oldAccount && isAvatarUpdate) {
+					deletePhoto(oldAccount.avatar);
+				}
+			},
+		);
 
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.ACCOUNT_UPDATED,
@@ -245,8 +250,7 @@ export async function profile(
 	try {
 		const { id } = request.user as IAccount;
 		const fieldsToPopulate = getPopulationOptionsFromRequestQuery(request);
-
-		const account = await Account.find({ _id: id, deletedAt: null })
+		const account = await Account.findOne({ _id: id, deletedAt: null })
 			.select(projection)
 			.populate(fieldsToPopulate)
 			.exec();

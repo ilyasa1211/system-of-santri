@@ -21,7 +21,8 @@ const response_1 = require("../traits/response");
 function index(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const resumes = yield models_1.Resume.find({}, null).sort({ createdAt: "desc" })
+            const resumes = yield models_1.Resume.find({}, null)
+                .sort({ createdAt: "desc" })
                 .exec();
             return response.status(http_status_codes_1.StatusCodes.OK).json({ resumes });
         }

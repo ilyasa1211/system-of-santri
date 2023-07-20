@@ -23,7 +23,7 @@ const calendarSchema = new mongoose.Schema<ICalendar>(
 			type: Object,
 		},
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
 calendarSchema.pre("save", function (next) {

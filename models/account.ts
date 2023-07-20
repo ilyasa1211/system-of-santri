@@ -96,7 +96,7 @@ const accountSchema = new mongoose.Schema<IAccount>(
 			trim: true,
 			default: path.join(
 				String(process.env.SAVE_ACCOUNT_AVATAR),
-				String(process.env.DEFAULT_AVATAR_NAME)
+				String(process.env.DEFAULT_AVATAR_NAME),
 			),
 		},
 		santriPeriod: {
@@ -154,8 +154,8 @@ const accountSchema = new mongoose.Schema<IAccount>(
 	{
 		timestamps: true,
 		toObject: { virtuals: true },
-		// toJSON: { virtuals: true },
-	}
+		toJSON: { virtuals: true },
+	},
 );
 
 accountSchema.pre("save", function (next: any) {
@@ -181,6 +181,13 @@ accountSchema.virtual("resume", {
 	ref: "Resume",
 	localField: "resumeId",
 	foreignField: "_id",
+	justOne: true,
+});
+
+accountSchema.virtual("absense", {
+	ref: "Absense",
+	localField: "absenseId",
+	foreignField: "id",
 	justOne: true,
 });
 

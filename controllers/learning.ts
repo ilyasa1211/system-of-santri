@@ -28,9 +28,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 		const { id } = request.params;
 		const learning = await Learning.findById(id);
 		if (!learning) {
-			throw new NotFoundError(
-				ResponseMessage.LEARNING_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
 		}
 		return response.status(StatusCodes.OK).json({ learning });
 	} catch (error: any) {
@@ -80,9 +78,7 @@ async function update(
 		}
 		const learning = await Learning.findById(id);
 		if (!learning) {
-			throw new NotFoundError(
-				ResponseMessage.LEARNING_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
 		}
 		Object.assign(learning, body);
 		await learning.save();
@@ -106,9 +102,7 @@ async function destroy(
 		const { id } = request.params;
 		const learning = await Learning.findById(id);
 		if (!learning) {
-			throw new NotFoundError(
-				ResponseMessage.LEARNING_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
 		}
 
 		const { thumbnail } = learning;

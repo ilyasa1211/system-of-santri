@@ -19,7 +19,7 @@ async function calendar(
 	try {
 		const year: number = new Date().getFullYear();
 		const calendar = await findOrCreate(Calendar, { year });
-		const events = await Event.find() as Array<IEvent>;
+		const events = (await Event.find()) as Array<IEvent>;
 		events.forEach((event) => {
 			const { title, slug, date } = event;
 			const [month, day] = date.split("-").slice(1);
@@ -77,15 +77,12 @@ async function update(
 		const { id } = request.params;
 		const event = await Event.findById(id);
 		if (!event) {
-			throw new NotFoundError(
-				ResponseMessage.EVENT_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.EVENT_NOT_FOUND);
 		}
 		Object.assign(event, request.body);
 		await event.save();
 		return response.status(StatusCodes.OK).json({
-			message:
-        ResponseMessage.EVENT_UPDATED,
+			message: ResponseMessage.EVENT_UPDATED,
 		});
 	} catch (error: any) {
 		next(error);

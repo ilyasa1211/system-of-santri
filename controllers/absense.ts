@@ -7,7 +7,6 @@ import {
 import { ATTENDANCE_STATUS } from "../traits/attendance-status";
 import { MONTHS, STATUSES } from "../traits";
 import { NextFunction, Request, Response } from "express";
-import { ICalendar } from "../models/calendar";
 import { Account, IAccount } from "../models/account";
 import { ResponseMessage } from "../traits/response";
 
@@ -99,7 +98,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 async function insert(
 	request: Request,
 	response: Response,
-	next: NextFunction
+	next: NextFunction,
 ) {
 	try {
 		const { token } = request.query;
@@ -119,7 +118,7 @@ async function insert(
 					lessonHours +
 					"am." +
 					"Current server time: " +
-					currentServerTime
+					currentServerTime,
 			);
 		}
 		const account: IAccount = request.user as IAccount;
@@ -133,11 +132,11 @@ async function insert(
 		const alreadyAbsent = account.absenses.find(
 			(absense: string) =>
 				absense.slice(absense.lastIndexOf("/")).toString() ===
-				now.slice(now.lastIndexOf("/")).toString()
+				now.slice(now.lastIndexOf("/")).toString(),
 		);
 		if (alreadyAbsent) {
 			throw new ConflictError(
-				"You have a unique presence that cannot be replicated or measured twice."
+				"You have a unique presence that cannot be replicated or measured twice.",
 			);
 		}
 		account.absenses.push(now);

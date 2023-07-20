@@ -9,7 +9,7 @@ export class ConfigurationController {
 		return async function getAccessCode(
 			request: Request,
 			response: Response,
-			next: NextFunction
+			next: NextFunction,
 		) {
 			try {
 				const KEY: CaseStyle = new CaseStyle(key);
@@ -21,7 +21,7 @@ export class ConfigurationController {
 					.exec();
 				if (!config) {
 					throw new NotFoundError(
-						`The ${key} configuration could not be found by the system. Please check your settings once more and try again.`
+						`The ${key} configuration could not be found by the system. Please check your settings once more and try again.`,
 					);
 				}
 				return response.status(StatusCodes.OK).json(config);
@@ -34,14 +34,14 @@ export class ConfigurationController {
 		return async function setAccessCode(
 			request: Request,
 			response: Response,
-			next: NextFunction
+			next: NextFunction,
 		) {
 			try {
 				const KEY = new CaseStyle(key);
 				const inputKey = request.body[KEY.toCamelCase()];
 				if (!inputKey) {
 					throw new BadRequestError(
-						`Please enter the needed ${key} to continue.`
+						`Please enter the needed ${key} to continue.`,
 					);
 				}
 				const { modifiedCount } = await Configuration.updateOne(
@@ -50,12 +50,12 @@ export class ConfigurationController {
 					},
 					{
 						value: inputKey,
-					}
+					},
 				);
 
 				if (!modifiedCount) {
 					throw new Error(
-						`Unfortunately, we must let you know that the attempt to set a new ${key} was unsuccessful.`
+						`Unfortunately, we must let you know that the attempt to set a new ${key} was unsuccessful.`,
 					);
 				}
 

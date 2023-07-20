@@ -65,14 +65,11 @@ function signup(request, response, next) {
                 }),
             };
             Object.assign(request.body, defaultValue);
-            const account = yield models_1.Account.create(request.body);
+            const account = (yield models_1.Account.create(request.body));
             const { id } = account;
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
             yield (0, utils_1.sendVerifyEmail)(hash, account);
-            const filteredAccount = (0, filter_properties_1.default)(account, [
-                "name",
-                "role",
-            ], { role: (0, get_role_name_1.default)(Number(account.role)) });
+            const filteredAccount = (0, filter_properties_1.default)(account, ["name", "role"], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.CREATED).json({
                 message: response_1.ResponseMessage.CHECK_EMAIL,
                 account: filteredAccount,
@@ -121,10 +118,7 @@ function signin(request, response, next) {
             }
             const { id, name } = account;
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
-            const filteredAccount = (0, filter_properties_1.default)(account, [
-                "name",
-                "role",
-            ], { role: (0, get_role_name_1.default)(Number(account.role)) });
+            const filteredAccount = (0, filter_properties_1.default)(account, ["name", "role"], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: response_1.ResponseMessage.LOGIN_SUCCEED,
                 account: filteredAccount,

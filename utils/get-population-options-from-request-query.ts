@@ -1,24 +1,26 @@
 import { Request } from "express";
+import { PopulateOptions } from "mongoose";
 
-export function getPopulationOptionsFromRequestQuery(request: Request) {
-	const {
-		resume,
-		role,
-		absense,
-		work,
-	} = request.query;
+export function getPopulationOptionsFromRequestQuery(
+	request: Request,
+	populationPathAvailable = ["resume", "role", "work", "absense"]
+) {
+	const { query } = request;
+	const fieldsToPopulate: Array<PopulateOptions> = [];
 
-	const fieldsToPopulate = [];
-
-	Boolean(resume) && fieldsToPopulate.push("resume");
-	Boolean(role) && fieldsToPopulate.push("role");
-	Boolean(absense) && fieldsToPopulate.push("absense");
-	Boolean(work) &&
-    fieldsToPopulate.push({
-    	path: "role",
-    	foreignField: "id",
-    	select: "id name -_id",
-    });
-
+	populationPathAvailable.forEach((path: string) => {
+		const populateOptions: PopulateOptions = {
+			path: path,
+			select: "-_id -__v",
+		};
+		if (path === "absense") {
+			const currentYear = new Date().getFullYear();
+			populateOptions.match = { year: currentYear };
+			populateOptions.select = "-id -_id -__v";
+		}
+		if (query.hasOwnProperty(path)) {
+			fieldsToPopulate.push(populateOptions);
+		}
+	});
 	return fieldsToPopulate;
 }

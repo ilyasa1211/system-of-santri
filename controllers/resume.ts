@@ -13,7 +13,8 @@ export { destroy, getByAccount, index, insert, show, update };
  */
 async function index(request: Request, response: Response, next: NextFunction) {
 	try {
-		const resumes = await Resume.find({}, null).sort({ createdAt: "desc" })
+		const resumes = await Resume.find({}, null)
+			.sort({ createdAt: "desc" })
 			.exec();
 		return response.status(StatusCodes.OK).json({ resumes });
 	} catch (error: any) {
@@ -30,9 +31,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 		const resume = await Resume.findById(id).exec();
 
 		if (!resume) {
-			throw new NotFoundError(
-				ResponseMessage.RESUME_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
 		}
 		return response.status(StatusCodes.OK).json({ resume });
 	} catch (error: any) {

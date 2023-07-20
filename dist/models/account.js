@@ -116,7 +116,7 @@ const accountSchema = new mongoose_1.default.Schema({
 }, {
     timestamps: true,
     toObject: { virtuals: true },
-    // toJSON: { virtuals: true },
+    toJSON: { virtuals: true },
 });
 accountSchema.pre("save", function (next) {
     // abense = 0 is for relation with absense model with id 0
@@ -138,6 +138,12 @@ accountSchema.virtual("resume", {
     ref: "Resume",
     localField: "resumeId",
     foreignField: "_id",
+    justOne: true,
+});
+accountSchema.virtual("absense", {
+    ref: "Absense",
+    localField: "absenseId",
+    foreignField: "id",
     justOne: true,
 });
 exports.Account = mongoose_1.default.model("Account", accountSchema);

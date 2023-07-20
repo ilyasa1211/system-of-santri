@@ -21,7 +21,7 @@ const verifyCallback: VerifyCallback = async function (
 		email: string;
 		name: string;
 	},
-	done: VerifiedCallback
+	done: VerifiedCallback,
 ) {
 	try {
 		const { id } = payload;
@@ -32,6 +32,7 @@ const verifyCallback: VerifyCallback = async function (
 		})
 			.populate("role", "id name -_id")
 			.exec();
+		console.log(account);
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}

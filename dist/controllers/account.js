@@ -29,10 +29,10 @@ const projection = [
     "santriPeriod",
     "generation",
     "generationYear",
-    "role",
-    "work",
+    "roleId",
+    "workId",
     "absenses",
-    "absense",
+    "absenseId",
 ];
 /**
  *  Get All Accounts, everyone has rights
@@ -223,7 +223,7 @@ function profile(request, response, next) {
         try {
             const { id } = request.user;
             const fieldsToPopulate = (0, get_population_options_from_request_query_1.getPopulationOptionsFromRequestQuery)(request);
-            const account = yield models_1.Account.find({ _id: id, deletedAt: null })
+            const account = yield models_1.Account.findOne({ _id: id, deletedAt: null })
                 .select(projection)
                 .populate(fieldsToPopulate)
                 .exec();

@@ -1,7 +1,11 @@
 import jwt from "jsonwebtoken";
 import argon2 from "argon2";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, NotFoundError, UnauthorizedError } from "../traits/errors";
+import {
+	BadRequestError,
+	NotFoundError,
+	UnauthorizedError,
+} from "../traits/errors";
 import { Account, Configuration, IAccount } from "../models";
 import {
 	generateToken,
@@ -73,16 +77,17 @@ async function signup(
 
 		Object.assign(request.body, defaultValue);
 
-		const account = await Account.create(request.body) as IAccount;
+		const account = (await Account.create(request.body)) as IAccount;
 
 		const { id } = account;
 		const token = jwt.sign({ id, email, name }, String(process.env.JWT_SECRET));
 		await sendVerifyEmail(hash, account);
 
-		const filteredAccount: Record<string, any> = filterProperties(account, [
-			"name",
-			"role",
-		], { role: getRoleName(Number(account.role)) });
+		const filteredAccount: Record<string, any> = filterProperties(
+			account,
+			["name", "role"],
+			{ role: getRoleName(Number(account.role)) },
+		);
 
 		return response.status(StatusCodes.CREATED).json({
 			message: ResponseMessage.CHECK_EMAIL,
@@ -127,7 +132,7 @@ async function signin(
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
-		if (!account.verify) { 
+		if (!account.verify) {
 			throw new UnauthorizedError(ResponseMessage.UNVERIFIED_ACCOUNT);
 		}
 
@@ -140,14 +145,14 @@ async function signin(
 
 		const token = jwt.sign({ id, email, name }, String(process.env.JWT_SECRET));
 
-		const filteredAccount: Record<string, any> = filterProperties(account, [
-			"name",
-			"role",
-		], { role: getRoleName(Number(account.role)) });
+		const filteredAccount: Record<string, any> = filterProperties(
+			account,
+			["name", "role"],
+			{ role: getRoleName(Number(account.role)) },
+		);
 
 		return response.status(StatusCodes.OK).json({
-			message:
-        ResponseMessage.LOGIN_SUCCEED,
+			message: ResponseMessage.LOGIN_SUCCEED,
 			account: filteredAccount,
 			token,
 		});
@@ -169,7 +174,7 @@ async function resendVerifyEmail(
 		let email: string | undefined = undefined;
 		if (
 			request.headers.authorization &&
-      request.headers.authorization.split(" ")[0] === "Bearer"
+			request.headers.authorization.split(" ")[0] === "Bearer"
 		) {
 			authToken = request.headers.authorization.split(" ")[1];
 		}
@@ -190,9 +195,7 @@ async function resendVerifyEmail(
 
 		const account = await Account.findOne({ email });
 		if (!account) {
-			throw new NotFoundError(
-				ResponseMessage.ACCOUNT_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
 		const hash: string = generateToken();
 
@@ -201,7 +204,7 @@ async function resendVerifyEmail(
 		await sendVerifyEmail(hash, account);
 		return response.status(StatusCodes.OK).json({
 			message:
-        "Your confirmation email was successfully sent again. Check your inbox, then adhere to the directions to finish the verification process. Don't forget to look in your spam or junk folder if you don't see the email in your inbox.",
+				"Your confirmation email was successfully sent again. Check your inbox, then adhere to the directions to finish the verification process. Don't forget to look in your spam or junk folder if you don't see the email in your inbox.",
 		});
 	} catch (error: any) {
 		next(error);
@@ -219,22 +222,17 @@ async function verify(
 	try {
 		const { hash } = request.query;
 		if (!hash) {
-			throw new BadRequestError(
-				ResponseMessage.EMPTY_TOKEN,
-			);
+			throw new BadRequestError(ResponseMessage.EMPTY_TOKEN);
 		}
 		const account = await Account.findOne({ hash });
 		if (!account) {
-			throw new NotFoundError(
-				ResponseMessage.ACCOUNT_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
 		account.hash = null;
 		account.verify = true;
 		await account.save();
 		return response.status(StatusCodes.OK).json({
-			message:
-        ResponseMessage.ACCOUNT_VERIFIED,
+			message: ResponseMessage.ACCOUNT_VERIFIED,
 		});
 	} catch (error: any) {
 		next(error);
@@ -252,15 +250,11 @@ async function forgotPassword(
 	try {
 		const { email } = request.body;
 		if (!email) {
-			throw new BadRequestError(
-				ResponseMessage.EMPTY_EMAIL,
-			);
+			throw new BadRequestError(ResponseMessage.EMPTY_EMAIL);
 		}
 		const account = await Account.findOne({ email, deletedAt: null });
 		if (!account) {
-			throw new NotFoundError(
-				ResponseMessage.ACCOUNT_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
 		const token: string = generateToken(3);
 		const forgetToken = token;
@@ -286,7 +280,9 @@ async function resetPassword(
 	try {
 		const { token: forgetToken } = request.query;
 		const { password, confirmPassword } = request.body;
-		if (!forgetToken) { throw new BadRequestError(ResponseMessage.EMPTY_TOKEN); }
+		if (!forgetToken) {
+			throw new BadRequestError(ResponseMessage.EMPTY_TOKEN);
+		}
 		if (!password) {
 			throw new BadRequestError(
 				"Please enter your new password in order to continue.",

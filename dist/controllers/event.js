@@ -27,7 +27,7 @@ function calendar(request, response, next) {
         try {
             const year = new Date().getFullYear();
             const calendar = yield (0, find_or_create_1.default)(models_1.Calendar, { year });
-            const events = yield models_1.Event.find();
+            const events = (yield models_1.Event.find());
             events.forEach((event) => {
                 var _a;
                 const { title, slug, date } = event;

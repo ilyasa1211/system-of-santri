@@ -49,15 +49,12 @@ async function insert(
 
 		const learningExists = await Note.exists({ _id: id });
 		if (!learningExists) {
-			throw new NotFoundError(
-				ResponseMessage.LEARNING_NOT_FOUND,
-			);
+			throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
 		}
 
 		const notes = await Note.create(request.body);
 		return response.status(StatusCodes.OK).json({
-			message:
-        ResponseMessage.NOTE_CREATED,
+			message: ResponseMessage.NOTE_CREATED,
 			notes,
 		});
 	} catch (error: any) {
@@ -76,8 +73,7 @@ async function update(
 	try {
 		const notes = await Note.findByIdAndUpdate(request.params.id, request.body);
 		return response.status(StatusCodes.OK).json({
-			message:
-        ResponseMessage.NOTE_UPDATED,
+			message: ResponseMessage.NOTE_UPDATED,
 			notes,
 		});
 	} catch (error: any) {
@@ -96,8 +92,7 @@ async function destroy(
 	try {
 		const notes = await Note.findByIdAndDelete(request.params.id);
 		return response.status(StatusCodes.OK).json({
-			message:
-        ResponseMessage.NOTE_DELETED,
+			message: ResponseMessage.NOTE_DELETED,
 			notes,
 		});
 	} catch (error: any) {

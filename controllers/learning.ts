@@ -15,7 +15,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 	try {
 		const learnings = await Learning.find();
 		return response.status(StatusCodes.OK).json({ learnings });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -31,7 +31,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 			throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
 		}
 		return response.status(StatusCodes.OK).json({ learning });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -56,7 +56,7 @@ async function insert(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.LEARNING_CREATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -85,7 +85,7 @@ async function update(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.LEARNING_UPDATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -112,7 +112,7 @@ async function destroy(
 		if (!thumbnail.endsWith(String(process.env.DEFAULT_THUMBNAIL_NAME))) {
 			fs.unlink(
 				path.join(__dirname, "..", "public", thumbnail),
-				(error: any) => {
+				(error: unknown) => {
 					if (error) throw error;
 				},
 			);
@@ -120,7 +120,7 @@ async function destroy(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.LEARNING_DELETED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }

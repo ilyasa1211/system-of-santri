@@ -13,7 +13,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 	try {
 		const notes = await Note.find();
 		return response.status(StatusCodes.OK).json({ notes });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -25,7 +25,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 	try {
 		const note = await Note.findById(request.params.id);
 		return response.status(StatusCodes.OK).json({ note });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -57,7 +57,7 @@ async function insert(
 			message: ResponseMessage.NOTE_CREATED,
 			notes,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -76,7 +76,7 @@ async function update(
 			message: ResponseMessage.NOTE_UPDATED,
 			notes,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -95,7 +95,7 @@ async function destroy(
 			message: ResponseMessage.NOTE_DELETED,
 			notes,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }

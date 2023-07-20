@@ -6,7 +6,7 @@ import { NextFunction, Request, Response } from "express";
 import { ResponseMessage } from "../traits/response";
 import { CallbackError } from "mongoose";
 
-export { destroy, getByAccount, index, insert, show, update };
+export { destroy, index, insert, show, update };
 
 /**
  * Get resume from all account, everyone has rights
@@ -17,7 +17,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 			.sort({ createdAt: "desc" })
 			.exec();
 		return response.status(StatusCodes.OK).json({ resumes });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -66,7 +66,7 @@ async function insert(
 			message: ResponseMessage.RESUME_CREATED,
 			resume,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -96,7 +96,7 @@ async function update(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.RESUME_UPDATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -123,13 +123,7 @@ async function destroy(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.RESUME_DELETED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
-
-async function getByAccount(
-	request: Request,
-	response: Response,
-	next: NextFunction,
-) {}

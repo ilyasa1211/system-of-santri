@@ -30,7 +30,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 			});
 		});
 		return response.status(StatusCodes.OK).json({ absenses: accounts });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -60,7 +60,7 @@ async function me(request: Request, response: Response, next: NextFunction) {
 		});
 
 		return response.status(StatusCodes.OK).json({ account });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -87,7 +87,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 		});
 
 		return response.status(StatusCodes.OK).json({ account });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -147,7 +147,7 @@ async function insert(
 			message:
 				"Thank you for your successful presence; it has had a significant impact.",
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }

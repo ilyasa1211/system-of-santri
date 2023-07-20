@@ -43,7 +43,7 @@ export async function index(
 			.exec();
 
 		return response.status(StatusCodes.OK).json({ accounts });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -67,7 +67,7 @@ export async function insert(
 		const token = generateJwtToken(account);
 
 		return response.status(StatusCodes.OK).json({ token });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -95,11 +95,7 @@ export async function show(
 			.exec();
 
 		return response.status(StatusCodes.OK).json({ account });
-	} catch (error: any) {
-		if (error.message.startsWith("Cast to ObjectId failed")) {
-			error.message = ResponseMessage.INVALID_ACCOUNT_ID;
-			error.code = StatusCodes.BAD_REQUEST;
-		}
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -145,7 +141,7 @@ export async function update(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.ACCOUNT_UPDATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -171,7 +167,7 @@ export async function destroy(
 		return response.status(StatusCodes.ACCEPTED).json({
 			message: ResponseMessage.ACCOUNT_DELETED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -186,7 +182,7 @@ export async function trash(
 	try {
 		const accounts = await Account.find({ deletedAt: { $ne: null } }).exec();
 		return response.status(StatusCodes.OK).json({ accounts });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -205,7 +201,7 @@ export async function restore(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.ACCOUNT_RESTORED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -235,7 +231,7 @@ export async function eliminate(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.ACCOUNT_DELETED_PERMANENT,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -259,7 +255,7 @@ export async function profile(
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
 		return response.status(StatusCodes.OK).json({ account });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -277,7 +273,7 @@ export async function workIndex(
 		const works = await Work.find({ accountId: id }).exec();
 
 		return response.json({ works });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -302,7 +298,7 @@ export async function workShow(
 		}
 
 		return response.status(StatusCodes.OK).json({ works });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -323,7 +319,7 @@ export async function resume(
 		}
 
 		return response.status(StatusCodes.OK).json({ resume });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }

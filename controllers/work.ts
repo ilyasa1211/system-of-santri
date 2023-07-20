@@ -14,7 +14,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 	try {
 		const works = await Work.find().sort({ createdAt: "desc" });
 		return response.status(StatusCodes.OK).json({ works });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -30,7 +30,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 			throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
 		}
 		return response.status(StatusCodes.OK).json({ work });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -48,16 +48,16 @@ async function insert(
 		request.body.accountId = user.id;
 
 		const work = await Work.create(request.body);
-		const account = await Account.findById(user.id);
+		const account = await Account.findById(user.id) as IAccount;
 
-		account!.work.push(work.id);
-		await account!.save();
+		account.workId.push(work.id);
+		await account.save();
 
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.WORK_CREATED,
 			work,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -89,7 +89,7 @@ async function update(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.WORK_UPDATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -116,7 +116,7 @@ async function destroy(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.WORK_DELETED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }

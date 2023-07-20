@@ -59,7 +59,7 @@ function insert(request, response, next) {
             request.body.accountId = user.id;
             const work = yield models_1.Work.create(request.body);
             const account = yield models_1.Account.findById(user.id);
-            account.work.push(work.id);
+            account.workId.push(work.id);
             yield account.save();
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: response_1.ResponseMessage.WORK_CREATED,

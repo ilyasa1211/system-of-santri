@@ -5,6 +5,7 @@ import findOrCreate from "../utils/find-or-create";
 import MONTHS from "../traits/month";
 import { NextFunction, Request, Response } from "express";
 import { ResponseMessage } from "../traits/response";
+import { CallbackError } from "mongoose";
 
 export { calendar, destroy, index, insert, update };
 
@@ -30,7 +31,7 @@ async function calendar(
 		});
 
 		return response.status(StatusCodes.OK).json({ calendar });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -42,7 +43,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 	try {
 		const events = await Event.find();
 		return response.status(StatusCodes.OK).json({ events });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -60,7 +61,7 @@ async function insert(
 		return response.status(StatusCodes.CREATED).json({
 			message: ResponseMessage.EVENT_CREATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -75,16 +76,19 @@ async function update(
 ) {
 	try {
 		const { id } = request.params;
-		const event = await Event.findById(id);
-		if (!event) {
-			throw new NotFoundError(ResponseMessage.EVENT_NOT_FOUND);
-		}
-		Object.assign(event, request.body);
-		await event.save();
+		Event.findByIdAndUpdate(
+			id,
+			request.body,
+			(error: CallbackError, event: IEvent): void => {
+				if (error) throw error;
+				if (!event) throw new NotFoundError(ResponseMessage.EVENT_NOT_FOUND);
+			},
+		);
+
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.EVENT_UPDATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }
@@ -103,7 +107,7 @@ async function destroy(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.EVENT_UPDATED,
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		next(error);
 	}
 }

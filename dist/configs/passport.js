@@ -31,7 +31,6 @@ const verifyCallback = function (payload, done) {
             })
                 .populate("role", "id name -_id")
                 .exec();
-            console.log(account);
             if (!account) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }

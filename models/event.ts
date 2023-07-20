@@ -20,13 +20,8 @@ export const eventSchema = new mongoose.Schema<IEvent>(
 			trim: true,
 			required: [true, "Please enter the event's name."],
 		},
-		slug: {
-			type: String,
-			trim: true,
-			unique: true,
-		},
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
 export const Event = mongoose.model<IEvent>("Event", eventSchema);

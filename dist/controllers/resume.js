@@ -38,8 +38,8 @@ exports.index = index;
 function show(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { id } = request.params;
-            const resume = yield models_1.Resume.findById(id).exec();
+            const { accountUniqueId } = request.params;
+            const resume = yield models_1.Resume.findOne({ accountId: accountUniqueId }).exec();
             if (!resume) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
             }
@@ -126,18 +126,6 @@ function destroy(request, response, next) {
 }
 exports.destroy = destroy;
 function getByAccount(request, response, next) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const { accountUniqueId } = request.params;
-            const resume = yield models_1.Resume.findOne({ accountId: accountUniqueId }).exec();
-            if (!resume) {
-                throw new errors_1.NotFoundError(response_1.ResponseMessage.RESUME_NOT_FOUND);
-            }
-            return response.status(http_status_codes_1.StatusCodes.OK).json({ resume });
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    return __awaiter(this, void 0, void 0, function* () { });
 }
 exports.getByAccount = getByAccount;

@@ -84,12 +84,12 @@ function update(request, response, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id } = request.params;
-            const event = yield models_1.Event.findById(id);
-            if (!event) {
-                throw new errors_1.NotFoundError(response_1.ResponseMessage.EVENT_NOT_FOUND);
-            }
-            Object.assign(event, request.body);
-            yield event.save();
+            models_1.Event.findByIdAndUpdate(id, request.body, (error, event) => {
+                if (error)
+                    throw error;
+                if (!event)
+                    throw new errors_1.NotFoundError(response_1.ResponseMessage.EVENT_NOT_FOUND);
+            });
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: response_1.ResponseMessage.EVENT_UPDATED,
             });

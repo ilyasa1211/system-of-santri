@@ -48,16 +48,16 @@ async function insert(
 	next: NextFunction,
 ) {
 	try {
-		const { id: account_id } = request.user as IAccount;
+		const { id: accountId } = request.user as IAccount;
 
-		Resume.exists({ account_id }, (error: CallbackError, resumeId) => {
+		Resume.exists({ accountId }, (error: CallbackError, resumeId) => {
 			if (error) throw error;
 			if (resumeId) {
 				throw new ConflictError(ResponseMessage.RESUME_CONFLICT);
 			}
 		});
 
-		request.body.account_id = account_id;
+		request.body.accountId = accountId;
 
 		const resume = await Resume.create(request.body);
 
@@ -112,7 +112,7 @@ async function destroy(
 		const { user, params } = request;
 		const { id } = params;
 
-		const resume = await Resume.findById(id).select("account_id -_id").exec();
+		const resume = await Resume.findById(id).select("accountId -_id").exec();
 		if (!resume) {
 			throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
 		}
@@ -135,7 +135,7 @@ async function getByAccount(
 	try {
 		const { accountUniqueId } = request.params;
 
-		const resume = await Resume.findOne({ account_id: accountUniqueId }).exec();
+		const resume = await Resume.findOne({ accountId: accountUniqueId }).exec();
 
 		if (!resume) {
 			throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);

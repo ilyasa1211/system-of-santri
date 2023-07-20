@@ -274,7 +274,7 @@ export async function workIndex(
 ) {
 	try {
 		const { id } = request.params;
-		const works = await Work.find({ account_id: id }).exec();
+		const works = await Work.find({ accountId: id }).exec();
 
 		return response.json({ works });
 	} catch (error: any) {
@@ -294,7 +294,7 @@ export async function workShow(
 		const { workId, id } = request.params;
 		const works = await Work.find({
 			_id: workId,
-			account_id: id,
+			accountId: id,
 		}).exec();
 
 		if (!works) {
@@ -317,7 +317,7 @@ export async function resume(
 ) {
 	try {
 		const { id } = request.params;
-		const resume = await Resume.findOne({ account_id: id }).exec();
+		const resume = await Resume.findOne({ accountId: id }).exec();
 		if (!resume) {
 			throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
 		}

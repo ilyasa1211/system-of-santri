@@ -16,7 +16,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 	try {
 		const currentYear: number = new Date().getFullYear();
 		const accounts = (await Account.find()
-			.select("name absense_id absenses")
+			.select("name absenseId absenses")
 			.populate("absense", ["months", "year"])
 			.exec()) as Array<IAccount>;
 

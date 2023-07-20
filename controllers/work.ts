@@ -45,7 +45,7 @@ async function insert(
 ) {
 	try {
 		const user = request.user as IAccount;
-		request.body.account_id = user.id;
+		request.body.accountId = user.id;
 
 		const work = await Work.create(request.body);
 		const account = await Account.findById(user.id);

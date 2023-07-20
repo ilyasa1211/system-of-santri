@@ -21,8 +21,6 @@ const models_1 = require("../models");
 const utils_1 = require("../utils");
 const role_1 = require("../traits/role");
 const email_pattern_1 = __importDefault(require("../traits/email-pattern"));
-const get_role_name_1 = __importDefault(require("../utils/get-role-name"));
-const filter_properties_1 = __importDefault(require("../utils/filter-properties"));
 const response_1 = require("../traits/response");
 /**
  * Register an account
@@ -58,18 +56,25 @@ function signup(request, response, next) {
             const defaultValue = {
                 verify: false,
                 verifyExpiration: date.setDate(date.getDate() + 1),
-                role_id: role_1.ROLES.SANTRI,
-                hash: hash,
+                roleId: role_1.ROLES.SANTRI,
+                hash,
                 password: yield argon2_1.default.hash(password, {
                     type: argon2_1.default.argon2i,
                 }),
             };
             Object.assign(request.body, defaultValue);
             const account = (yield models_1.Account.create(request.body));
-            const { id } = account;
+            const { id, roleId } = account;
+            const filteredAccount = {
+                id,
+                name,
+                role: {
+                    id: roleId,
+                    name: (0, utils_1.getRoleName)(roleId),
+                },
+            };
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
             yield (0, utils_1.sendVerifyEmail)(hash, account);
-            const filteredAccount = (0, filter_properties_1.default)(account, ["name", "role"], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.CREATED).json({
                 message: response_1.ResponseMessage.CHECK_EMAIL,
                 account: filteredAccount,
@@ -102,10 +107,21 @@ function signin(request, response, next) {
             if (!password) {
                 throw new errors_1.BadRequestError(response_1.ResponseMessage.EMPTY_PASSWORD);
             }
-            const account = yield models_1.Account.findOne({
+            const account = (yield models_1.Account.findOne({
                 email,
                 deletedAt: null,
-            });
+            })
+                .select("name roleId password email")
+                .exec());
+            const { id, name, roleId } = account;
+            const filteredAccount = {
+                id,
+                name,
+                role: {
+                    id: roleId,
+                    name: (0, utils_1.getRoleName)(roleId),
+                },
+            };
             if (!account) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }
@@ -116,9 +132,7 @@ function signin(request, response, next) {
             if (!valid) {
                 throw new errors_1.UnauthorizedError(response_1.ResponseMessage.WRONG_PASSWORD);
             }
-            const { id, name } = account;
             const token = jsonwebtoken_1.default.sign({ id, email, name }, String(process.env.JWT_SECRET));
-            const filteredAccount = (0, filter_properties_1.default)(account, ["name", "role"], { role: (0, get_role_name_1.default)(Number(account.role)) });
             return response.status(http_status_codes_1.StatusCodes.OK).json({
                 message: response_1.ResponseMessage.LOGIN_SUCCEED,
                 account: filteredAccount,
@@ -152,7 +166,7 @@ function resendVerifyEmail(request, response, next) {
                 }
                 email = decoded.email;
             });
-            const account = yield models_1.Account.findOne({ email });
+            const account = yield models_1.Account.findOne({ email }).select("email").exec();
             if (!account) {
                 throw new errors_1.NotFoundError(response_1.ResponseMessage.ACCOUNT_NOT_FOUND);
             }

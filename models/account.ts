@@ -22,12 +22,7 @@ export interface IAccount extends Document {
 	santriPeriod: string;
 	generation: number;
 	generationYear: number;
-	roleId:
-		| number
-		| {
-				id: ObjectId | string;
-				name: string;
-		  };
+	roleId: number;
 	role: IRole;
 	absenses: Array<string>;
 	absenseId: number | ObjectId | ICalendar;

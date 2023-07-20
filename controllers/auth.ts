@@ -10,14 +10,13 @@ import { Account, Configuration, IAccount } from "../models";
 import {
 	generateToken,
 	getAccessCode,
+	getRoleName,
 	sendForgetPasswordEmail,
 	sendVerifyEmail,
 } from "../utils";
 import { ROLES } from "../traits/role";
 import emailPattern from "../traits/email-pattern";
 import { NextFunction, Request, Response } from "express";
-import getRoleName from "../utils/get-role-name";
-import filterProperties from "../utils/filter-properties";
 import { ResponseMessage } from "../traits/response";
 
 export {
@@ -68,8 +67,8 @@ async function signup(
 		const defaultValue = {
 			verify: false,
 			verifyExpiration: date.setDate(date.getDate() + 1),
-			role_id: ROLES.SANTRI,
-			hash: hash,
+			roleId: ROLES.SANTRI,
+			hash,
 			password: await argon2.hash(password, {
 				type: argon2.argon2i,
 			}),
@@ -79,15 +78,18 @@ async function signup(
 
 		const account = (await Account.create(request.body)) as IAccount;
 
-		const { id } = account;
+		const { id, roleId } = account;
+
+		const filteredAccount = {
+			id,
+			name,
+			role: {
+				id: roleId,
+				name: getRoleName(roleId),
+			},
+		};
 		const token = jwt.sign({ id, email, name }, String(process.env.JWT_SECRET));
 		await sendVerifyEmail(hash, account);
-
-		const filteredAccount: Record<string, any> = filterProperties(
-			account,
-			["name", "role"],
-			{ role: getRoleName(Number(account.role)) },
-		);
 
 		return response.status(StatusCodes.CREATED).json({
 			message: ResponseMessage.CHECK_EMAIL,
@@ -124,10 +126,23 @@ async function signin(
 			throw new BadRequestError(ResponseMessage.EMPTY_PASSWORD);
 		}
 
-		const account = await Account.findOne({
+		const account = (await Account.findOne({
 			email,
 			deletedAt: null,
-		});
+		})
+			.select("name roleId password email")
+			.exec()) as IAccount;
+
+		const { id, name, roleId } = account;
+
+		const filteredAccount = {
+			id,
+			name,
+			role: {
+				id: roleId,
+				name: getRoleName(roleId),
+			},
+		};
 
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
@@ -141,15 +156,8 @@ async function signin(
 		if (!valid) {
 			throw new UnauthorizedError(ResponseMessage.WRONG_PASSWORD);
 		}
-		const { id, name } = account;
 
 		const token = jwt.sign({ id, email, name }, String(process.env.JWT_SECRET));
-
-		const filteredAccount: Record<string, any> = filterProperties(
-			account,
-			["name", "role"],
-			{ role: getRoleName(Number(account.role)) },
-		);
 
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.LOGIN_SUCCEED,
@@ -193,7 +201,7 @@ async function resendVerifyEmail(
 			},
 		);
 
-		const account = await Account.findOne({ email });
+		const account = await Account.findOne({ email }).select("email").exec();
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}

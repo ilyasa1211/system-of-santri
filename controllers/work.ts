@@ -14,7 +14,7 @@ async function index(request: Request, response: Response, next: NextFunction) {
 	try {
 		const works = await Work.find().sort({ createdAt: "desc" });
 		return response.status(StatusCodes.OK).json({ works });
-	} catch (error: unknown) {
+	} catch (error: any) {
 		next(error);
 	}
 }
@@ -30,7 +30,7 @@ async function show(request: Request, response: Response, next: NextFunction) {
 			throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
 		}
 		return response.status(StatusCodes.OK).json({ work });
-	} catch (error: unknown) {
+	} catch (error: any) {
 		next(error);
 	}
 }
@@ -57,7 +57,7 @@ async function insert(
 			message: ResponseMessage.WORK_CREATED,
 			work,
 		});
-	} catch (error: unknown) {
+	} catch (error: any) {
 		next(error);
 	}
 }
@@ -89,7 +89,7 @@ async function update(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.WORK_UPDATED,
 		});
-	} catch (error: unknown) {
+	} catch (error: any) {
 		next(error);
 	}
 }
@@ -116,7 +116,7 @@ async function destroy(
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.WORK_DELETED,
 		});
-	} catch (error: unknown) {
+	} catch (error: any) {
 		next(error);
 	}
 }

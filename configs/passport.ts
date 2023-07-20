@@ -32,7 +32,7 @@ const verifyCallback: VerifyCallback = async function (
 		})
 			.populate("role", "id name -_id")
 			.exec();
-		console.log(account);
+
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}

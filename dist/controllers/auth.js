@@ -111,7 +111,7 @@ function signin(request, response, next) {
                 email,
                 deletedAt: null,
             })
-                .select("name roleId password email")
+                .select("name roleId password email verify")
                 .exec());
             const { id, name, roleId } = account;
             const filteredAccount = {

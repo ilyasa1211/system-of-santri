@@ -130,7 +130,7 @@ async function signin(
 			email,
 			deletedAt: null,
 		})
-			.select("name roleId password email")
+			.select("name roleId password email verify")
 			.exec()) as IAccount;
 
 		const { id, name, roleId } = account;

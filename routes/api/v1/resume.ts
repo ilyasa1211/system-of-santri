@@ -5,8 +5,7 @@ import * as ResumeController from "../../../controllers/resume";
 const router: Router = Router();
 
 router.get("/", ResumeController.index);
-router.get("/account/:accountUniqueId", ResumeController.getByAccount);
-router.get("/:id", ResumeController.show);
+router.get("/:accountUniqueId", ResumeController.show);
 
 router.use(passport.authenticate("jwt", { session: false }));
 

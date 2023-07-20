@@ -27,14 +27,15 @@ async function index(request: Request, response: Response, next: NextFunction) {
  */
 async function show(request: Request, response: Response, next: NextFunction) {
 	try {
-		const { id } = request.params;
-		const resume = await Resume.findById(id).exec();
+		const { accountUniqueId } = request.params;
+
+		const resume = await Resume.findOne({ accountId: accountUniqueId }).exec();
 
 		if (!resume) {
 			throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
 		}
 		return response.status(StatusCodes.OK).json({ resume });
-	} catch (error: any) {
+	} catch (error) {
 		next(error);
 	}
 }
@@ -131,17 +132,4 @@ async function getByAccount(
 	request: Request,
 	response: Response,
 	next: NextFunction,
-) {
-	try {
-		const { accountUniqueId } = request.params;
-
-		const resume = await Resume.findOne({ accountId: accountUniqueId }).exec();
-
-		if (!resume) {
-			throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
-		}
-		return response.status(StatusCodes.OK).json({ resume });
-	} catch (error) {
-		next(error);
-	}
-}
+) {}

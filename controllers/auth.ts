@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import argon2 from "argon2";
 import { StatusCodes } from "http-status-codes";
 import {
@@ -7,17 +6,13 @@ import {
 	UnauthorizedError,
 } from "../traits/errors";
 import { Account, Configuration, IAccount } from "../models";
-import {
-	generateToken,
-	getAccessCode,
-	getRoleName,
-	sendForgetPasswordEmail,
-	sendVerifyEmail,
-} from "../utils";
+import { getAccessCode, getRoleName } from "../utils";
 import { ROLES } from "../traits/role";
-import emailPattern from "../traits/email-pattern";
 import { NextFunction, Request, Response } from "express";
 import { ResponseMessage } from "../traits/response";
+import Email, { ForgetEmail, VerifyEmail } from "../helpers/email";
+import Token from "../helpers/token";
+import Password from "../helpers/password";
 
 export {
 	forgotPassword,
@@ -39,12 +34,9 @@ async function signup(
 	try {
 		const date = new Date();
 		const { name, email, password, accessCode: accessCodeInput } = request.body;
-		if (!email) {
-			throw new BadRequestError(ResponseMessage.EMPTY_EMAIL);
-		}
-		if (!emailPattern.test(email)) {
-			throw new BadRequestError(ResponseMessage.INVALID_EMAIL);
-		}
+
+		Email.validate(email);
+
 		if (!password) {
 			throw new BadRequestError(ResponseMessage.EMPTY_PASSWORD);
 		}
@@ -62,7 +54,7 @@ async function signup(
 
 		if (request.file) request.body.photo = request.file.filename;
 
-		const hash: string = generateToken();
+		const hash: string = Token.generateRandomToken();
 
 		const defaultValue = {
 			verify: false,
@@ -88,8 +80,10 @@ async function signup(
 				name: getRoleName(roleId),
 			},
 		};
-		const token = jwt.sign({ id, email, name }, String(process.env.JWT_SECRET));
-		await sendVerifyEmail(hash, account);
+
+		const token = Token.generateJwtToken(account);
+
+		new Email(account).send(new VerifyEmail(hash));
 
 		return response.status(StatusCodes.CREATED).json({
 			message: ResponseMessage.CHECK_EMAIL,
@@ -112,12 +106,8 @@ async function signin(
 	try {
 		const { email, password } = request.body;
 
-		if (!email) {
-			throw new BadRequestError(ResponseMessage.EMPTY_EMAIL);
-		}
-		if (!emailPattern.test(email)) {
-			throw new BadRequestError(ResponseMessage.INVALID_EMAIL);
-		}
+		Email.validate(email);
+
 		if (!password) {
 			throw new BadRequestError(ResponseMessage.EMPTY_PASSWORD);
 		}
@@ -147,13 +137,13 @@ async function signin(
 			throw new UnauthorizedError(ResponseMessage.UNVERIFIED_ACCOUNT);
 		}
 
-		const valid = await argon2.verify(account.password, password);
+		const valid = await Password.verify(account.password, password);
 
 		if (!valid) {
 			throw new UnauthorizedError(ResponseMessage.WRONG_PASSWORD);
 		}
 
-		const token = jwt.sign({ id, email, name }, String(process.env.JWT_SECRET));
+		const token = Token.generateJwtToken(account);
 
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.LOGIN_SUCCEED,
@@ -174,38 +164,20 @@ async function resendVerifyEmail(
 	next: NextFunction,
 ) {
 	try {
-		let authToken: string | undefined = undefined;
-		let email: string | undefined = undefined;
-		if (
-			request.headers.authorization &&
-			request.headers.authorization.split(" ")[0] === "Bearer"
-		) {
-			authToken = request.headers.authorization.split(" ")[1];
-		}
-		if (!authToken) {
-			throw new BadRequestError("Please provide authorization header.");
-		}
-
-		jwt.verify(
-			authToken,
-			String(process.env.JWT_SECRET),
-			function (error, decoded) {
-				if (error) {
-					throw new BadRequestError(ResponseMessage.TOKEN_FAILED);
-				}
-				email = (decoded as { id: string; name: string; email: string }).email;
-			},
-		);
+		const jwtToken: string = Token.getJwtToken(request);
+		const { email } = Token.getJwtPayload(jwtToken)!;
 
 		const account = await Account.findOne({ email }).select("email").exec();
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
-		const hash: string = generateToken();
+		const hash: string = Token.generateRandomToken();
 
 		account.hash = hash;
 		await account.save();
-		await sendVerifyEmail(hash, account);
+
+		new Email(account).send(new VerifyEmail(hash));
+
 		return response.status(StatusCodes.OK).json({
 			message:
 				"Your confirmation email was successfully sent again. Check your inbox, then adhere to the directions to finish the verification process. Don't forget to look in your spam or junk folder if you don't see the email in your inbox.",
@@ -228,7 +200,7 @@ async function verify(
 		if (!hash) {
 			throw new BadRequestError(ResponseMessage.EMPTY_TOKEN);
 		}
-		const account = await Account.findOne({ hash });
+		const account = await Account.findOne({ hash }).exec();
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
@@ -260,11 +232,13 @@ async function forgotPassword(
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
-		const token: string = generateToken(3);
+		const token: string = Token.generateRandomToken(3);
 		const forgetToken = token;
 		account.forgetToken = token;
 		await account.save();
-		await sendForgetPasswordEmail(forgetToken, account);
+
+		new Email(account).send(new ForgetEmail(forgetToken));
+
 		return response.status(StatusCodes.OK).json({
 			message: ResponseMessage.CHECK_EMAIL,
 		});
@@ -301,7 +275,7 @@ async function resetPassword(
 		if (!account) {
 			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
 		}
-		account.password = await argon2.hash(password, { type: argon2.argon2i });
+		account.password = await Password.hash(password);
 		account.forgetToken = null;
 		await account.save();
 		return response.status(StatusCodes.OK).json({

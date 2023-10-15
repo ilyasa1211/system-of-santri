@@ -1,28 +1,23 @@
 import { NextFunction, Request, Response } from "express";
-import { UnauthorizedError } from "../traits/errors";
-import { IAccount } from "../models";
 import { ObjectId } from "mongoose";
+import { UnauthorizedError } from "../enums/errors";
+import { ResponseMessage } from "../enums/response";
+import { TAccount } from "../types/account";
 
-export default (...roles: Array<number>) =>
-	(request: Request, response: Response, next: NextFunction) => {
-		try {
-			if (request.isUnauthenticated()) {
-				throw new UnauthorizedError(
-					"Please log in with your credentials to continue with any account-related actions. You can perform a variety of tasks by logging in, which will give you the access and permissions you need.",
-				);
-			}
-			const account = request.user as IAccount;
-			debugger;
-			const hasRole: number | undefined = roles.find((role: number) =>
-				(account.role as { id: ObjectId | number; name: string }).id === role
-			);
-			if (!hasRole) {
-				throw new UnauthorizedError(
-					"We regret any inconvenience this may have caused. Unfortunately, it seems that you lack the access rights needed to complete this task. ",
-				);
-			}
-			next();
-		} catch (error: any) {
-			next(error);
-		}
-	};
+export default function accountIs(...roles: Array<number>) {
+    return (request: Request, response: Response, next: NextFunction) => {
+        if (request.isUnauthenticated()) {
+            throw new UnauthorizedError(ResponseMessage.UNAUTHENTICATED);
+        }
+        const account = request.user as TAccount;
+        const hasRole: number | undefined = roles.find(
+            (role: number) =>
+                (account.role as { id: ObjectId | number; name: string }).id ===
+                role,
+        );
+        if (!hasRole) {
+            throw new UnauthorizedError(ResponseMessage.UNAUTHORIZED);
+        }
+        next();
+    };
+}

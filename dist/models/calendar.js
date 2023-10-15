@@ -24,5 +24,5 @@ calendarSchema.pre("save", function (next) {
     this.year = new Date().getFullYear();
     next();
 });
-exports.Calendar = mongoose_1.default.model("Absense", calendarSchema);
+exports.Calendar = mongoose_1.default.model("Absence", calendarSchema);
 exports.default = exports.Calendar;

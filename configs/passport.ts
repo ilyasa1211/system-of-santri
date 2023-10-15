@@ -1,48 +1,51 @@
-import { Account } from "../models";
-import { NotFoundError, UnauthorizedError } from "../traits/errors";
-import passport from "passport";
+import { JwtPayload } from "jsonwebtoken";
+import { Strategy } from "passport";
 import {
-	ExtractJwt,
-	Strategy as JwtStrategy,
-	StrategyOptions,
-	VerifiedCallback,
-	VerifyCallback,
+    ExtractJwt,
+    Strategy as JwtStrategy,
+    StrategyOptions,
+    VerifiedCallback,
 } from "passport-jwt";
-import { ResponseMessage } from "../traits/response";
+import Account from "../models/account.model";
+import AccountRepository from "../repositories/account.repository";
+import { NotFoundError, UnauthorizedError } from "../enums/errors";
+import { ResponseMessage } from "../enums/response";
 
-const options: StrategyOptions = {
-	jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-	secretOrKey: process.env.JWT_SECRET,
-};
+export interface IStrategy {
+    options: StrategyOptions;
+    getStrategy: () => Strategy;
+}
 
-const verifyCallback: VerifyCallback = async function (
-	payload: {
-		id: string;
-		email: string;
-		name: string;
-	},
-	done: VerifiedCallback,
-) {
-	try {
-		const { id } = payload;
+export class StrategyJWT implements IStrategy {
+    public options: StrategyOptions = {
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        secretOrKey: process.env.JWT_SECRET,
+        issuer: process.env.JWT_ISSUER,
+    };
 
-		const account = await Account.findOne({
-			_id: id,
-			deletedAt: null,
-		})
-			.populate("role", "id name -_id")
-			.exec();
+    public getStrategy() {
+        return new JwtStrategy(this.options, async function (
+            payload: JwtPayload,
+            done: VerifiedCallback,
+        ) {
+            try {
+                const { accountId } = payload;
 
-		if (!account) {
-			throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
-		}
-		if (!account.verify) {
-			throw new UnauthorizedError(ResponseMessage.UNVERIFIED_ACCOUNT);
-		}
-		return done(null, account);
-	} catch (error: any) {
-		done(error, false);
-	}
-};
+                const accountRepository = new AccountRepository(Account);
+                const account = await accountRepository.findById(accountId);
 
-passport.use(new JwtStrategy(options, verifyCallback));
+                if (!account) {
+                    throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
+                }
+                if (!account.isVerified) {
+                    throw new UnauthorizedError(
+                        ResponseMessage.UNVERIFIED_ACCOUNT,
+                    );
+                }
+                return done(null, account);
+            } catch (error: unknown) {
+                done(error, false);
+            }
+        });
+    }
+}

@@ -1,28 +1,22 @@
-require("dotenv").config();
-require("./configs/database");
-require("./configs/passport");
-
-import express, { Express } from "express";
-import path from "path";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import express, { Express, Router } from "express";
+import helmet from "helmet";
 import logger from "./middlewares/morgan";
-
+import path from "path";
 import schedule from "node-schedule";
-import {
-	Account,
-	Calendar,
-	Configuration,
-	IConfiguration,
-	Role,
-} from "./models";
-import { error, notFound } from "./middlewares";
-import { landingRoute, v1 } from "./routes";
-import {
-	findOrCreate,
-	generateToken,
-	refreshCalendar,
-	refreshRole,
-} from "./utils";
+import Token from "./helpers/token";
+import passport from "passport";
+import { StrategyJWT } from "./configs/passport";
+import Role from "./models/role.model";
+import Configuration from "./models/configuration.model";
+import errorHandler from "./middlewares/error-handler";
+import urlNotFound from "./middlewares/url-not-found";
+import V1Route from "./routes/api/v1";
+
+dotenv.config();
+passport.use(new StrategyJWT().getStrategy());
 
 const onlineSince: string = new Date().toString();
 
@@ -32,50 +26,56 @@ const everyYear: string = "0 0 0 1 1 *";
 // Define the cron expression for everyDay at 00:00
 const everyDay: string = "0 0 0 * * *";
 
-const job = schedule.scheduleJob(everyYear, async () => {
-	await refreshCalendar(Calendar, findOrCreate);
-	console.info("Calendar Refreshed!");
+schedule
+    .scheduleJob(everyYear, async () => {
+        await refreshCalendar(Calendar, findOrCreate);
+        console.info("Calendar Refreshed!");
+    })
+    .invoke();
+
+schedule.scheduleJob(everyDay, async () => {
+    const today: number = new Date().getTime();
+    const deleted = await Account.deleteMany({
+        verifyExpiration: { $lt: today },
+        verify: false,
+    });
+    await Configuration.updateOne(
+        { key: "absence_token" },
+        { value: Token.generateRandomToken(3) },
+        { upsert: true },
+    );
+    console.info("Deleted unverfied account! count: ", deleted.deletedCount);
 });
 
-const job2 = schedule.scheduleJob(everyDay, async () => {
-	const today: number = new Date().getTime();
-	const deleted = await Account.deleteMany({
-		verifyExpiration: { $lt: today },
-		verify: false,
-	});
-	const absenseToken = await Configuration.updateOne(
-		{ key: "absense_token" },
-		{ value: generateToken(3) },
-		{ upsert: true },
-	);
-	console.info("Deleted unverfied account! count: ", deleted.deletedCount);
-});
-job.invoke();
-
-(async function () {
-	await findOrCreate<IConfiguration>(Configuration, { key: "access_code" });
-	await findOrCreate<IConfiguration>(Configuration, { key: "absense_token" });
-	await refreshRole(Role, findOrCreate);
-	console.info("Refreshed Access Code!");
-	console.info("Refreshed Absense Token!");
-	console.info("Refreshed Role!");
-})();
+await Role.initialize();
+await Configuration.findOrCreate({ key: "access_code" });
+await Configuration.findOrCreate({ key: "absence_token" });
 
 const app: Express = express();
+const router: Router = express.Router();
 
+app.use(cors());
+app.use(helmet());
 app.use(logger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/", (req, res, next) => {
-	Object.defineProperty(req, "onlineSince", { value: onlineSince });
-	next();
-}, landingRoute);
 
-app.use("/api/v1", v1);
+const v1 = new V1Route(router);
 
-app.use(notFound);
-app.use(error);
+app.use(
+    "/",
+    (req, res, next) => {
+        Object.defineProperty(req, "onlineSince", { value: onlineSince });
+        next();
+    },
+    landingRoute,
+);
 
-export = app;
+app.use("/api/v1", v1.getRouter());
+
+app.use(urlNotFound);
+app.use(errorHandler);
+
+export default app;

@@ -1,18 +1,14 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-const morgan_1 = __importDefault(require("morgan"));
-const logger_1 = __importDefault(require("../utils/logger"));
+import morgan from "morgan";
+import logger from "../utils/logger";
 const stream = {
     // Use the http severity
-    write: (message) => logger_1.default.http(message),
+    write: (message) => logger.http(message),
 };
 const skip = () => {
     const env = process.env.NODE_ENV || "development";
     return env !== "development";
 };
-const morganMiddleware = (0, morgan_1.default)(
+const morganMiddleware = morgan(
 // Define message format string (this is the default one).
 // The message format is made from tokens, and each token is
 // defined inside the Morgan library.
@@ -21,4 +17,4 @@ const morganMiddleware = (0, morgan_1.default)(
 // Options: in this case, I overwrote the stream and the skip logic.
 // See the methods above.
 { stream, skip });
-module.exports = morganMiddleware;
+export default morganMiddleware;

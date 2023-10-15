@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function findOrCreate(Model, filterOrCreate = { id: 0 }) {
     return __awaiter(this, void 0, void 0, function* () {
         const model = yield Model.findOne(filterOrCreate);
-        return (!model) ? yield Model.create(filterOrCreate) : model;
+        return !model ? yield Model.create(filterOrCreate) : model;
     });
 }
 exports.default = findOrCreate;

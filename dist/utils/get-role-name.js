@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const traits_1 = require("../traits");
-function getRoleName(id) {
-    return traits_1.ROLES[id];
+import { ROLES } from "../enums/role";
+export default function getRoleName(id) {
+    return ROLES[id];
 }
-exports.default = getRoleName;

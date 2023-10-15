@@ -1,68 +1,59 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-require("dotenv").config();
-require("./configs/database");
-require("./configs/passport");
-const express_1 = __importDefault(require("express"));
-const path_1 = __importDefault(require("path"));
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const morgan_1 = __importDefault(require("./middlewares/morgan"));
-const node_schedule_1 = __importDefault(require("node-schedule"));
-const models_1 = require("./models");
-const middlewares_1 = require("./middlewares");
-const routes_1 = require("./routes");
-const utils_1 = require("./utils");
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import helmet from "helmet";
+import logger from "./middlewares/morgan";
+import path from "path";
+import schedule from "node-schedule";
+import Token from "./helpers/token";
+import passport from "passport";
+import { StrategyJWT } from "./configs/passport";
+import Role from "./models/role.model";
+import Configuration from "./models/configuration.model";
+import errorHandler from "./middlewares/error-handler";
+import urlNotFound from "./middlewares/url-not-found";
+import V1Route from "./routes/api/v1";
+dotenv.config();
+passport.use(new StrategyJWT().getStrategy());
 const onlineSince = new Date().toString();
 // Define the cron expression for January 1st at 00:00
 const everyYear = "0 0 0 1 1 *";
 // Define the cron expression for everyDay at 00:00
 const everyDay = "0 0 0 * * *";
-const job = node_schedule_1.default.scheduleJob(everyYear, () => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, utils_1.refreshCalendar)(models_1.Calendar, utils_1.findOrCreate);
+schedule
+    .scheduleJob(everyYear, async () => {
+    await refreshCalendar(Calendar, findOrCreate);
     console.info("Calendar Refreshed!");
-}));
-const job2 = node_schedule_1.default.scheduleJob(everyDay, () => __awaiter(void 0, void 0, void 0, function* () {
+})
+    .invoke();
+schedule.scheduleJob(everyDay, async () => {
     const today = new Date().getTime();
-    const deleted = yield models_1.Account.deleteMany({
+    const deleted = await Account.deleteMany({
         verifyExpiration: { $lt: today },
         verify: false,
     });
-    const absenseToken = yield models_1.Configuration.updateOne({ key: "absense_token" }, { value: (0, utils_1.generateToken)(3) }, { upsert: true });
+    await Configuration.updateOne({ key: "absence_token" }, { value: Token.generateRandomToken(3) }, { upsert: true });
     console.info("Deleted unverfied account! count: ", deleted.deletedCount);
-}));
-job.invoke();
-(function () {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield (0, utils_1.findOrCreate)(models_1.Configuration, { key: "access_code" });
-        yield (0, utils_1.findOrCreate)(models_1.Configuration, { key: "absense_token" });
-        yield (0, utils_1.refreshRole)(models_1.Role, utils_1.findOrCreate);
-        console.info("Refreshed Access Code!");
-        console.info("Refreshed Absense Token!");
-        console.info("Refreshed Role!");
-    });
-})();
-const app = (0, express_1.default)();
-app.use(morgan_1.default);
-app.use(express_1.default.json());
-app.use(express_1.default.urlencoded({ extended: false }));
-app.use((0, cookie_parser_1.default)());
-app.use(express_1.default.static(path_1.default.join(__dirname, "public")));
+});
+await Role.initialize();
+await Configuration.findOrCreate({ key: "access_code" });
+await Configuration.findOrCreate({ key: "absence_token" });
+const app = express();
+const router = express.Router();
+app.use(cors());
+app.use(helmet());
+app.use(logger);
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
+const v1 = new V1Route(router);
 app.use("/", (req, res, next) => {
     Object.defineProperty(req, "onlineSince", { value: onlineSince });
     next();
-}, routes_1.landingRoute);
-app.use("/api/v1", routes_1.v1);
-app.use(middlewares_1.notFound);
-app.use(middlewares_1.error);
-module.exports = app;
+}, landingRoute);
+app.use("/api/v1", v1.getRouter());
+app.use(urlNotFound);
+app.use(errorHandler);
+export default app;

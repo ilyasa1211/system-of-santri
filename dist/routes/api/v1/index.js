@@ -1,28 +1,51 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.config = exports.test = exports.note = exports.trash = exports.work = exports.resume = exports.learning = exports.event = exports.auth = exports.account = exports.absense = void 0;
-var absense_1 = require("./absense");
-Object.defineProperty(exports, "absense", { enumerable: true, get: function () { return __importDefault(absense_1).default; } });
-var account_1 = require("./account");
-Object.defineProperty(exports, "account", { enumerable: true, get: function () { return __importDefault(account_1).default; } });
-var auth_1 = require("./auth");
-Object.defineProperty(exports, "auth", { enumerable: true, get: function () { return __importDefault(auth_1).default; } });
-var event_1 = require("./event");
-Object.defineProperty(exports, "event", { enumerable: true, get: function () { return __importDefault(event_1).default; } });
-var learning_1 = require("./learning");
-Object.defineProperty(exports, "learning", { enumerable: true, get: function () { return __importDefault(learning_1).default; } });
-var resume_1 = require("./resume");
-Object.defineProperty(exports, "resume", { enumerable: true, get: function () { return __importDefault(resume_1).default; } });
-var work_1 = require("./work");
-Object.defineProperty(exports, "work", { enumerable: true, get: function () { return __importDefault(work_1).default; } });
-var trash_1 = require("./trash");
-Object.defineProperty(exports, "trash", { enumerable: true, get: function () { return __importDefault(trash_1).default; } });
-var note_1 = require("./note");
-Object.defineProperty(exports, "note", { enumerable: true, get: function () { return __importDefault(note_1).default; } });
-var test_1 = require("./test");
-Object.defineProperty(exports, "test", { enumerable: true, get: function () { return __importDefault(test_1).default; } });
-var config_1 = require("./config");
-Object.defineProperty(exports, "config", { enumerable: true, get: function () { return __importDefault(config_1).default; } });
+import AbsenceRoute from "./absence.route";
+import AccountRoute from "./account.route";
+import AuthRoute from "./auth.route";
+import EventRoute from "./event.route";
+import LearningRoute from "./learning.route";
+import NoteRoute from "./note.route";
+import ResumeRoute from "./resume.route";
+import WorkRoute from "./work.route";
+import TrashRoute from "./trash.route";
+import ConfigRoute from "./config.route";
+export default class V1Route {
+    constructor(router) {
+        this.router = router;
+        this.route = {
+            AbsenceRoute: new AbsenceRoute(router),
+            AccountRoute: new AccountRoute(router),
+            AuthRoute: new AuthRoute(router),
+            ConfigRoute: new ConfigRoute(router),
+            EventRoute: new EventRoute(router),
+            LearningRoute: new LearningRoute(router),
+            NoteRoute: new NoteRoute(router),
+            ResumeRoute: new ResumeRoute(router),
+            TrashRoute: new TrashRoute(router),
+            WorkRoute: new WorkRoute(router),
+        };
+        this.initializeRoutes();
+    }
+    initializeRoutes() {
+        this.router.use("/absence", this.route.AbsenceRoute.getRouter());
+        this.router.use("/account", this.route.AccountRoute.getRouter());
+        this.router.use("/auth", this.route.AuthRoute.getRouter());
+        this.router.use("/config", this.route.ConfigRoute.getRouter());
+        this.router.use("/event", this.route.EventRoute.getRouter());
+        this.router.use("/learning", this.route.LearningRoute.getRouter());
+        this.router.use("/resume", this.route.ResumeRoute.getRouter());
+        this.router.use("/trash", this.route.TrashRoute.getRouter());
+        this.router.use("/work", this.route.WorkRoute.getRouter());
+        return this;
+    }
+    getRouter() {
+        return this.router;
+    }
+}
+export class Route {
+    constructor(router) {
+        this.router = router;
+    }
+    getRouter() {
+        return this.router;
+    }
+}

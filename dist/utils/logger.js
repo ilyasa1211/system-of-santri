@@ -1,8 +1,4 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-const winston_1 = __importDefault(require("winston"));
+import winston from "winston";
 // Define your severity levels.
 // With them, You can create log files,
 // see or hide levels based on the running ENV.
@@ -34,35 +30,34 @@ const colors = {
 };
 // Tell winston that you want to link the colors
 // defined above to the severity levels.
-winston_1.default.addColors(colors);
+winston.addColors(colors);
 // Chose the aspect of your log customizing the log format.
-const format = winston_1.default.format.combine(
+const format = winston.format.combine(
 // Add the message timestamp with the preferred format
-winston_1.default.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }), 
+winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }), 
 // Tell Winston that the logs must be colored
-winston_1.default.format.colorize({ all: true }), 
+winston.format.colorize({ all: true }), 
 // Define the format of the message showing the timestamp, the level and the message
-winston_1.default.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`));
+winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`));
 // Define which transports the logger must use to print out messages.
 // In this example, we are using three different transports
 const transports = [
     // Allow the use the console to print the messages
-    new winston_1.default.transports.Console(),
+    new winston.transports.Console(),
     // Allow to print all the error level messages inside the error.log file
-    new winston_1.default.transports.File({
+    new winston.transports.File({
         filename: "logs/error.log",
         level: "error",
     }),
     // Allow to print all the error message inside the all.log file
     // (also the error log that are also printed inside the error.log(
-    new winston_1.default.transports.File({ filename: "logs/all.log" }),
+    new winston.transports.File({ filename: "logs/all.log" }),
 ];
 // Create the logger instance that has to be exported
 // and used to log messages.
-const logger = winston_1.default.createLogger({
+const logger = winston.createLogger({
     level: level(),
     levels,
     format,
     transports,
 });
-module.exports = logger;

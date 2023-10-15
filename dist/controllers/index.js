@@ -23,10 +23,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ConfigurationController = exports.EventController = exports.WorkController = exports.ResumeController = exports.AuthController = exports.AbsenseController = exports.LearningController = exports.AccountController = void 0;
+exports.ConfigurationController = exports.EventController = exports.WorkController = exports.ResumeController = exports.AuthController = exports.AbsenceController = exports.LearningController = exports.AccountController = void 0;
 exports.AccountController = __importStar(require("./account"));
 exports.LearningController = __importStar(require("./learning"));
-exports.AbsenseController = __importStar(require("./absense"));
+exports.AbsenceController = __importStar(require("./absence"));
 exports.AuthController = __importStar(require("./auth"));
 exports.ResumeController = __importStar(require("./resume"));
 exports.WorkController = __importStar(require("./work"));

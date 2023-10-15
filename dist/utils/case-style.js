@@ -9,17 +9,26 @@ class CaseStyle {
     }
     toCamelCase() {
         var _a;
-        return this._input.split(this._divider).map((input, index) => {
+        return this._input
+            .split(this._divider)
+            .map((input, index) => {
             return index === 0 ? input : input[0].toUpperCase() + input.slice(1);
-        }).join((_a = this._joinWith) !== null && _a !== void 0 ? _a : "");
+        })
+            .join((_a = this._joinWith) !== null && _a !== void 0 ? _a : "");
     }
-    toPacalCase() {
+    toPascalCase() {
         var _a;
-        return this._input.split(this._divider).map((input) => input.toUpperCase()).join((_a = this._joinWith) !== null && _a !== void 0 ? _a : "");
+        return this._input
+            .split(this._divider)
+            .map((input) => input.toUpperCase())
+            .join((_a = this._joinWith) !== null && _a !== void 0 ? _a : "");
     }
     toSnakeCase() {
         var _a;
-        return this._input.split(this._divider).map((input) => input.toLowerCase()).join((_a = this._joinWith) !== null && _a !== void 0 ? _a : "_");
+        return this._input
+            .split(this._divider)
+            .map((input) => input.toLowerCase())
+            .join((_a = this._joinWith) !== null && _a !== void 0 ? _a : "_");
     }
 }
 exports.CaseStyle = CaseStyle;

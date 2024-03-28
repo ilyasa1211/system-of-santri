@@ -12,60 +12,60 @@ export default class AccountController {
     }
     async index(request, response) {
         const accounts = await this.accountService.getAllAccounts(request);
-        return new this.apiResponse(response).ok({ accounts });
+        return this.apiResponse.ok({ accounts });
     }
     async create(request, response) {
         const account = await this.accountService.createNewAccount(request);
         const token = Token.generateJwtToken(account);
-        return new this.apiResponse(response).created({ token });
+        return this.apiResponse.created({ token });
     }
     async show(request, response) {
         const account = await this.accountService.getAccountById(request.params.id, request);
-        return new this.apiResponse(response).ok({ account });
+        return this.apiResponse.ok({ account });
     }
     async update(request, response) {
         await this.accountService.updateAccountById(request.params.id, request);
-        return new this.apiResponse(response).ok({
+        return this.apiResponse.ok({
             message: ResponseMessage.ACCOUNT_UPDATED,
         });
     }
     async disableAccount(request, response) {
         await this.accountService.disableAccountById(request.params.id, request);
-        return new this.apiResponse(response).ok({
+        return this.apiResponse.ok({
             message: ResponseMessage.ACCOUNT_DELETED,
         });
     }
     async trash(request, response) {
         const accounts = await this.accountService.getDisabledAccounts(request);
-        return new this.apiResponse(response).ok({ accounts });
+        return this.apiResponse.ok({ accounts });
     }
     async restore(request, response) {
         const { id: accountId } = request.params;
         await this.accountService.restoreDisabledAccountById(accountId, request);
-        return new this.apiResponse(response).ok({
+        return this.apiResponse.ok({
             message: ResponseMessage.ACCOUNT_RESTORED,
         });
     }
     async eliminate(request, response) {
         const { id: accountId } = request.params;
         await this.accountService.deleteAccountById(accountId, request);
-        return new this.apiResponse(response).ok({
+        return this.apiResponse.ok({
             message: ResponseMessage.ACCOUNT_DELETED_PERMANENT,
         });
     }
     async myAccount(request, response) {
         const { id: accountId } = request.user;
         const account = await this.accountService.getAccountById(accountId, request);
-        return new this.apiResponse(response).ok({ account });
+        return this.apiResponse.ok({ account });
     }
     async showWorks(request, response) {
         const { id: accountId } = request.params;
         const works = await this.accountService.getAccountWorksById(accountId);
-        return new this.apiResponse(response).ok({ works });
+        return this.apiResponse.ok({ works });
     }
     async showResume(request, response) {
         const { id: accountId } = request.params;
         const resume = await this.accountService.getAccountResumeById(accountId);
-        return new this.apiResponse(response).ok({ resume });
+        return this.apiResponse.ok({ resume });
     }
 }

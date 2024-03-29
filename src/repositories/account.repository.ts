@@ -1,9 +1,9 @@
 import { PopulateOptions, UpdateQuery } from "mongoose";
-import Account, { IAccount } from "../models/account.model";
+import Account, { IAccount, IUser } from "../models/account.model";
 import AccountInterface from "./interfaces/account.interface";
 
 export default class AccountRepository implements AccountInterface {
-  public constructor(private model: typeof Account) {}
+  public constructor(private model: Model<IUser>) {}
 
   public findAll(fieldsToPopulate: PopulateOptions[]) {
     return this.model.find().populate(fieldsToPopulate).exec();

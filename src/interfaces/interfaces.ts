@@ -1,5 +1,7 @@
+import { Router } from "express";
+
 export interface IRoutes {
-  registerRoutes(): void;
+  registerRoutes(): Router;
 }
 
 export interface ISendEmail {

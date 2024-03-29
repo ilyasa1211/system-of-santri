@@ -6,10 +6,10 @@ const router: Router = Router();
 export default router;
 
 router.get("/", (request: Request, response: Response) => {
-    const { onlineSince } = request as Request & { onlineSince: string };
-    
-    return response.status(StatusCodes.OK).json({
-        message: "Welcome to System of Santri!",
-        onlineSince,
-    });
+  const { onlineSince } = request as Request & { onlineSince: string };
+
+  return response.status(StatusCodes.OK).json({
+    message: "Welcome to System of Santri!",
+    onlineSince,
+  });
 });

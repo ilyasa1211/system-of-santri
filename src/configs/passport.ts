@@ -11,7 +11,6 @@ import AccountRepository from "../repositories/account.repository";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { ResponseMessage } from "../enums/response";
 
-
 export interface IStrategy {
   options: StrategyOptions;
   getStrategy: () => Strategy;
@@ -38,7 +37,7 @@ export class StrategyJWT implements IStrategy {
         if (!account) {
           throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
         }
-        if (!account.isVerified) {
+        if (!account.verifyAt) {
           throw new UnauthorizedError(
             ResponseMessage.UNVERIFIED_ACCOUNT,
           );

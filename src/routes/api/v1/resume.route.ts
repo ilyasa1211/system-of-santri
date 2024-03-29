@@ -17,5 +17,7 @@ export default class ResumeRoute implements IRoutes {
     this.router.post("/resume", this.controller.create);
     this.router.delete("/resume/:resumeId", this.controller.destroy);
     this.router.put("/resume/:resumeId", this.controller.update);
+
+    return this.router;
   }
 }

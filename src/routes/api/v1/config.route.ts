@@ -2,8 +2,8 @@ import { Router } from "express";
 import passport from "passport";
 import { ROLES } from "../../../enums/role";
 import { ConfigurationController } from "../../../controllers/configuration";
-import { accountIs } from "../../../middlewares/account-is";
 import { IRoutes } from "../../../interfaces/interfaces";
+import AccountIs from "../../../middlewares/account-is";
 
 export default class ConfigRoute implements IRoutes {
   public constructor(
@@ -13,7 +13,7 @@ export default class ConfigRoute implements IRoutes {
 
   public registerRoutes() {
     this.router.use(passport.authenticate("jwt", { session: false }));
-    this.router.use(accountIs(ROLES.ADMIN, ROLES.MANAGER));
+    this.router.use(AccountIs(ROLES.ADMIN, ROLES.MANAGER));
 
     this.router.get(
       "/access-code",
@@ -32,5 +32,7 @@ export default class ConfigRoute implements IRoutes {
       "/absence-token",
       this.configController.setConfiguration("absence_token"),
     );
+
+    return this.router;
   }
 }

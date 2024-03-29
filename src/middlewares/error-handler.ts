@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { ResponseMessage } from "../enums/response";
 
-export default function errorHandler(
+export default function ErrorHandler(
   error: Error & { code: number },
   request: Request,
   response: Response,

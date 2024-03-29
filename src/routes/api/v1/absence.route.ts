@@ -3,7 +3,7 @@ import { Router } from "express";
 import passport from "passport";
 import { ROLES } from "../../../enums/role";
 import { IRoutes } from "../../../interfaces/interfaces";
-import accountIs from "../../../middlewares/account-is";
+import AccountIs from "../../../middlewares/account-is";
 
 export default class AbsenceRoute implements IRoutes {
   public constructor(
@@ -12,18 +12,16 @@ export default class AbsenceRoute implements IRoutes {
     private controller: AbsenceController,
   ) {}
 
-  public registerRoutes(): void {
+  public registerRoutes(): Router {
     this.router.use(passport.authenticate("jwt", { session: false }));
     this.router.get("/:id", this.controller.show);
     this.router.get(
       "/",
-      accountIs(ROLES.ADMIN, ROLES.MANAGER),
+      AccountIs(ROLES.ADMIN, ROLES.MANAGER),
       this.controller.index,
     );
-    this.router.post(
-      "/",
-      accountIs(ROLES.SANTRI),
-      this.controller.insert,
-    );
+    this.router.post("/", AccountIs(ROLES.SANTRI), this.controller.insert);
+
+    return this.router;
   }
 }

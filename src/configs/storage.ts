@@ -2,6 +2,7 @@ import multer, { Multer } from "multer";
 import path from "node:path";
 import crypto from "node:crypto";
 import { Request } from "express";
+import Configuration from "./configuration";
 
 export class Storage {
   public local(folderName: string): Multer {
@@ -13,7 +14,7 @@ export class Storage {
       ) {
         callback(
           null,
-          path.join(__dirname, "..", "public", "images", folderName),
+          path.join(__dirname, "..", "public", Configuration.IMAGE_FOLDER as string, folderName),
         );
       },
       filename: function (

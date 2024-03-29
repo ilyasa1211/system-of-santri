@@ -45,12 +45,14 @@ export default class AccountRoute implements IRoutes {
     this.router.use(passport.authenticate("jwt", { session: false }));
 
     // Create an account to the database
-    // this.router.post("/", accountIs(ROLES.ADMIN), this.accountController.create);
+    // this.router.post("/", AccountIs(ROLES.ADMIN), this.accountController.create);
 
     // Update the existing account
     this.router.put("/account/:accountId", this.accountController.update);
 
     // Delete one account not permanently
     this.router.delete("/account/:accountId", this.accountController.disable);
+
+    return this.router;
   }
 }

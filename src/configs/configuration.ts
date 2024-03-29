@@ -1,2 +1,17 @@
-export default class Configuration {
-}
+const Configuration = {
+  PORT: process.env.PORT,
+  MONGODB_CONNECTION_STRING: process.env.MONGODB_CONNECTION_STRING,
+  APP_URL: process.env.APP_URL,
+  JWT_SECRET: process.env.JWT_SECRET,
+  MAIL_HOST: process.env.MAIL_HOST,
+  MAIL_PORT: process.env.MAIL_PORT,
+  MAIL_USERNAME: process.env.MAIL_USERNAME,
+  MAIL_PASSWORD: process.env.MAIL_PASSWORD,
+  IMAGE_FOLDER: process.env.IMAGE_FOLDER,
+  SAVE_LEARNING_THUMBNAIL: process.env.SAVE_LEARNING_THUMBNAIL,
+  SAVE_ACCOUNT_AVATAR: process.env.SAVE_ACCOUNT_AVATAR,
+  DEFAULT_THUMBNAIL_NAME: process.env.DEFAULT_THUMBNAIL_NAME,
+  DEFAULT_AVATAR_NAME: process.env.DEFAULT_AVATAR_NAME,
+};
+
+export default Configuration;

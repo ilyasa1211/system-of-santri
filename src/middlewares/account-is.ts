@@ -5,7 +5,7 @@ import { ResponseMessage } from "../enums/response";
 import { IAccount } from "../models/account.model";
 
 
-export default function accountIs(...roles: Array<number>) {
+export default function RoleIs(...roles: Array<number>) {
   return (request: Request, response: Response, next: NextFunction) => {
     if (request.isUnauthenticated()) {
       throw new UnauthorizedError(ResponseMessage.UNAUTHENTICATED);

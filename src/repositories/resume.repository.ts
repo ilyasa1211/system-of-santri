@@ -1,9 +1,9 @@
-import { AnyKeys, FilterQuery, SortOrder, UpdateQuery } from "mongoose";
+import { AnyKeys, FilterQuery, Model, SortOrder, UpdateQuery } from "mongoose";
 import Resume, { IResume } from "../models/resume.model";
 import ResumeInterface from "./interfaces/resume.interface";
 
 export default class ResumeRepository implements ResumeInterface {
-  public constructor(private model: typeof Resume) {}
+  public constructor(private model: Model<IResume>) {}
 
   public findAll() {
     return this.model.find().exec();

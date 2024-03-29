@@ -1,9 +1,9 @@
-import { FilterQuery, UpdateQuery } from "mongoose";
+import { FilterQuery, Model, UpdateQuery } from "mongoose";
 import Learning, { ILearning } from "../models/learning.model";
 import LearningInterface from "./interfaces/learning.interface";
 
 export default class LearningRepository implements LearningInterface {
-  public constructor(private learningModel: typeof Learning) {}
+  public constructor(private learningModel: Model<ILearning>) {}
 
   public findAll() {
     return this.learningModel.find().exec();

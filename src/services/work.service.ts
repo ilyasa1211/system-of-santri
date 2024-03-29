@@ -5,7 +5,7 @@ import { NotFoundError } from "../errors/errors";
 import { ResponseMessage } from "../enums/response";
 import authorize from "../utils/authorize";
 import { HydratedDocument } from "mongoose";
-import { IAccount } from "../models/account.model";
+import { IAccount, IUser } from "../models/account.model";
 
 export default class WorkService {
   public constructor(private workRepository: WorkRepository) {}
@@ -29,7 +29,7 @@ export default class WorkService {
   }
   public async create(
     payload: Record<string, unknown>,
-    user: HydratedDocument<IAccount>,
+    user: HydratedDocument<IUser>,
   ) {
     payload.accountId = user.id;
 
@@ -44,7 +44,7 @@ export default class WorkService {
   public async updateId(
     id: string,
     payload: Record<string, unknown>,
-    user: HydratedDocument<IAccount>,
+    user: HydratedDocument<IUser>,
   ) {
     const work = await this.workRepository.findById(id);
 

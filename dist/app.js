@@ -11,8 +11,8 @@ import passport from "passport";
 import { StrategyJWT } from "./configs/passport";
 import Role from "./models/role.model";
 import Configuration from "./models/configuration.model";
-import errorHandler from "./middlewares/error-handler";
-import urlNotFound from "./middlewares/url-not-found";
+import ErrorHandler from "./middlewares/error-handler";
+import UrlNotFound from "./middlewares/url-not-found";
 import V1Route from "./routes/api/v1";
 dotenv.config();
 passport.use(new StrategyJWT().getStrategy());
@@ -22,19 +22,23 @@ const everyYear = "0 0 0 1 1 *";
 // Define the cron expression for everyDay at 00:00
 const everyDay = "0 0 0 * * *";
 schedule
-    .scheduleJob(everyYear, async () => {
+  .scheduleJob(everyYear, async () => {
     await refreshCalendar(Calendar, findOrCreate);
     console.info("Calendar Refreshed!");
-})
-    .invoke();
+  })
+  .invoke();
 schedule.scheduleJob(everyDay, async () => {
-    const today = new Date().getTime();
-    const deleted = await Account.deleteMany({
-        verifyExpiration: { $lt: today },
-        verify: false,
-    });
-    await Configuration.updateOne({ key: "absence_token" }, { value: Token.generateRandomToken(3) }, { upsert: true });
-    console.info("Deleted unverfied account! count: ", deleted.deletedCount);
+  const today = new Date().getTime();
+  const deleted = await Account.deleteMany({
+    verifyExpiration: { $lt: today },
+    verify: false,
+  });
+  await Configuration.updateOne(
+    { key: "absence_token" },
+    { value: Token.generateRandomToken(3) },
+    { upsert: true },
+  );
+  console.info("Deleted unverfied account! count: ", deleted.deletedCount);
 });
 await Role.initialize();
 await Configuration.findOrCreate({ key: "access_code" });
@@ -49,11 +53,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 const v1 = new V1Route(router);
-app.use("/", (req, res, next) => {
+app.use(
+  "/",
+  (req, res, next) => {
     Object.defineProperty(req, "onlineSince", { value: onlineSince });
     next();
-}, landingRoute);
+  },
+  landingRoute,
+);
 app.use("/api/v1", v1.getRouter());
-app.use(urlNotFound);
-app.use(errorHandler);
+app.use(UrlNotFound);
+app.use(ErrorHandler);
 export default app;

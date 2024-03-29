@@ -2,8 +2,9 @@ import { Router } from "express";
 import passport from "passport";
 import { LearningController } from "../../../controllers/learning";
 import { ROLES } from "../../../enums/role";
-import { accountIs } from "../../../middlewares/account-is";
+import AccountIs from "../../../middlewares/account-is";
 import { IRoutes } from "../../../interfaces/interfaces";
+import { Storage } from "../../../configs/storage";
 
 export default class LearningRoute implements IRoutes {
   public constructor(
@@ -17,7 +18,7 @@ export default class LearningRoute implements IRoutes {
     this.router.get("/learning/:learningId", this.controller.show);
 
     this.router.use(passport.authenticate("jwt", { session: false }));
-    this.router.use(accountIs(ROLES.ADMIN, ROLES.MANAGER));
+    this.router.use(AccountIs(ROLES.ADMIN, ROLES.MANAGER));
 
     this.router.delete("/learning/:learningId", this.controller.destroy);
 
@@ -25,5 +26,7 @@ export default class LearningRoute implements IRoutes {
 
     this.router.post("/learning", this.controller.create);
     this.router.put("/learning/:", this.controller.update);
+
+    return this.router;
   }
 }

@@ -1,9 +1,9 @@
-import { AnyKeys, FilterQuery, SortOrder, UpdateQuery } from "mongoose";
+import { AnyKeys, FilterQuery, Model, SortOrder, UpdateQuery } from "mongoose";
 import Work, { IWork } from "../models/work.model";
 import WorkInterface from "./interfaces/work.interface";
 
 export default class WorkRepository implements WorkInterface {
-  public constructor(private model: typeof Work) {}
+  public constructor(private model: Model<IWork>) {}
 
   public findAll() {
     return this.model.find().exec();

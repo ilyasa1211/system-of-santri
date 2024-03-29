@@ -10,6 +10,8 @@ import passport from "passport";
 import { StrategyJWT } from "./configs/passport";
 import Role from "./models/role.model";
 import Configuration from "./models/configuration.model";
+import IndexRoutes from "./routes/api/v1";
+import AbsenceRoute from "./routes/api/v1/absence.route";
 
 passport.use(new StrategyJWT().getStrategy());
 
@@ -21,30 +23,30 @@ const everyYear: string = "0 0 0 1 1 *";
 // Define the cron expression for everyDay at 00:00
 const everyDay: string = "0 0 0 * * *";
 
-schedule
-  .scheduleJob(everyYear, async () => {
-    await refreshCalendar(Calendar, findOrCreate);
-    console.info("Calendar Refreshed!");
-  })
-  .invoke();
+// schedule
+//   .scheduleJob(everyYear, async () => {
+//     await refreshCalendar(Calendar, findOrCreate);
+//     console.info("Calendar Refreshed!");
+//   })
+//   .invoke();
 
-schedule.scheduleJob(everyDay, async () => {
-  const today: number = new Date().getTime();
-  const deleted = await Account.deleteMany({
-    verifyExpiration: { $lt: today },
-    verify: false,
-  });
-  await Configuration.updateOne(
-    { key: "absence_token" },
-    { value: Token.generateRandomToken(3) },
-    { upsert: true },
-  );
-  console.info("Deleted unverfied account! count: ", deleted.deletedCount);
-});
+// schedule.scheduleJob(everyDay, async () => {
+//   const today: number = new Date().getTime();
+//   const deleted = await Account.deleteMany({
+//     verifyExpiration: { $lt: today },
+//     verify: false,
+//   });
+//   await Configuration.updateOne(
+//     { key: "absence_token" },
+//     { value: Token.generateRandomToken(3) },
+//     { upsert: true },
+//   );
+//   console.info("Deleted unverfied account! count: ", deleted.deletedCount);
+// });
 
-await Role.initialize();
-await Configuration.findOrCreate({ key: "access_code" });
-await Configuration.findOrCreate({ key: "absence_token" });
+// await Role.initialize();
+// await Configuration.findOrCreate({ key: "access_code" });
+// await Configuration.findOrCreate({ key: "absence_token" });
 
 const app: Express = express();
 const router: Router = express.Router();
@@ -57,11 +59,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-const v1 = new V1Route(router);
+const v1 = new IndexRoutes(router);
 
-app.use("/api/v1", v1.getRouter());
+app.use("/api/v1", v1.registerRoutes());
 
-app.use(urlNotFound);
-app.use(errorHandler);
+app.use(UrlNotFound);
+app.use(ErrorHandler);
 
 export default app;

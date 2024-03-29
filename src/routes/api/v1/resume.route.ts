@@ -1,13 +1,21 @@
 import { Router } from "express";
 import passport from "passport";
-import { IRoute, Route } from "..";
-import ResumeController from "../../../controllers/resume";
-import { Facades } from "../../../facades/route";
+import { ResumeController } from "../../../controllers/resume";
+import { IRoutes } from "../../../interfaces/interfaces";
 
-Route.get("/resume", resumeController.index);
-Route.get("/resume/:accountUniqueId", resumeController.show);
+export default class ResumeRoute implements IRoutes {
+  public constructor(
+    private router: Router,
+    private controller: ResumeController,
+  ) {}
 
-Route.use(passport.authenticate("jwt", { session: false }));
-Route.post("/resume", resumeController.insert);
-Route.delete("/resume/:id", resumeController.destroy);
-Route.put("/resume/:id", resumeController.update);
+  public registerRoutes() {
+    this.router.get("/resume", this.controller.index);
+    this.router.get("/resume/:accountUniqueId", this.controller.show);
+
+    this.router.use(passport.authenticate("jwt", { session: false }));
+    this.router.post("/resume", this.controller.create);
+    this.router.delete("/resume/:resumeId", this.controller.destroy);
+    this.router.put("/resume/:resumeId", this.controller.update);
+  }
+}

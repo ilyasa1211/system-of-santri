@@ -11,136 +11,132 @@ import Work from "../models/work.model";
 import { ResponseMessage } from "../enums/response";
 import { NotFoundError } from "../errors/errors";
 import { deletePhoto } from "../utils/delete-photo";
+import { HydratedDocument } from "mongoose";
 
 export default class AccountService {
-    private accountRepository;
-    private resumeRepository;
-    private workRepository;
-    private options;
+  private options;
 
-    public constructor(
-        accountModel: typeof Account,
-        resumeModel: typeof Resume,
-        workModel: typeof Work,
-    ) {
-        this.accountRepository = new AccountRepository(accountModel);
-        this.resumeRepository = new ResumeRepository(resumeModel);
-        this.workRepository = new WorkRepository(workModel);
-        this.options = getPopulationOptionsFromRequestQuery;
+  public constructor(
+    private repository: AccountRepository,
+    // private resumeRepository: ResumeRepository,
+    // private workRepository: WorkRepository,
+  ) {
+    this.options = getPopulationOptionsFromRequestQuery;
+  }
+
+  public getAllAccounts(query: Request["query"]) {
+    const fieldsToPopulate = this.options(query);
+    return this.repository.findAll(fieldsToPopulate);
+  }
+
+  public getDisabledAccounts(query: Request["query"]) {
+    const fieldsToPopulate = this.options(query);
+    return this.repository.findOne(
+      { deletedAt: { $ne: null } },
+      fieldsToPopulate,
+    );
+  }
+
+  public async restoreAccount(accountId: string, request: Request) {
+    const account = await this.repository.isExist(accountId);
+    if (!account) {
+      throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
+    }
+    authorize(request.user, account._id.toString());
+    return this.repository.updateById(accountId, {
+      deletedAt: null,
+    });
+  }
+
+  public async deleteById(
+    accountId: string,
+    user: HydratedDocument<IAccount>,
+  ) {
+    const account = await this.repository.findById(accountId);
+
+    if (!account) {
+      throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
+    }
+    
+    authorize(user, accountId);
+
+    const deleted = await account.deleteOne();
+
+    deletePhoto(user.avatar);
+
+    return deleted;
+  }
+
+  public create(payload: Request["body"], file: Request["file"]) {
+    const data = Object.assign({}, payload, {
+      verify: true,
+      password: Password.hash(payload.password),
+      avatar: file ? file.filename : undefined,
+    });
+
+    return this.repository.create(data);
+  }
+
+  public async findById(accountId: string, query: Request["query"]) {
+    const fieldsToPopulate = this.options(query);
+
+    const account = await this.repository.findById(accountId, fieldsToPopulate);
+
+    if (!account) {
+      throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
     }
 
-    public getAllAccounts(query: Request["query"]) {
-        const fieldsToPopulate = this.options(query);
-        return this.accountRepository.findAll(fieldsToPopulate);
+    return account;
+  }
+
+  public async disableAccount(accountId: string) {
+    const account = await this.repository.findById(accountId);
+
+    account.deletedAt = Date.now();
+  }
+
+  public async updateById(accountId: string, request: Request) {
+    const { body, file, user } = request;
+
+    authorize(user, accountId);
+
+    let isAvatarUpdate: boolean;
+
+    if (file) {
+      body.avatar = file.filename;
+      isAvatarUpdate = true;
+    }
+    if (body.password) {
+      body.password = await Password.hash(body.password);
     }
 
-    public getDisabledAccounts(query: Request["query"]) {
-        const fieldsToPopulate = this.options(query);
-        return this.accountRepository.findOne(
-            { deletedAt: { $ne: null } },
-            fieldsToPopulate,
-        );
-    }
-
-    public async restoreDisabledAccountById(
-        accountId: string,
-        request: Request,
-    ) {
-        const account = await this.accountRepository.isExist(accountId);
-        if (!account) {
-            throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
+    const updated = await this.repository.updateById(accountId, body);
+    // TODO: inspect this
+    Account.findOneAndUpdate(
+      { _accountId: accountId, deletedAt: null },
+      request.body,
+      {
+        returnDocument: "before",
+      },
+      function (error, oldAccount: IAccount | null) {
+        if (error) throw error;
+        if (oldAccount && isAvatarUpdate) {
+          deletePhoto(oldAccount.avatar);
         }
-        authorize(request.user, account._id.toString());
-        return this.accountRepository.updateById(accountId, {
-            deletedAt: null,
-        });
-    }
+      },
+    );
+  }
+  // public async getAccountResumeById(accountId: string) {
+  //   const resume = await this.resumeRepository.findByAccountId(accountId);
+  //   if (!resume) {
+  //     throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
+  //   }
 
-    public async deleteAccountById(accountId: string, user: HydratedDocument<IAccount>) {
-        const account = await this.accountRepository.findById(accountId);
-        if (!account) {
-            throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
-        }
-        authorize(user, user.id);
+  //   return resume;
+  // }
+  // public async getAccountWorksById(accountId: string) {
+  //   const works = await this.workRepository.findByAccountId(accountId);
 
-        const deleted = await user.deleteOne();
-        // eslint-disable-next-line no-debugger
-        debugger;
-        throw deleted;
-        deletePhoto(user.avatar);
-
-        return deleted;
-    }
-
-    public createNewAccount(request: Request) {
-        const { file } = request;
-
-        const data = Object.assign({}, request.body, {
-            verify: true,
-            password: Password.hash(request.body.password),
-            avatar: file ? file.filename : undefined,
-        });
-
-        return this.accountRepository.insert(data);
-    }
-
-    public getAccountById(accountId: string, query: Request["query"]) {
-        const fieldsToPopulate = this.options(query);
-        const account = this.accountRepository.findById(
-            accountId,
-            fieldsToPopulate,
-        );
-        if (!account) {
-            throw new NotFoundError(ResponseMessage.ACCOUNT_NOT_FOUND);
-        }
-
-        return account;
-    }
-    public async disableAccountById(accountId: string) {
-        const disabledAccount = this.accountRepository.disableById(accountId);
-        return disabledAccount;
-    }
-    public async updateAccountById(accountId: string, request: Request) {
-        const { body, file, user } = request;
-        authorize(user, accountId);
-
-        let isAvatarUpdate: boolean = false;
-
-        if (file) {
-            body.avatar = file.filename;
-            isAvatarUpdate = true;
-        }
-        if (body.password) {
-            body.password = await Password.hash(body.password);
-        }
-
-        const a = this.accountRepository.updateById(accountId, body);
-        throw a;
-        Account.findOneAndUpdate(
-            { _accountId: accountId, deletedAt: null },
-            request.body,
-            {
-                returnDocument: "before",
-            },
-            function (error, oldAccount: IAccount | null) {
-                if (error) throw error;
-                if (oldAccount && isAvatarUpdate) {
-                    deletePhoto(oldAccount.avatar);
-                }
-            },
-        );
-    }
-    public async getAccountResumeById(accountId: string) {
-        const resume = await this.resumeRepository.findByAccountId(accountId);
-        if (!resume) {
-            throw new NotFoundError(ResponseMessage.RESUME_NOT_FOUND);
-        }
-
-        return resume;
-    }
-    public async getAccountWorksById(accountId: string) {
-        const works = await this.workRepository.findByAccountId(accountId);
-
-        return works;
-    }
+  //   return works;
+  // }
 }

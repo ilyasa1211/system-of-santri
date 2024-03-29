@@ -8,77 +8,83 @@ import Token from "../helpers/token";
 
 export class AccountController {
   public constructor(
-    private accountService: AccountService,
+    private service: AccountService,
     private apiResponse: ApiResponse,
   ) {}
 
   public async index(request: Request) {
-    const accounts = await this.accountService.getAllAccounts(request.query);
+    const accounts = await this.service.getAllAccounts(request.query);
 
     return this.apiResponse.ok({ accounts });
   }
+  
   public async create(request: Request) {
-    const account = await this.accountService.createNewAccount(request);
+    const account = await this.service.create(request.body, request.file);
     const token = Token.generateJwtToken(account);
 
     return this.apiResponse.created({ token });
   }
 
-  public async show(request: Request, accountId: string) {
-    const account = await this.accountService.getAccountById(
-      accountId,
-      request.body,
-    );
+  public async show(request: Request) {
+    const accountId = request.params.accountId;
+
+    const account = await this.service.findById(accountId, request.body);
 
     return this.apiResponse.ok({ account });
   }
 
   public async update(request: Request) {
-    await this.accountService.updateAccountById(request.params.id, request);
+    await this.service.updateById(request.params.id, request.body);
 
     return this.apiResponse.updated(null);
   }
 
-  public async disable(request: Request, accountId: string) {
-    await this.accountService.disableAccountById(accountId);
+  public async disable(request: Request) {
+    const accountId = request.params.accountId;
+
+    await this.service.disableAccount(accountId);
 
     return this.apiResponse.deleted(null);
   }
 
   // public async trash(request: Request) {
-  //   const accounts = await this.accountService.getDisabledAccounts(
+  //   const accounts = await this.service.getDisabledAccounts(
   //     request.query,
   //   );
   //   return this.apiResponse.ok({ accounts });
   // }
 
   public async restore(request: Request) {
-    const { id: accountId }: { id?: string } = request.params;
-    await this.accountService.restoreDisabledAccountById(accountId, request);
+    const { accountId } = request.params;
+    await this.service.restoreAccount(accountId, request.body);
 
     return this.apiResponse.ok({
       message: ResponseMessage.ACCOUNT_RESTORED,
     });
   }
 
-  public async destroy(request: Request, accountId: string) {
-    await this.accountService.deleteAccountById(
-      accountId,
-      request.user as HydratedDocument<IAccount>,
-    );
+  public async destroy(request: Request) {
+    const accountId = request.params.accountId;
+    const user = request.user as HydratedDocument<IAccount>;
+
+    await this.service.deleteById(accountId, user);
 
     return this.apiResponse.deleted(null);
   }
 
-  public async showWorks(request: Request, accountId: string) {
-    const works = await this.accountService.getAccountWorksById(accountId);
+  // public async showWorks(request: Request) {
+  //   const accountId = request.params.accountId;
 
-    return this.apiResponse.ok({ works });
-  }
-  
-  public async showResume(request: Request, accountId: string) {
-    const resume = await this.accountService.getAccountResumeById(accountId);
+  //   const works = await this.service.getAccountWorksById(accountId);
 
-    return this.apiResponse.ok({ resume });
-  }
+  //   return this.apiResponse.ok({ works });
+  // }
+
+  // public async showResume(request: Request) {
+  //   const accountId = request.params.accountId;
+
+  //   const resume = await this.service.getAccountResumeById(accountId);
+
+  //   return this.apiResponse.ok({ resume });
+  // }
 }

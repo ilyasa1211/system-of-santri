@@ -1,6 +1,5 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import dotenv from "dotenv";
 import express, { Express, Router } from "express";
 import helmet from "helmet";
 import logger from "./middlewares/morgan";
@@ -11,11 +10,7 @@ import passport from "passport";
 import { StrategyJWT } from "./configs/passport";
 import Role from "./models/role.model";
 import Configuration from "./models/configuration.model";
-import errorHandler from "./middlewares/error-handler";
-import urlNotFound from "./middlewares/url-not-found";
-import V1Route from "./routes/api";
 
-dotenv.config();
 passport.use(new StrategyJWT().getStrategy());
 
 const onlineSince: string = new Date().toString();
@@ -27,24 +22,24 @@ const everyYear: string = "0 0 0 1 1 *";
 const everyDay: string = "0 0 0 * * *";
 
 schedule
-    .scheduleJob(everyYear, async () => {
-        await refreshCalendar(Calendar, findOrCreate);
-        console.info("Calendar Refreshed!");
-    })
-    .invoke();
+  .scheduleJob(everyYear, async () => {
+    await refreshCalendar(Calendar, findOrCreate);
+    console.info("Calendar Refreshed!");
+  })
+  .invoke();
 
 schedule.scheduleJob(everyDay, async () => {
-    const today: number = new Date().getTime();
-    const deleted = await Account.deleteMany({
-        verifyExpiration: { $lt: today },
-        verify: false,
-    });
-    await Configuration.updateOne(
-        { key: "absence_token" },
-        { value: Token.generateRandomToken(3) },
-        { upsert: true },
-    );
-    console.info("Deleted unverfied account! count: ", deleted.deletedCount);
+  const today: number = new Date().getTime();
+  const deleted = await Account.deleteMany({
+    verifyExpiration: { $lt: today },
+    verify: false,
+  });
+  await Configuration.updateOne(
+    { key: "absence_token" },
+    { value: Token.generateRandomToken(3) },
+    { upsert: true },
+  );
+  console.info("Deleted unverfied account! count: ", deleted.deletedCount);
 });
 
 await Role.initialize();

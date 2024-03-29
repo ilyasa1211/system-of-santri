@@ -1,5 +1,5 @@
 export function getArgumentName(func: CallableFunction) {
-  // First match everything inside the function argument parens.
+  // First match everything inside the function argument parents.
   const args = func.toString().match(/function\s.*?\(([^)]*)\)/);
 
   // Check wether the function has arguments or not.

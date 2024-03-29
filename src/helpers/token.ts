@@ -6,7 +6,7 @@ import { ResponseMessage } from "../enums/response";
 import crypto from "node:crypto";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-export default class Token {
+export default class TokenHelper {
   private static readonly key: string = process.env.JWT_SECRET as string;
 
   public static generateRandomToken(length: number = 20) {

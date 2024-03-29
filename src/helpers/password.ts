@@ -1,7 +1,6 @@
 import argon2 from "argon2";
 
-
-export class Password {
+export default class PasswordHelper {
   public static async hash(plainPassword: string) {
     return argon2.hash(plainPassword, { type: argon2.argon2i });
   }

@@ -1,22 +1,25 @@
 import mongoose from "mongoose";
 import getCalendar from "../utils/calendar";
-const calendarSchema = new mongoose.Schema({
+const calendarSchema = new mongoose.Schema(
+  {
     id: {
-        type: Number,
-        default: 0,
+      type: SchemaTypes.Number,
+      default: 0,
     },
     year: {
-        type: Number,
-        unique: true,
+      type: SchemaTypes.Number,
+      unique: true,
     },
     months: {
-        type: Object,
+      type: Object,
     },
-}, { timestamps: true });
+  },
+  { timestamps: true },
+);
 calendarSchema.pre("save", function (next) {
-    this.months = getCalendar();
-    this.year = new Date().getFullYear();
-    next();
+  this.months = getCalendar();
+  this.year = new Date().getFullYear();
+  next();
 });
 export const Calendar = mongoose.model("Absence", calendarSchema);
 export default Calendar;

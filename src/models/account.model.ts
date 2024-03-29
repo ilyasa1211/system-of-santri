@@ -9,7 +9,7 @@ import { IResume } from "./resume.model";
 import { IAbsence } from "./absence.model";
 
 export interface IVerify {
-  isVerified: boolean;
+  verifyAt: Date;
   verifyExpiration: number | null;
   verifyToken: string | null;
 }
@@ -19,7 +19,8 @@ export interface IForgetToken {
 }
 
 export interface IAccount {
-  id: string,
+  _id?: string;
+  id: string;
   absenceId: ObjectId;
   avatar: string;
   division: string;
@@ -42,17 +43,17 @@ export interface IAccount {
   absence: IAbsence;
 }
 
-export interface IUser extends IAccount, IVerify, IForgetToken { }
+export interface IUser extends IAccount, IVerify, IForgetToken {}
 
 const accountSchema = new mongoose.Schema<IUser>(
   {
     name: {
-      type: String,
+      type: SchemaTypes.String,
       trim: true,
       required: [true, ResponseMessage.EMPTY_NAME],
     },
     email: {
-      type: String,
+      type: SchemaTypes.String,
       trim: true,
       maxLength: [320, ResponseMessage.EMAIL_MAX],
       required: [true, ResponseMessage.EMPTY_EMAIL],
@@ -60,55 +61,56 @@ const accountSchema = new mongoose.Schema<IUser>(
       match: Email.emailPattern,
     },
     password: {
-      type: String,
+      type: SchemaTypes.String,
       minLength: [8, ResponseMessage.WEAK_PASSWORD],
       maxLength: [128, ResponseMessage.PASSWORD_MAX],
       required: [true, ResponseMessage.EMPTY_PASSWORD],
     },
     phoneNumber: {
-      type: String,
+      type: SchemaTypes.String,
       trim: true,
       maxLength: [15, ResponseMessage.PHONE_NUMBER_MAX],
       required: [true, ResponseMessage.EMPTY_PHONE_NUMBER],
     },
     division: {
-      type: String,
+      type: SchemaTypes.String,
       trim: true,
       required: [true, ResponseMessage.EMPTY_DIVISION],
     },
     status: {
-      type: String,
+      type: SchemaTypes.String,
       trim: true,
     },
     avatar: {
-      type: String,
+      type: SchemaTypes.String,
       trim: true,
       default: path.join(
+        "images",
         String(process.env.SAVE_ACCOUNT_AVATAR),
         String(process.env.DEFAULT_AVATAR_NAME),
       ),
     },
     santriPeriod: {
-      type: String,
+      type: SchemaTypes.String,
       trim: true,
     },
     generation: {
-      type: Number,
+      type: SchemaTypes.Number,
       default: 15,
       trim: true,
     },
     generationYear: {
-      type: Number,
+      type: SchemaTypes.Number,
       trim: true,
       default: 2090,
     },
     roleId: {
-      type: Number,
+      type: SchemaTypes.Number,
       trim: true,
       default: 3,
     },
     absenceId: {
-      type: Number,
+      type: SchemaTypes.Number,
       ref: "Absence",
     },
     workIds: [{ type: SchemaTypes.ObjectId }],
@@ -116,20 +118,20 @@ const accountSchema = new mongoose.Schema<IUser>(
       type: SchemaTypes.ObjectId,
       default: null,
     },
-    isVerified: {
-      type: Boolean,
-      default: false,
+    verifyAt: {
+      type: SchemaTypes.Date,
+      default: null,
     },
     verifyExpiration: {
-      type: Number,
+      type: SchemaTypes.Number,
       default: null,
     },
     forgetToken: {
-      type: String,
+      type: SchemaTypes.String,
       default: null,
     },
     verifyToken: {
-      type: String,
+      type: SchemaTypes.String,
       default: null,
     },
     deletedAt: {
@@ -142,30 +144,30 @@ const accountSchema = new mongoose.Schema<IUser>(
     toObject: { virtuals: true },
     toJSON: { virtuals: true },
     virtuals: {
-      "role": {
+      role: {
         ref: "Role",
         localField: "roleId",
         foreignField: "id",
         justOne: true,
       },
-      "work": {
+      work: {
         ref: "Work",
         localField: "workIds",
         foreignField: "_id",
       },
-      "resume": {
+      resume: {
         ref: "Resume",
         localField: "resumeId",
         foreignField: "_id",
         justOne: true,
       },
-      "absence": {
+      absence: {
         ref: "Absence",
         localField: "absenceId",
         foreignField: "id",
         justOne: true,
-      }
-    }
+      },
+    },
   },
 );
 
@@ -173,4 +175,5 @@ const Account = mongoose.model<IAccount & IVerify & IForgetToken>(
   "Account",
   accountSchema,
 );
+
 export default Account;

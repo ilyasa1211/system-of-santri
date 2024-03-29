@@ -1,19 +1,25 @@
 import passport from "passport";
 import { ROLES } from "../../../enums/role";
-import { IRoute, Route } from "..";
-import accountIs from "../../../middlewares/account-is";
 import { Router } from "express";
-import EventController from "../../../controllers/event";
-import { Facades } from "../../../facades/route";
+import { EventController } from "../../../controllers/event";
+import { accountIs } from "../../../middlewares/account-is";
+import { IRoutes } from "../../../interfaces/interfaces";
 
+export default class EventRoute implements IRoutes {
+  public constructor(
+    private router: Router,
+    private eventController: EventController,
+  ) {}
 
-Route.get("/event", [EventController, "index"]);
-Route.get("/event/calendar", [EventController, "calendar"]);
+  public registerRoutes() {
+    this.router.get("/event", this.eventController.index);
+    this.router.get("/event/calendar", this.eventController.calendar);
 
-Route.use(passport.authenticate("jwt", { session: false }));
-Route.use(accountIs(ROLES.ADMIN));
+    this.router.use(passport.authenticate("jwt", { session: false }));
+    this.router.use(accountIs(ROLES.ADMIN));
 
-Route.post("/event/", [EventController, "insert"]);
-Route.put("/event/:id", [EventController, "update"]);
-Route.delete("/event/:id", [EventController, "destroy"]);
-
+    this.router.post("/event/", this.eventController.insert);
+    this.router.put("/event/:id", this.eventController.update);
+    this.router.delete("/event/:id", this.eventController.destroy);
+  }
+}

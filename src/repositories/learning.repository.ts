@@ -1,4 +1,4 @@
-import { AnyKeys, FilterQuery, UpdateQuery } from "mongoose";
+import { FilterQuery, UpdateQuery } from "mongoose";
 import Learning, { ILearning } from "../models/learning.model";
 import LearningInterface from "./interfaces/learning.interface";
 
@@ -17,15 +17,18 @@ export default class LearningRepository implements LearningInterface {
     return this.learningModel.findOne({ accountId: id }).exec();
   }
 
-  public findOne(filter: Record<string, unknown>) {
+  public findOne(filter: FilterQuery<ILearning>): Promise<unknown> {
     return this.learningModel.findOne(filter).exec();
   }
 
-  public insert(data: Record<string, unknown>) {
-    return this.learningModel.create(data);
+  public create(payload: ILearning): Promise<unknown> {
+    return this.learningModel.create(payload);
   }
 
-  public updateById(id: string, updatedData: Record<string, unknown>) {
+  public updateById(
+    id: string,
+    updatedData: UpdateQuery<ILearning>,
+  ): Promise<unknown> {
     return this.learningModel.findByIdAndUpdate(id, updatedData).exec();
   }
 

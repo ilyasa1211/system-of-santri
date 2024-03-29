@@ -1,23 +1,29 @@
 import { Router } from "express";
 import passport from "passport";
-import { IRoute, Route } from "..";
-import Storage from "../../../configs/storage";
-import LearningController from "../../../controllers/learning";
-import accountIs from "../../../middlewares/account-is";
+import { LearningController } from "../../../controllers/learning";
 import { ROLES } from "../../../enums/role";
-import { Facades } from "../../../facades/route";
+import { accountIs } from "../../../middlewares/account-is";
+import { IRoutes } from "../../../interfaces/interfaces";
 
-const upload = Storage("learning");
+export default class LearningRoute implements IRoutes {
+  public constructor(
+    private router: Router,
+    private storage: Storage,
+    private controller: LearningController,
+  ) {}
 
-Route.get("/learning", [LearningController, "index"]);
-Route.get("/learning/:id", [LearningController, "show"]);
+  public registerRoutes() {
+    this.router.get("/learning", this.controller.index);
+    this.router.get("/learning/:learningId", this.controller.show);
 
-Route.use(passport.authenticate("jwt", { session: false }));
-Route.use(accountIs(ROLES.ADMIN, ROLES.MANAGER));
+    this.router.use(passport.authenticate("jwt", { session: false }));
+    this.router.use(accountIs(ROLES.ADMIN, ROLES.MANAGER));
 
-Route.delete("/learning/:id", [LearningController, "destroy"]);
+    this.router.delete("/learning/:learningId", this.controller.destroy);
 
-Route.use(upload.single("thumbnail"));
+    this.router.use(this.storage.local("learning").single("thumbnail"));
 
-Route.post("/learning", [LearningController, "insert"]);
-Route.put("/learning/:id", [LearningController, "update"]);
+    this.router.post("/learning", this.controller.create);
+    this.router.put("/learning/:", this.controller.update);
+  }
+}

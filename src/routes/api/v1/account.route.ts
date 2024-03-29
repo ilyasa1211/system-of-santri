@@ -1,45 +1,56 @@
 import { Router } from "express";
 import passport from "passport";
 import { ROLES } from "../../../enums/role";
-import AccountController from "../../../controllers/account";
-import { IRoute, Route } from "..";
-import Storage from "../../../configs/storage";
-import accountIs from "../../../middlewares/account-is";
 import { Multer } from "multer";
-import { Facades } from "../../../facades/route";
+import { Storage } from "../../../configs/storage";
+import { AccountController } from "../../../controllers/account";
+import { IRoutes } from "../../../interfaces/interfaces";
 
+export default class AccountRoute implements IRoutes {
+  public constructor(
+    private router: Router,
+    private storage: Storage,
+    private accountController: AccountController,
+  ) {}
 
-const upload = Storage("account");
+  public registerRoutes() {
+    this.router.use(this.storage.local("account").single("avatar"));
 
-Route.use(upload.single("avatar"));
+    // Get All Accounts
+    this.router.get("/account", this.accountController.index);
 
-// Get All Accounts
-Route.get("/account", [AccountController, "index"]);
+    // Get information about my account
+    // this.router.get(
+    //     "/me",
+    //     passport.authenticate("jwt", { session: false }),
+    //     this.accountController.myAccount,
+    // );
 
-// Get information about my account
-// Route.get(
-//     "/me",
-//     passport.authenticate("jwt", { session: false }),
-//     AccountController.myAccount,
-// );
+    // Show one account
+    this.router.get("/account/:accountId", this.accountController.show);
 
-// Show one account
-Route.get("/account/:accountId", [AccountController, "show"]);
+    // Get all works about an account
+    // this.router.get(
+    //   "/account/:accountId/work",
+    //   this.accountController.showWorks,
+    // );
 
-// Get all works about an account
-Route.get("/account/:accountId/work", [AccountController, "showWorks"]);
+    // Get a resume of an account
+    // this.router.get(
+    //   "/account/:accountId/resume",
+    //   this.accountController.showResume,
+    // );
 
-// Get a resume of an account
-Route.get("/account/:accountId/resume", [AccountController, "showResume"]);
+    // All route below this will work for authenticated user only
+    this.router.use(passport.authenticate("jwt", { session: false }));
 
-// All route below this will work for authenticated user only
-Route.use(passport.authenticate("jwt", { session: false }));
+    // Create an account to the database
+    // this.router.post("/", accountIs(ROLES.ADMIN), this.accountController.create);
 
-// Create an account to the database
-// Route.post("/", accountIs(ROLES.ADMIN), AccountController.create);
+    // Update the existing account
+    this.router.put("/account/:accountId", this.accountController.update);
 
-// Update the existing account
-Route.put("/account/:accountId", [AccountController, "update"]);
-
-// Delete one account not permanently
-Route.delete("/account/:accountId", [AccountController, "disable"]);
+    // Delete one account not permanently
+    this.router.delete("/account/:accountId", this.accountController.disable);
+  }
+}

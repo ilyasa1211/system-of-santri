@@ -1,18 +1,26 @@
 import { Router } from "express";
-import Storage from "../../../configs/storage";
-import { IRoute, Route } from "..";
-import AuthController from "../../../controllers/auth";
-import { Facades } from "../../../facades/route";
+import { AuthController } from "../../../controllers/auth";
+import { IRoutes } from "../../../interfaces/interfaces";
+import guestOnly from "../../../middlewares/guest-only";
 
-const upload = Storage("account");
+export default class AuthRoute implements IRoutes {
+  public constructor(
+    private router: Router,
+    private storage: Storage,
+    private authController: AuthController,
+  ) {}
+  public registerRoutes() {
+    this.router.use(guestOnly);
+    this.router.post("/auth/signin", this.authController.signin);
+    this.router.get("/auth/verify", this.authController.verify);
+    this.router.get("/auth/reverify", this.authController.resendVerifyEmail);
+    this.router.post(
+      "/auth/forgot-password",
+      this.authController.forgetPassword,
+    );
+    this.router.put("/auth/forgot-password", this.authController.resetPassword);
 
-Route.use(guestOnly);
-Route.post("/auth/signin", [AuthController, "signin"]);
-Route.get("/auth/verify", [AuthController, "verify"]);
-Route.get("/auth/reverify", [AuthController, "resendVerifyEmail"]);
-Route.post("/auth/forgot-password", [AuthController, "forgetPassword"]);
-Route.put("/auth/forgot-password", [AuthController, "resetPassword"]);
-
-Route.use(upload.single("photo"));
-Route.post("/auth/signup", [AuthController, "signup"]);
-
+    this.router.use(this.storage.local("account").single("photo"));
+    this.router.post("/auth/signup", this.authController.signup);
+  }
+}

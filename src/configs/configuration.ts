@@ -1,2 +1,2 @@
-export class Configuration {
+export default class Configuration {
 }

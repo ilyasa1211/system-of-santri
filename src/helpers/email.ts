@@ -6,8 +6,9 @@ import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { HydratedDocument } from "mongoose";
 import { IAccount } from "../models/account.model";
 import { BadRequestError } from "../errors/errors";
+import { ISendEmail } from "../interfaces/interfaces";
 
-export default class Email {
+export default class EmailHelper {
   public static readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   private _accountName: string;
   private _accountEmail: string;
@@ -27,7 +28,7 @@ export default class Email {
   }
 
   public validate(): never | void {
-    return Email.validate(this._accountEmail);
+    return EmailHelper.validate(this._accountEmail);
   }
   public send(send: SendEmail) {
     const pugFilePath = path.join(__dirname, "..", "views", send.pugFilename);
@@ -46,11 +47,6 @@ export default class Email {
       });
   }
 }
-
-export type ISendEmail = {
-  readonly subject: string;
-  readonly pugFilename: string;
-};
 
 export abstract class SendEmail implements ISendEmail {
   public constructor(public readonly token: string) {}

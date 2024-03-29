@@ -2,9 +2,9 @@ import { Response } from "express";
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
 
 export default class ApiResponse {
-  public constructor(private response: Response) { }
+  public constructor(private response: Response) {}
 
-  public sendJsonResponse(status: number, data: any = null) {
+  public sendJsonResponse(status: number, data: unknown = null) {
     return this.response.status(status).json({
       status: status,
       message: getReasonPhrase(status),
@@ -12,16 +12,16 @@ export default class ApiResponse {
     });
   }
 
-  public created(data: any) {
+  public created(data: unknown) {
     return this.sendJsonResponse(StatusCodes.CREATED, data);
   }
-  public ok(data: any) {
+  public ok(data: unknown) {
     return this.sendJsonResponse(StatusCodes.OK, data);
   }
-  public updated(data: any) {
+  public updated(data: unknown) {
     return this.sendJsonResponse(StatusCodes.OK, data);
   }
-  public deleted(data: any) {
+  public deleted(data: unknown) {
     return this.sendJsonResponse(StatusCodes.OK, data);
   }
 }

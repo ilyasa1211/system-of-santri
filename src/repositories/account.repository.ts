@@ -1,53 +1,35 @@
-import { PopulateOptions } from "mongoose";
-import Account from "../models/account.model";
+import { PopulateOptions, UpdateQuery } from "mongoose";
+import Account, { IAccount } from "../models/account.model";
 import AccountInterface from "./interfaces/account.interface";
 
 export default class AccountRepository implements AccountInterface {
-    public constructor(private accountModel: typeof Account) {}
+  public constructor(private model: typeof Account) {}
 
-    public async findAll(fieldsToPopulate: PopulateOptions[]) {
-        return await this.accountModel
-            .find({ deletedAt: null })
-            .populate(fieldsToPopulate)
-            .exec();
-    }
+  public findAll(fieldsToPopulate: PopulateOptions[]) {
+    return this.model.find().populate(fieldsToPopulate).exec();
+  }
 
-    public async findOne(
-        filter: Record<string, unknown>,
-        fieldsToPopulate: PopulateOptions[],
-    ) {
-        return await this.accountModel
-            .findOne(filter)
-            .populate(fieldsToPopulate)
-            .exec();
-    }
+  public findOne(
+    filter: Record<string, unknown>,
+    fieldsToPopulate: PopulateOptions[],
+  ) {
+    return this.model.findOne(filter).populate(fieldsToPopulate).exec();
+  }
 
-    public async findById(id: string, fieldsToPopulate: PopulateOptions[] = []) {
-        return await this.accountModel
-            .find({ _id: id })
-            .populate(fieldsToPopulate)
-            .exec();
-    }
+  public findById(id: string, fieldsToPopulate: PopulateOptions[] = []) {
+    return this.model.find({ _id: id }).populate(fieldsToPopulate).exec();
+  }
 
-    public async insert(data: Record<string, unknown>) {
-        return await this.accountModel.create(data);
-    }
+  public create(payload: IAccount) {
+    return this.model.create(payload);
+  }
 
-    public async updateById(id: string, updatedData: Record<string, unknown>) {
-        return await this.accountModel
-            .findOneAndUpdate({ _id: id, deletedAt: null }, updatedData)
-            .exec();
-    }
-
-    public async disableById(id: string) {
-        return await this.accountModel
-            .findOneAndUpdate(
-                { _id: id, deletedAt: null },
-                { deletedAt: Date.now() },
-            )
-            .exec();
-    }
-    public async isExist(id: string) {
-        return await this.accountModel.exists({ _id: id }).exec();
-    }
+  public updateById(id: string, updatedData: UpdateQuery<IAccount>) {
+    return this.model
+      .findOneAndUpdate({ _id: id, deletedAt: null }, updatedData)
+      .exec();
+  }
+  public isExist(id: string) {
+    return this.model.exists({ _id: id }).exec();
+  }
 }

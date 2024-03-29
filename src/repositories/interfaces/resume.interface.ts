@@ -1,13 +1,14 @@
-import { AnyKeys, UpdateQuery } from "mongoose";
-import { IWork } from "../../models/work.model";
+import { SortOrder, UpdateQuery } from "mongoose";
 import { FilterQuery } from "mongoose";
+import { IResume } from "../../models/resume.model";
 
 export default interface ResumeInterface {
-  findAll(): any;
-  findById(id: string): any;
-  findByAccountId(id: string): any;
-  insert(data: Record<string, unknown>): any;
-  updateById(id: string, updatedData: Record<string, unknown>): any;
-  deleteById(id: string): any;
-  isExist(filter: FilterQuery<IWork>): any;
+  findAll(): Promise<unknown>;
+  findAllSortBy(column: keyof IResume, order: SortOrder): Promise<unknown>;
+  findById(id: string): Promise<unknown>;
+  findBy(column: keyof IResume, value: unknown): Promise<unknown>;
+  create(payload: IResume): Promise<unknown>;
+  updateById(id: string, updatedData: UpdateQuery<IResume>): Promise<unknown>;
+  deleteById(id: string): Promise<unknown>;
+  isExist(filter: FilterQuery<IResume>): Promise<unknown>;
 }

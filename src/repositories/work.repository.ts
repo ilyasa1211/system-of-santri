@@ -1,35 +1,42 @@
-import { AnyKeys, FilterQuery, UpdateQuery } from "mongoose";
+import { AnyKeys, FilterQuery, SortOrder, UpdateQuery } from "mongoose";
 import Work, { IWork } from "../models/work.model";
 import WorkInterface from "./interfaces/work.interface";
 
 export default class WorkRepository implements WorkInterface {
-  public constructor(private workModel: typeof Work) {}
+  public constructor(private model: typeof Work) {}
 
   public findAll() {
-    return this.workModel.find().exec();
+    return this.model.find().exec();
+  }
+
+  public findAllSortBy(column: keyof IWork, order: SortOrder) {
+    const sortColumn: Partial<Record<keyof IWork, SortOrder>> = {};
+    Object.defineProperty(sortColumn, column, { value: order });
+
+    return this.model.find().sort(sortColumn).exec();
   }
 
   public findById(id: string) {
-    return this.workModel.findById(id).exec();
+    return this.model.findById(id).exec();
   }
 
-  public findByAccountId(id: string) {
-    return this.workModel.findOne({ accountId: id }).exec();
+  public findBy(column: keyof IWork, value: unknown) {
+    const filterQuery: Partial<IWork> = {};
+
+    Object.defineProperty(filterQuery, column, { value });
+
+    return this.model.findOne(filterQuery).exec();
   }
 
-  public findOne(filter: Record<string, unknown>) {
-    return this.workModel.findOne(filter).exec();
+  public create(payload: Partial<IWork>) {
+    return this.model.create(payload);
   }
 
-  public insert(data: Record<string, unknown>) {
-    return this.workModel.create(data);
-  }
-
-  public updateById(id: string, updatedData: Record<string, unknown>) {
-    return this.workModel.findByIdAndUpdate(id, updatedData).exec();
+  public updateById(id: string, updatedData: UpdateQuery<IWork>) {
+    return this.model.findByIdAndUpdate(id, updatedData).exec();
   }
 
   public deleteById(id: string) {
-    return this.workModel.findByIdAndDelete(id).exec();
+    return this.model.findByIdAndDelete(id).exec();
   }
 }

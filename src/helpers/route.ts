@@ -1,25 +1,28 @@
 import { Request } from "express";
 
-export class Route {
+export default class RouteHelper {
   public static getPathParameterName(path: string): string[] {
     const params: string[] = [];
 
-    path.split('/').forEach(name => {
-      if (name.startsWith(':')) {
+    path.split("/").forEach((name) => {
+      if (name.startsWith(":")) {
         params.push(name.substring(1));
       }
     });
     return params;
   }
-  public static getPathParameterNameWithValue(path: string, requestParameter: Request["params"]): Record<string, string> {
+  public static getPathParameterNameWithValue(
+    path: string,
+    requestParameter: Request["params"],
+  ): Record<string, string> {
     const params = this.getPathParameterName(path);
     const resultParameterWithValue: Record<string, string> = {};
 
-    params.forEach(param => {
+    params.forEach((param) => {
       Object.defineProperty(resultParameterWithValue, param, {
         value: requestParameter[param],
       });
-    })
+    });
 
     return resultParameterWithValue;
   }

@@ -3,39 +3,45 @@ import LearningService from "../services/learning.service";
 import Learning from "../models/learning.model";
 import ApiResponse from "../utils/api-response";
 
-    export class LearningController {
-        public constructor(
-            private readonly learningService: LearningService,
-            private readonly apiResponse: ApiResponse,
-        ) { }
+export class LearningController {
+  public constructor(
+    private readonly service: LearningService,
+    private readonly apiResponse: ApiResponse,
+  ) {}
 
-        public async index(request: Request) {
-            const learnings = await this.learningService.getAllLearning();
+  public async index(request: Request) {
+    const learnings = await this.service.getAllLearning();
 
-            return this.apiResponse.ok({ learnings });
-        }
-        
-        public async show(request: Request, learningId: string) {
-            const learning = await this.learningService.getLearningById(id);
+    return this.apiResponse.ok({ learnings });
+  }
 
-            return this.apiResponse.ok({ learning });
-        }
+  public async show(request: Request) {
+    const learningId: string = request.params.learningId;
 
-        public async insert(request: Request) {
-            const learning = await this.learningService.createNewLearning(request);
+    const learning = await this.service.getLearningById(learningId);
 
-            return this.apiResponse.created({ learning });
-        }
+    return this.apiResponse.ok({ learning });
+  }
 
-        public async update(request: Request, learningId: string) {
-            await this.learningService.updateLearningById(learningId);
+  public async store(request: Request) {
+    const learning = await this.service.createNewLearning(request);
 
-            return this.apiResponse.updated(null);
-        }
+    return this.apiResponse.created({ learning });
+  }
 
-        public async destroy(request: Request, learningId: string) {
-            await this.learningService.deleteLearningById(learningId);
+  public async update(request: Request) {
+    const learningId: string = request.params.learningId;
 
-            return this.apiResponse.deleted(null);
-        }
-    }
+    await this.service.updateLearningById(learningId, request.body);
+
+    return this.apiResponse.updated(null);
+  }
+
+  public async destroy(request: Request) {
+    const learningId: string = request.params.learningId;
+    // TODO: Add authorization
+    await this.service.deleteLearningById(learningId);
+
+    return this.apiResponse.deleted(null);
+  }
+}

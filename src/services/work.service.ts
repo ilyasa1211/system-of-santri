@@ -3,58 +3,72 @@ import Work from "../models/work.model";
 import WorkRepository from "../repositories/work.repository";
 import { NotFoundError } from "../errors/errors";
 import { ResponseMessage } from "../enums/response";
-import { HydratedDocument<IAccount> } from "../types/account";
 import authorize from "../utils/authorize";
+import { HydratedDocument } from "mongoose";
+import { IAccount } from "../models/account.model";
 
 export default class WorkService {
-    private workRepository;
+  public constructor(private workRepository: WorkRepository) {}
 
-    public constructor(workModel: typeof Work) {
-        this.workRepository = new WorkRepository(workModel);
+  public async findAll() {
+    // TODO: create a pagination
+    const works = await this.workRepository.findAllSortBy("accountId", "descending");
+
+    return works;
+  }
+
+  public async findId(id: string) {
+    // TODO: add select
+    const work = await this.workRepository.findById(id);
+
+    if (!work) {
+      throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
     }
 
-    public async getAllWorks() {
-        const works = await Work.find().sort({ createdAt: "desc" });
-        return works;
+    return work;
+  }
+  public async create(
+    payload: Record<string, unknown>,
+    user: HydratedDocument<IAccount>,
+  ) {
+    payload.accountId = user.id;
+
+    const work = await this.workRepository.create(payload);
+
+    user.workIds.push(work.id);
+
+    const updatedAccount = await user.save();
+
+    return work;
+  }
+  public async updateId(
+    id: string,
+    payload: Record<string, unknown>,
+    user: HydratedDocument<IAccount>,
+  ) {
+    const work = await this.workRepository.findById(id);
+
+    if (!work) {
+      throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
     }
-    public async getWorkById(id: string) {
-        const work = await this.workRepository.findById(id);
-        if (!work) {
-            throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
-        }
-        return work;
-    }
-    public async createNewWork(payload: any, user: HydratedDocument<IAccount>) {
-        payload.accountId = user.id;
+    Object.assign(work, payload);
 
-        const work = await this.workRepository.insert(payload);
-        user.workId.push(work.id);
-        const updatedAccount = await user.save();
+    authorize(user, work.accountId.toString());
 
-        return updatedAccount;
-    }
-    public async updateWorkById(id: string, payload: any, user: HydratedDocument<IAccount>) {
-        const work = await this.workRepository.findById(id);
+    const updatedWork = await work.save();
 
-        if (!work) {
-            throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
-        }
-        Object.assign(work, payload);
+    return updatedWork;
+  }
 
-        authorize(user, work.accountId.toString());
-        const updatedWork = work.save();
+  public async deleteId(id: string, user: HydratedDocument<IAccount>) {
+    const work = await this.workRepository.findById(id);
 
-        return updatedWork;
+    if (!work) {
+      throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
     }
 
-    public async deleteWorkById(id: string, user: HydratedDocument<IAccount>) {
-        const work = await Work.findById(id);
-        if (!work) {
-            throw new NotFoundError(ResponseMessage.WORK_NOT_FOUND);
-        }
+    authorize(user, work.accountId.toString());
 
-        authorize(user, work.accountId.toString());
-
-        return work.deleteOne();
-    }
+    return await work.deleteOne();
+  }
 }

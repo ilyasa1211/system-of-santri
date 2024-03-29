@@ -19,17 +19,21 @@ export class WorkController {
 
     return this.apiResponse.ok({ work });
   }
-  public async insert(request: Request) {
-    const work = await this.workRepository.insert(request.body);
+  public async create(request: Request) {
+    const work = await this.workRepository.create(request.body);
 
     return this.apiResponse.created({ work });
   }
-  public async update(request: Request, workId: string) {
+  public async update(request: Request) {
+    const workId: string = request.params.workId;
+
     await this.workRepository.updateById(workId, request.body);
 
     return this.apiResponse.updated(null);
   }
-  public async destroy(request: Request, workId: string) {
+  public async destroy(request: Request) {
+    const workId: string = request.params.workId;
+
     await this.workRepository.deleteById(workId);
 
     return this.apiResponse.deleted(null);

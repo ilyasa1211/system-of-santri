@@ -1,12 +1,13 @@
-import { AnyKeys, FilterQuery, UpdateQuery } from "mongoose";
+import { SortOrder, UpdateQuery } from "mongoose";
 import { IWork } from "../../models/work.model";
 
+// TODO: change Promise<unknown>   to something
 export default interface WorkInterface {
-  findAll(): any;
-  findOne(filter: FilterQuery<IWork>): any;
-  findById(id: string): any;
-  findByAccountId(id: string): any;
-  insert(data: Record<string, unknown>): any;
-  updateById(id: string, updatedData: Record<string, unknown>): any;
-  deleteById(id: string): any;
+  findAll(): Promise<unknown>;
+  findAllSortBy(column: keyof IWork, order: SortOrder): Promise<unknown>;
+  findById(id: string): Promise<unknown>;
+  findBy(colum: keyof IWork, value: unknown): Promise<unknown>;
+  create(payload: Partial<IWork>): Promise<unknown>;
+  updateById(id: string, updatedData: UpdateQuery<IWork>): Promise<unknown>;
+  deleteById(id: string): Promise<unknown>;
 }

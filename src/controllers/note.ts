@@ -5,26 +5,29 @@ import Note from "../models/note.model";
 import { IAccount } from "../models/account.model";
 import { HydratedDocument } from "mongoose";
 
+// TODO: this controller need help
 export class NoteController {
-
   public constructor(
-    private readonly noteService: NoteService,
+    private readonly service: NoteService,
     private readonly apiResponse: ApiResponse,
-  ) { }
+  ) {}
 
   public async index(request: Request) {
-    const notes = await this.noteService.getAllNotes();
+    const notes = await this.service.findAll();
+
     return this.apiResponse.ok({ notes });
   }
+
   public async show(request: Request) {
     const { noteId } = request.params;
-    const note = await this.noteService.getNoteById(noteId);
+    const note = await this.service.findId(noteId);
 
     return this.apiResponse.ok({ note });
   }
-  public async insert(request: Request) {
+
+  public async create(request: Request) {
     const { body: payload, user } = request;
-    const note = await this.noteService.createNewNote(
+    const note = await this.service.create(
       payload,
       user as HydratedDocument<IAccount>,
     );
@@ -35,7 +38,7 @@ export class NoteController {
     const { body: payload, user } = request;
     const { noteId } = request.params;
 
-    await this.noteService.updateNoteById(
+    await this.service.updateId(
       noteId,
       payload,
       user as HydratedDocument<IAccount>,
@@ -43,10 +46,11 @@ export class NoteController {
 
     return this.apiResponse.updated(null);
   }
+
   public async destroy(request: Request) {
     const { user } = request;
     const { noteId } = request.params;
-    await this.noteService.deleteNoteById(noteId, user as HydratedDocument<IAccount>);
+    await this.service.deleteId(noteId, user as HydratedDocument<IAccount>);
 
     return this.apiResponse.deleted(null);
   }

@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import { Request } from "express";
 
 export class Storage {
-  public static local(folderName: string): Multer {
+  public local(folderName: string): Multer {
     const storage = multer.diskStorage({
       destination: function (
         request: Request,

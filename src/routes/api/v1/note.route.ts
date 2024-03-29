@@ -1,17 +1,23 @@
 import { Router } from "express";
 import passport from "passport";
 import { ROLES } from "../../../enums/role";
-import { IRoute, Route } from "..";
-import accountIs from "../../../middlewares/account-is";
-import NoteController from "../../../controllers/note";
-import { Facades } from "../../../facades/route";
+import { NoteController } from "../../../controllers/note";
+import { accountIs } from "../../../middlewares/account-is";
+import { IRoutes } from "../../../interfaces/interfaces";
 
-Route.use(passport.authenticate("jwt", { session: false }));
-Route.get("/note", noteController.index);
-Route.get("/note/:id", noteController.show);
+export default class NoteRoute implements IRoutes {
+  public constructor(
+    private router: Router,
+    private controller: NoteController,
+  ) {}
+  public registerRoutes() {
+    this.router.use(passport.authenticate("jwt", { session: false }));
+    this.router.get("/note", this.controller.index);
+    this.router.get("/note/:noteId", this.controller.show);
 
-Route.use(accountIs(ROLES.ADMIN, ROLES.MANAGER));
-Route.post("/note", noteController.insert);
-Route.delete("/note/:id", noteController.destroy);
-Route.put("/note/:id", noteController.update);
-
+    this.router.use(accountIs(ROLES.ADMIN, ROLES.MANAGER));
+    this.router.post("/note", this.controller.create);
+    this.router.delete("/note/:noteId", this.controller.destroy);
+    this.router.put("/note/:noteId", this.controller.update);
+  }
+}

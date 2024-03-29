@@ -6,51 +6,66 @@ import LearningRepository from "../repositories/learning.repository";
 import { deletePhoto } from "../utils/delete-photo";
 
 export default class LearningService {
-    private learningRepository;
+  public constructor(private repository: LearningRepository) {}
 
-    public constructor(learningModel: typeof Learning) {
-        this.learningRepository = new LearningRepository(learningModel);
+  public findAll() {
+    return this.repository.findAll();
+  }
+
+  public async findId(learningId: string) {
+    const learning = await this.repository.findById(learningId);
+    if (!learning) {
+      throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
     }
-    public async getAllLearning() {
-        const learnings = await this.learningRepository.findAll();
-        return learnings;
+    return learning;
+  }
+
+  public async create(payload: Request["body"], file: Request["file"] | null) {
+    if (file) {
+      const { path } = file;
+      payload.thumbnail = path.slice(path.indexOf("images"));
     }
-    public async getLearningById(learningId: string) {
-        const learning = await this.learningRepository.findById(learningId);
-        if (!learning) {
-            throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
-        }
-        return learning;
+
+    const learning = await this.repository.create(payload);
+
+    return learning;
+  }
+
+  public async updateId(
+    learningId: string,
+    payload: Request["body"],
+    file: Request["file"] | null,
+  ) {
+    if (file) {
+      const { path } = file;
+      // TODO: search for path images
+      payload.thumbnail = path.slice(path.indexOf("images"));
     }
-    public async createNewLearning(request: Request) {
-        const { body, file } = request;
-        !body.thumbnail && delete body.thumbnail;
-        if (file) {
-            const { path } = file;
-            body.thumbnail = path.slice(path.indexOf("images"));
-        }
-        const learning = await this.learningRepository.insert(body);
-        return learning;
+
+    const learning = await this.repository.findById(learningId);
+
+    if (!learning) {
+      throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
     }
-    public async updateLearningById(learningId: string, request: Request) {
-        const { body, file } = request;
-        if (file) {
-            const { path } = file;
-            body.thumbnail = path.slice(path.indexOf("images"));
-        }
-        const learning = await this.learningRepository.findById(learningId);
-        if (!learning) {
-            throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
-        }
-        Object.assign(learning, body);
-        await learning.save();
+
+    Object.assign(learning, payload);
+
+    const updated = await learning.save();
+
+    return updated;
+  }
+
+  public async deleteId(learningId: string) {
+    const learning = await Learning.findById(learningId);
+
+    if (!learning) {
+      throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
     }
-    public async deleteLearningById(learningId: string) {
-        const learning = await Learning.findById(learningId);
-        if (!learning) {
-            throw new NotFoundError(ResponseMessage.LEARNING_NOT_FOUND);
-        }
-        await learning.deleteOne();
-        deletePhoto(learning.thumbnail);
-    }
+
+    const deleted = await learning.deleteOne();
+
+    deletePhoto(learning.thumbnail);
+
+    return deleted;
+  }
 }

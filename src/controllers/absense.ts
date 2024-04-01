@@ -69,11 +69,7 @@ export default class AbsenseController {
     const lessonHours: number = 8;
     if (currentHours !== lessonHours) {
       throw new BadRequestError(
-        "You are referring to an absence that is officially over and closed. For additional assistance or to address any upcoming absences, kindly come back at " +
-          lessonHours +
-          "am." +
-          "Current server time: " +
-          currentServerTime,
+        "You are referring to an absence that is officially over and closed",
       );
     }
     const account: IAccount = request.user as IAccount;
